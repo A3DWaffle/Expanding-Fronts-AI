@@ -1,0 +1,1153 @@
+; =====================================================
+; FILE: map-loads
+; PURPOSE:
+;   Detects map types, resources, fish, hunt, and special map conditions.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: MAP DETECTION
+;	Chapter 2: RESOURCE DETECTION
+;	Chapter 3: SPECIAL MAPS
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(true)
+=>
+	(set-goal fish-present NO)
+	(set-goal ore-found NO)
+	(set-goal nova-found NO)
+	(set-goal berries-present NO)
+	(set-goal hunt-present NO)
+	(set-strategic-number snc-lure-amount 0)
+	(disable-self)
+)
+
+; #load-if-defined CUSTOM-MAP ; these rules now fire for all maps
+
+(defrule
+	(cc-players-unit-type-count 0 GAIA-BERRY-LINE >= 10) ; if any berries do exist on map
+=>
+	(set-goal berries-present YES)
+	(disable-self)
+)
+
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-HUNT-LINE >= 4) ; if there's at least one huntable
+=>
+	(set-goal hunt-present YES)
+	(disable-self)
+)
+
+(defrule
+	(or
+		(cc-players-unit-type-count 0 6482 > 0) ; carbon gas vent
+		(cc-players-unit-type-count 0 7091 > 0) ; tropical variant
+	)
+	(game-time > 3)
+=>
+	(set-goal fish-present VENTSIGHTED) ; increased priority, disables deleting fishing boats
+	(disable-self)
+)
+
+
+#load-if-defined TINY-MAP ; 2p sized map
+(defrule
+	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 20) ; 10 fish total on map
+=>
+	(set-goal fish-present YES)
+	(set-goal special-map WATER)
+	(disable-self)
+)
+
+; Assume: More than 15 berries per player would be funny
+; Since the AI sees double, this is 30b per player
+; A Tiny map should have 2 players on it, soooo
+; 60 berries
+(defrule
+	(goal berries-present YES)
+	(cc-players-unit-type-count 0 GAIA-BERRY-LINE >= 60) ; remember, AI sees double
+=>
+	(set-goal berries-present PLENTY)
+	(disable-self)
+)
+
+; one lure per player: two players is two lure
+; AI sees double so make that 4 lure
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 4)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 1)
+	(disable-self)
+)
+; two lure per player: two players is 4 lure
+; AI sees double so make that 8 lure
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 8)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 2)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 12)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 3)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 16)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 4)
+	(disable-self)
+)
+
+#end-if
+
+#load-if-defined SMALL-MAP ; 3p sized map
+
+(defrule
+	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 30) ; 15 fish total on map
+=>
+	(set-goal fish-present YES)
+	(set-goal special-map WATER)
+	(disable-self)
+)
+
+(defrule
+	(goal berries-present YES)
+	(cc-players-unit-type-count 0 GAIA-BERRY-LINE >= 90) 
+=>
+	(set-goal berries-present PLENTY)
+	(disable-self)
+)
+
+; one lure per player: three players is 3 lure
+; AI sees double so make that 6 lure
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 6)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 1)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 12)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 2)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 18)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 3)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 24)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 4)
+	(disable-self)
+)
+#end-if
+
+#load-if-defined MEDIUM-MAP ; 4p sized map
+
+(defrule
+	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 40)
+=>
+	(set-goal fish-present YES)
+	(set-goal special-map WATER)
+	(disable-self)
+)
+
+(defrule
+	(goal berries-present YES)
+	(cc-players-unit-type-count 0 GAIA-BERRY-LINE >= 120) 
+=>
+	(set-goal berries-present PLENTY)
+	(disable-self)
+)
+; one lure per player is 4 lure
+; AI sees double so make that 8
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 8)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 1)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 16)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 2)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 24)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 3)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 32)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 4)
+	(disable-self)
+)
+		
+#end-if
+
+#load-if-defined NORMAL-MAP ; 6p sized map
+
+(defrule
+	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 60)
+=>
+	(set-goal fish-present YES)
+	(set-goal special-map WATER)
+	(disable-self)
+)
+
+(defrule
+	(goal berries-present YES)
+	(cc-players-unit-type-count 0 GAIA-BERRY-LINE >= 180) 
+=>
+	(set-goal berries-present PLENTY)
+	(disable-self)
+)
+; one lure per player is 6 lure
+; AI sees double so make that 12
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 12)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 1)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 24)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 2)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 36)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 3)
+	(disable-self)
+)
+(defrule
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 48)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 4)
+	(disable-self)
+)
+
+
+		
+#end-if
+
+#load-if-defined LARGE-MAP ; 8p sized map
+
+(defrule
+	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 70)
+=>
+	(set-goal fish-present YES)
+	(set-goal special-map WATER)
+	(disable-self)
+)
+
+(defrule
+	(goal berries-present YES)
+	(cc-players-unit-type-count 0 GAIA-BERRY-LINE >= 240) 
+=>
+	(set-goal berries-present PLENTY)
+	(disable-self)
+)
+; lure rules a duplicate of Giant below
+		
+#end-if
+
+; #load-if-defined GIANT-MAP ; load if any map (handling for odd or extra-massive sizes)
+
+(defrule
+	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 80)
+=>
+	(set-goal fish-present YES)
+	(set-goal special-map WATER)
+	(disable-self)
+)
+
+(defrule
+	(goal berries-present YES)
+	(cc-players-unit-type-count 0 GAIA-BERRY-LINE >= 240) 
+=>
+	(set-goal berries-present PLENTY)
+	(disable-self)
+)
+
+; one lure per player is 8 lure
+; AI sees double so make that 16
+(defrule
+	(strategic-number snc-lure-amount < 1)
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 16)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 1)
+	(disable-self)
+)
+(defrule
+	(strategic-number snc-lure-amount < 2)
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 32)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 2)
+	(disable-self)
+)
+(defrule
+	(strategic-number snc-lure-amount < 3)
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 48)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 3)
+	(disable-self)
+)
+(defrule
+	(strategic-number snc-lure-amount < 4)
+	(cc-players-unit-type-count 0 GAIA-ANIMAL-LURE-LINE >= 64)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 4)
+	(disable-self)
+)
+
+; check type of lure
+(defrule
+		(or
+	(cc-players-unit-type-count 0 4423 >= 4); Flit, 120f
+		(or
+	(cc-players-unit-type-count 0 7401 >= 4); Splox, 150f
+		(or
+	(cc-players-unit-type-count 0 7437 >= 4); Ksomethingslug, 200f
+		(or
+	(cc-players-unit-type-count 0 7496 >= 4); Lisk, 200f
+		(or
+	(cc-players-unit-type-count 0 7606 >= 4); Exoboar, 220f
+		(or
+	(cc-players-unit-type-count 0 7659 >= 4); Scazz, 210f
+		(or
+	(cc-players-unit-type-count 0 7661 >= 4); Horranth, 220f
+	(cc-players-unit-type-count 0 7673 >= 4); BGlider, 210f
+	)))))))
+=>
+	(set-goal allowgarbage LOWLUREFOOD) ; this goal does double duty
+	(disable-self)
+)
+
+(defrule
+	(current-age >= tech-level-2)
+=>
+	(set-goal allowgarbage NO) ; reset and let this goal be used for its other purpose
+	(disable-self)
+)
+
+
+		
+; #end-if
+
+(defrule
+	(goal fish-present VENTSIGHTED)
+=>
+	(set-goal special-map WATER)
+	(disable-self)
+)
+; if there's a vent, no matter map sizes or fish count, go on the water
+
+; #end-if ; end of custom map
+
+
+
+
+; boring map specifics here
+; mostly just sets a ton of "is water, is asteroid" stuff as well as a bunch of other useless leftovers (such as wall build on Defend the Monument, which it doesn't even do)
+
+#load-if-defined GAME-SPEED-LOCKED
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+#end-if
+
+;*******************************
+#load-if-defined WATER-MASS-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map WATER)
+        (disable-self)
+)
+
+#end-if
+;*******************************
+#load-if-defined LAND-SATELLITES-MAP	;Islands
+
+(defrule
+        (true)
+=>
+        (set-goal special-map WATER)
+        (disable-self)
+)
+
+#end-if
+;*******************************
+#load-if-defined SPACE-SATELLITES-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map ASTEROID)
+        (disable-self)
+)
+
+#end-if
+;*******************************
+#load-if-defined PLANETS-AND-MOONS-MAP		;Asteriods
+
+(defrule
+        (true)
+=>
+        (set-goal special-map ASTEROID)
+        (disable-self)
+)
+
+#end-if
+;*******************************
+#load-if-defined SEARCH-AND-DESTROY-MAP		;Forced Deployment
+
+(defrule
+        (true)
+=>
+        (set-goal special-map WATER)
+        (disable-self)
+)
+
+#end-if
+;*******************************
+#load-if-defined TEAM-LAND-SATELLITES-MAP		;Team Islands
+
+(defrule
+        (true)
+=>
+        (set-goal special-map WATER)
+        (disable-self)
+)
+#end-if
+
+;*******************************
+#load-if-defined TEAM-SPACE-SATELLITES-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map ASTEROID)
+        (disable-self)
+)
+
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-KASHYYYK-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-ENDOR-MAP              
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined STAR-WARS-WORLD-GEDDES-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map ASTEROID)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined STAR-WARS-WORLD-AEREEN-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map ASTEROID)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined STAR-WARS-WORLD-KESSEL-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-TATOOINE-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-TATOOINE-NEW-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-YAVIN-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+;*******************************
+#load-if-defined SEA-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map WATER)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined SHORELINE-MAP
+
+(defrule
+        (true)
+=>
+		(set-goal special-map WATER) ; wasn't originally a water map
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined LAND-MASS-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined SPACE-MASS-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map ASTEROID)
+        (disable-self)
+)
+
+#end-if
+;*******************************
+#load-if-defined NOVA-LAKE-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map WATER)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined LARGE-SEA-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map WATER)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-KRANT-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-HOTH-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-HANOON-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-REYTHA-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined STAR-WARS-WORLD-DAGOBAH-MAP
+
+#load-if-not-defined NABOO
+#load-if-not-defined GUNGANS
+#load-if-not-defined FEDERATION
+#load-if-not-defined NEWREPUBLIC
+#load-if-not-defined IMPERIALREMNANT
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+
+#load-if-defined NABOO
+#load-if-defined GUNGANS
+#load-if-defined FEDERATION
+#load-if-defined NEWREPUBLIC
+#load-if-defined IMPERIALREMNANT
+
+(defrule
+        (true)
+=>
+        (set-goal special-map WATER)
+        (disable-self)
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined STAR-WARS-WORLD-ZALORIIS-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined STAR-WARS-WORLD-NABOO-MAP
+
+(defrule
+        (true)
+=>
+        (set-goal special-map WATER)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined STAR-WARS-WORLD-SARAPIN-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined STAR-WARS-WORLD-EREDENN-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined STAR-WARS-WORLD-GEONOSIS-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+;*******************************
+#load-if-defined STAR-WARS-WORLD-MOSESPA-MAP
+
+(defrule
+        (true)
+=>
+		(do-nothing)
+        (disable-self)
+)
+
+#load-if-defined DEFEND-MONUMENT
+(defrule
+        (goal wonder-attempt DEFEND)
+=>
+        (set-goal wall-build YES)
+        (disable-self)
+)
+#end-if
+#end-if
+
+;*******************************
+#load-if-defined RAIDERS-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+
+; there was a whole swarm of Raiders specific script but we want it to work on all non-CC starting maps
+
+#end-if
+;*******************************
+#load-if-defined RIVERS-MAP
+
+#load-if-not-defined NABOO
+#load-if-not-defined GUNGANS
+#load-if-not-defined FEDERATION
+#load-if-not-defined NEWREPUBLIC
+#load-if-not-defined IMPERIALREMNANT
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+
+#load-if-defined NABOO
+#load-if-defined GUNGANS
+#load-if-defined FEDERATION
+#load-if-defined NEWREPUBLIC
+#load-if-defined IMPERIALREMNANT
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+
+#end-if
+;*******************************
+#load-if-defined SWAMP-MAP
+
+#load-if-not-defined NABOO
+#load-if-not-defined GUNGANS
+#load-if-not-defined FEDERATION
+#load-if-not-defined NEWREPUBLIC
+#load-if-not-defined IMPERIALREMNANT
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+
+#load-if-defined NABOO
+#load-if-defined GUNGANS
+#load-if-defined FEDERATION
+#load-if-defined NEWREPUBLIC
+#load-if-defined IMPERIALREMNANT
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+
+#end-if
+;*******************************
+#load-if-defined TUNDRA-MAP
+
+(defrule
+        (not (goal special-map NOTWATER)) ; can't just be true as seems to be overwritten by fish logic 
+=>
+        (set-goal special-map NOTWATER)
+)
+
+#end-if
+;*******************************
+#load-if-defined DESERT-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined ARENA-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined FOREST-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+
+#end-if
+;*******************************
+#load-if-defined FORTRESS-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined ICE-LAKE-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined NOVA-ASSAULT-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined PRECIPICE-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+#end-if
+;*******************************
+#load-if-defined FLATS-MAP
+
+(defrule
+        (true)
+=>
+        (do-nothing)
+        (disable-self)
+)
+
+#end-if
+;*******************************
+
+
+; forcible overrides to say "hey please don't go on water"
+
+#load-if-defined MOTHERLODE-MAP
+
+(defrule
+	(not (goal special-map NOTWATER))
+=>
+	(set-goal special-map NOTWATER)
+)
+
+#end-if
+;*******************************
+#load-if-defined SAVANNAH-MAP
+
+(defrule
+	(not (goal special-map NOTWATER))
+=>
+	(set-goal special-map NOTWATER)
+)
+
+#end-if
+;*************************************************************

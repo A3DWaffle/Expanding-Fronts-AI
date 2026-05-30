@@ -1,0 +1,446 @@
+; =====================================================
+; FILE: war-center
+; PURPOSE:
+;   Builds War Centers and researches War Center-owned combat techs.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: BUILDINGS
+;	Chapter 2: CORE TECHS
+;	Chapter 3: CIV TECHS
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(or
+		(current-age >= tech-level-3)
+		(goal openingstyle STYLE-RUSH) ; Rush
+	)
+	(or
+		(building-type-count-total BLDG-TRAINAIR == 2); Defensive
+		(building-type-count BLDG-MAIN > 2) ; Aggressive
+	)
+	(building-type-count-total BLDG-WARCTR < 2)
+	(building-type-count-total BLDG-TRAINMECH > 0)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-WARCTR)
+=>
+	(release-escrow carbon)
+	(build BLDG-WARCTR)
+)
+
+; -----------------------------------------------------
+; *** Chapter 1: RANGE ***
+; -----------------------------------------------------
+
+(defrule
+    ; Elevation Tracking, Mech Range TL2
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-elevation-tracking)
+	(or
+		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(unit-type-count-total UNIT-MECH2-LINE > 0)
+	)
+=>
+	(release-escrow food)
+	(research rt-elevation-tracking)
+)
+
+(defrule
+    ; External Sensor Pod, Mech Range TL3
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-external-sensor-pod)
+	(or
+		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(unit-type-count-total UNIT-MECH2-LINE > 0)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-external-sensor-pod)
+)
+
+(defrule
+    ; Targeting Sensor, Mech Range TL4
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-targetting-sensors)
+	(or
+		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(unit-type-count-total UNIT-MECH2-LINE > 0)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-targetting-sensors)
+)
+
+; -----------------------------------------------------
+; *** Chapter 2: DAMAGE ***
+; -----------------------------------------------------
+
+(defrule
+    ; Primary Focusing Coils, Damage TL2
+	(or
+		(current-age >= tech-level-3)
+		(goal openingstyle STYLE-RUSH)
+	)
+	(can-research rt-primary-focus-coils)
+=>
+	(research rt-primary-focus-coils)
+)
+
+(defrule
+    ; Cooling Sleeves, Damage TL3
+	(or
+		(current-age >= tech-level-3)
+		(goal openingstyle STYLE-RUSH)
+	)
+	(can-research-with-escrow rt-cooling-sleeves)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-cooling-sleeves)
+)
+
+(defrule
+    ; Advanced Power Pack, Damage TL4
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-adv-power-pack)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-adv-power-pack)
+)
+
+; -----------------------------------------------------
+; *** Chapter 3: TROOPER ARMOR ***
+; -----------------------------------------------------
+
+(defrule
+	; Basic Armor, TL2
+	(can-research-with-escrow rt-basic-armor)
+	(or
+		(current-age >= tech-level-3)
+		(goal openingstyle STYLE-RUSH)
+	)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal support-grenadiers YES)
+				(or
+					(goal support-grenadiers YES)
+					(goal uu-kind UU-TROOPER)
+				)
+			)
+		)
+	)
+=>
+	(release-escrow food)
+	(research rt-basic-armor)
+)
+
+(defrule
+	; Light Armor, TL3
+	(can-research-with-escrow rt-light-armor)
+	(or
+		(current-age >= tech-level-3)
+		(goal openingstyle STYLE-RUSH)
+	)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal support-grenadiers YES)
+				(or
+					(goal support-grenadiers YES)
+					(goal uu-kind UU-TROOPER)
+				)
+			)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-light-armor)
+)
+
+(defrule
+	; Heavy Armor, TL4
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-heavy-armor)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal support-grenadiers YES)
+				(or
+					(goal support-grenadiers YES)
+					(goal uu-kind UU-TROOPER)
+				)
+			)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-heavy-armor)
+)
+
+; -----------------------------------------------------
+; *** Chapter 4: MECH PLATING *** 
+; -----------------------------------------------------
+
+(defrule
+	; Light Plating, TL2
+	(can-research-with-escrow rt-light-plating)
+	(or
+		(current-age >= tech-level-3)
+		(goal openingstyle STYLE-RUSH)
+	)
+	(or
+		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(or
+			(unit-type-count-total UNIT-MECH2-LINE > 0)
+			(unit-type-count-total UNIT-MECH3-LINE > 0)
+		)
+	)
+=>
+	(release-escrow food)
+	(research rt-light-plating)
+)
+
+(defrule
+	; Medium Plating, TL3 
+	(can-research-with-escrow rt-medium-plating)
+	(or
+		(current-age >= tech-level-3)
+		(goal openingstyle STYLE-RUSH)
+	)
+	(or
+		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(or
+			(unit-type-count-total UNIT-MECH2-LINE > 0)
+			(unit-type-count-total UNIT-MECH3-LINE > 0)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-medium-plating)
+)
+
+(defrule
+	; Heavy Plating, TL4
+	(can-research-with-escrow rt-heavy-plating)
+	(current-age >= tech-level-4)
+	(or
+		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(or
+			(unit-type-count-total UNIT-MECH2-LINE > 0)
+			(unit-type-count-total UNIT-MECH3-LINE > 0)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-heavy-plating)
+)
+
+(defrule
+	; Light Plating, TL4 mech-UU fallback
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-light-plating)
+	(or
+		(civ-selected RESISTANCE)
+		(civ-selected BLACKSUN)
+	)
+=>
+	(release-escrow food)
+	(research rt-light-plating)
+)
+
+(defrule
+	; Medium Plating, TL4 mech-UU fallback
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-medium-plating)
+	(or
+		(civ-selected RESISTANCE)
+		(civ-selected BLACKSUN)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-medium-plating)
+)
+
+(defrule
+	; Heavy Plating, TL4 mech-UU fallback
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-heavy-plating)
+	(or
+		(civ-selected RESISTANCE)
+		(civ-selected BLACKSUN)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-heavy-plating)
+)
+
+; -----------------------------------------------------
+; *** Chapter 5: SUPPORT / UNIQUE TECHS *** 
+; -----------------------------------------------------
+
+(defrule
+    ; Stimpacks - prioritize for real troop/grenadier armies
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-stimpacks)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal support-grenadiers YES)
+				(or
+					(goal support-grenadiers YES)
+					(goal uu-kind UU-TROOPER)
+				)
+			)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-stimpacks)
+)
+
+(defrule
+    ; Grenadier Training
+	(can-research-with-escrow rt-gren-reload)
+	(goal importantT2research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal support-grenadiers YES)
+				(or
+					(goal support-grenadiers YES)
+					(unit-type-count-total UNIT-GRENADE-LINE > 0)
+				)
+			)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-gren-reload)
+)
+
+(defrule
+    ; ZC Black Market Components
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-black-market-components)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(research rt-black-market-components)
+)
+
+(defrule
+    ; GN Potent Plasma
+	(can-research-with-escrow rt-potent-plasma)
+=>
+	(release-escrow metal)
+	(release-escrow carbon)
+	(research rt-potent-plasma)
+)
+
+(defrule
+    ; RA Tougher Armor
+    (can-research-with-escrow rt-tougher-armor)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal support-grenadiers YES)
+				(or
+					(goal support-grenadiers YES)
+					(goal uu-kind UU-TROOPER)
+				)
+			)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+    (research rt-tougher-armor)
+)
+
+(defrule
+    ; RP Kaminoan Cloners
+    (current-age >= tech-level-4)
+    (can-research-with-escrow rt-kamclonr)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal support-grenadiers YES)
+				(or
+					(goal support-grenadiers YES)
+					(goal uu-kind UU-TROOPER)
+				)
+			)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+    (research rt-kamclonr)
+)
+
+(defrule
+    ; CF Battlefield Scanners
+    (current-age >= tech-level-4)
+    (can-research-with-escrow rt-battlefield-scanners)
+	(goal importantT4research DONE)
+=>
+	(release-escrow carbon)
+	(release-escrow food)
+    (research rt-battlefield-scanners)
+)
+
+(defrule
+    ; RS Sensor Cloak
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-sensorcloak)
+	(goal importantT4research DONE)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(research rt-sensorcloak)
+)
+
+(defrule
+    ; GN Faster Growth Chambers
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-fast-growth-chambers)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(research rt-fast-growth-chambers)
+)
+

@@ -1,0 +1,784 @@
+; =====================================================
+; FILE: homebase
+; PURPOSE:
+;   Builds core base infrastructure, workers, prefabs, farms, power cores, and CCs.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: COMMAND CENTER
+;	Chapter 2: RESEARCH
+;	Chapter 3: WORKERS
+;	Chapter 4: PREFABS
+;	Chapter 5: FARMS
+;	Chapter 6: POWER CORE
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(game-time > raiders-timeout) ; raiders starts are very odd and this does not often work properly
+	(building-type-count-total BLDG-MAIN == 0)
+	(can-build-with-escrow BLDG-MAIN)
+=>
+	(release-escrow carbon)
+	(release-escrow metal)
+	(build BLDG-MAIN) 
+)
+
+; the value of TL3-CCs and TL4-CCs is set in building count (needs to be in prior loaded file or does silly errors)
+
+; Defensive should spend its first clean TL3 on infrastructure, and that includes
+; getting to the full 3-CC macro shell quickly.
+(defrule
+	(current-age == tech-level-3)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count-total BLDG-MAIN < 3)
+	(building-type-count-total BLDG-TRAINAIR >= 2)
+	(can-build-with-escrow BLDG-MAIN)
+=>
+	(release-escrow carbon)
+	(release-escrow metal)
+	(build BLDG-MAIN)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(building-type-count-total BLDG-MAIN < TL3-CCs)
+	(can-build-with-escrow BLDG-MAIN)
+=>
+	(release-escrow carbon)
+	(release-escrow metal)
+	(build BLDG-MAIN)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(building-type-count-total BLDG-MAIN < TL4-CCs)
+	(can-build-with-escrow BLDG-MAIN)
+	(metal-amount > 110) ; try to not release escrow in T4
+=>
+	(release-escrow carbon)
+	(build BLDG-MAIN)
+)
+
+
+
+(defrule
+	(current-age == tech-level-4)
+	(can-build-with-escrow BLDG-MAIN)
+	(or
+		(goal attackTSAhold HOLDING-HIGH) ; use far-flung CCs to grab res during TSA
+		(goal attackTSAhold HOLDING-LOW)
+	)
+	(metal-amount > 110) ; try to not release escrow in T4
+	(or
+		(goal attackTSAlevel 3)
+		(goal attackTSAlevel 4)
+	)
+=>
+	(release-escrow carbon)
+	(build BLDG-MAIN)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(can-build-with-escrow BLDG-MAIN)
+	(or
+		(goal attackTSAhold HOLDING-HIGH) 
+		(goal attackTSAhold HOLDING-LOW)
+	)
+	(metal-amount > 110)
+	(goal attackTSAlevel 5)
+=>
+	(release-escrow carbon)
+	(build BLDG-MAIN)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(can-build-with-escrow BLDG-MAIN)
+	(or
+		(goal attackTSAhold HOLDING-HIGH) 
+		(goal attackTSAhold HOLDING-LOW)
+	)
+	(metal-amount > 110)
+	(goal attackTSAlevel 6)
+=>
+	(release-escrow carbon)
+	(build BLDG-MAIN)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(can-build-with-escrow BLDG-MAIN)
+	(or
+		(goal attackTSAhold HOLDING-HIGH) 
+		(goal attackTSAhold HOLDING-LOW)
+	)
+	(metal-amount > 110)
+	(goal attackTSAlevel 7)
+=>
+	(release-escrow carbon)
+	(build BLDG-MAIN)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(can-build-with-escrow BLDG-MAIN)
+	(or
+		(goal attackTSAhold HOLDING-HIGH) 
+		(goal attackTSAhold HOLDING-LOW)
+	)
+	(metal-amount > 110)
+	(goal attackTSAlevel 8)
+=>
+	(release-escrow carbon)
+	(build BLDG-MAIN)
+	(disable-self)
+)
+
+
+(defrule
+	(current-age == tech-level-4)
+	(can-build-with-escrow BLDG-MAIN)
+	(or
+		(goal attackTSAhold HOLDING-HIGH) 
+		(goal attackTSAhold HOLDING-LOW)
+	)
+	(metal-amount > 110)
+	(goal attackTSAlevel 9)
+=>
+	(release-escrow carbon)
+	(build BLDG-MAIN)
+	(disable-self)
+)
+
+
+; *** COMMAND CENTER RESESARCH ***
+
+; motivator & basic training research is here due to needing to load before training workers (else it never gets it)
+; but building CCs needs to be before research or else when teching up research happens instead of CC building
+
+(defrule
+	(current-age >= tech-level-2)
+	(can-research-with-escrow rt-upgraded-motivator)
+	(game-time > 300) ; to avoid cases where AI would immediately resesearch this instead of training workers
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(research rt-upgraded-motivator)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-optimized-motivator)
+	(game-time > 300)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(research rt-optimized-motivator)
+)
+
+(defrule
+	; Basic Training
+	(can-research rt-basic-training)
+	(or
+		(not (can-train UNIT-WORKER) )
+		(or
+			(civilian-population > 14)
+			(unit-type-count 224 > 0) ; dead worker
+		)
+	)
+=>
+	(research rt-basic-training)
+)
+
+
+
+;********* UNIT WORKER ***********
+
+(defrule
+	(current-age == tech-level-1)
+	(civilian-population < civ-dark-hard) ; this value can be very high, like 50, so not an issue (it's per pop)
+	(can-train UNIT-WORKER)
+=>
+	(train UNIT-WORKER)
+)
+
+; this T2 check is a mess but it works so I'm not going to poke it
+; update: I poked it
+(defrule
+	(current-age == tech-level-2)
+	(or
+		(and
+			(unit-type-count-total UNIT-WORKER < TL4-max-workers-ally)
+			(cc-players-building-type-count any-ally BLDG-SPACEPORT > 0) ; budget check for ally
+		)
+		(and
+			(unit-type-count-total UNIT-WORKER < TL4-max-workers-noally)
+			(not (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)) ; budget check for no ally
+		)
+	)
+	(can-train UNIT-WORKER)
+=>
+	(train UNIT-WORKER)
+)
+
+; when looking at economic pop
+; it should be split between trawlers, trade, and workers
+; actually should it be split on trawlers? all the fish goes away eventually ... yes because vents
+; we might get some better logic here eventually but they often get reduced down with lategameworker anyway 
+; so not a biggie
+
+; case 1: no fish, yes ally
+(defrule
+		(or
+			(current-age == tech-level-3)
+			(current-age == tech-level-4)
+		)
+		(goal fish-present NO)
+        (unit-type-count-total UNIT-WORKER < TL4-max-workers-ally)
+		(cc-players-building-type-count any-ally BLDG-SPACEPORT > 0) ; budget check for ally
+		(not (population > stop-junk-threshold)) ; stop training these once the 10% headroom threshold is reached
+		(goal lategameworker NO)
+        (can-train UNIT-WORKER)
+        =>
+        (train UNIT-WORKER)
+)
+
+; case 2: no fish, no ally
+(defrule
+        (or
+			(current-age == tech-level-3)
+			(current-age == tech-level-4)
+		)
+		(goal fish-present NO)
+        (unit-type-count-total UNIT-WORKER < TL4-max-workers-noally)
+		(not (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)) ; budget check for no ally
+		(not (population > stop-junk-threshold)) ; stop training these once the 10% headroom threshold is reached
+		(goal lategameworker NO)
+        (can-train UNIT-WORKER)
+        =>
+        (train UNIT-WORKER)
+)
+
+
+; if the map DOES have fish (includes carbon gas vent)
+; case 3: yes fish, yes ally
+(defrule
+        (or
+			(current-age == tech-level-3)
+			(current-age == tech-level-4)
+		)
+		(not (goal fish-present NO))
+		(unit-type-count-total UNIT-WORKER < TL4-max-workers-ally-water)
+		(cc-players-building-type-count any-ally BLDG-SPACEPORT > 0) ; budget check for ally
+		(not (population > stop-junk-threshold))
+		(goal lategameworker NO)
+        (can-train UNIT-WORKER)
+        =>
+        (train UNIT-WORKER)
+)
+; case 4: yes fish, no ally
+(defrule
+        (or
+			(current-age == tech-level-3)
+			(current-age == tech-level-4)
+		)
+		(not (goal fish-present NO))
+        (unit-type-count-total UNIT-WORKER < TL4-max-workers-noally-water)
+		(not (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)) ; budget check for no ally
+		(not (population > stop-junk-threshold))
+		(goal lategameworker NO)
+        (can-train UNIT-WORKER)
+        =>
+        (train UNIT-WORKER)
+)
+
+; if epic lategame
+
+(defrule
+	(true)
+=>
+	(set-goal lategameworker NO)
+	(disable-self)
+)
+
+; Shared late-game worker cleanup for all difficulties. Difficulty should not be
+; changing whether the AI understands how to trim workers at max-pop.
+
+(defrule
+	(game-time > 3600)
+	(goal lategameworker NO)
+	(goal ore-found NO)
+	(goal nova-found NO) ; these call, among other things, number of miners
+	(cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)
+	(carbon-amount > 700) ; so got a bit banked, implying all buildings done
+	=>
+	(set-goal lategameworker YES)
+	(chat-local-to-self "WAFFLE: Lategame worker active. May delete")
+)
+
+(defrule
+	(not (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0))
+	(goal lategameworker YES)
+=>
+	(set-goal lategameworker NO)
+)
+
+(defrule
+	(goal lategameworker YES)
+	(unit-type-count-total UNIT-WORKER > late-max-workers)
+	(population > stop-junk-threshold) ; only if pop is a rare resource
+	=>
+	(delete-unit UNIT-WORKER) ; thank you for your services, we're sorry to do you dirty like this ;_;
+)
+
+; lategame train rule 
+(defrule
+	(goal lategameworker YES)
+	(unit-type-count-total UNIT-WORKER < late-max-workers)
+	(population < stop-junk-threshold) ; only if pop has plenty
+	(can-train UNIT-WORKER)
+	=>
+	(train UNIT-WORKER)
+)
+
+
+; LITERALLY EVERYTHING ELSE
+; FILE LOAD ORDER STOPS BEING IMPORTANT SO THESE CAN BE IN ANY ORDER
+
+
+
+;****** PREFAB SHELTER *******
+
+; as-needed
+(defrule
+	(building-type-count BLDG-MAIN > 0)
+	(housing-headroom < 5)			; "do we need a house" check
+	(population-headroom > 0)		; check for if you still have headroom against the pop limit
+	(can-build BLDG-PREFAB)
+=>
+	(build BLDG-PREFAB)
+)
+
+(defrule
+	(building-type-count BLDG-MAIN > 0)
+	(current-age == tech-level-2)
+	(housing-headroom < 10)	
+	(population-headroom > 0)
+	(can-build BLDG-PREFAB)
+=>
+	(build BLDG-PREFAB)
+)
+
+(defrule
+	(building-type-count BLDG-MAIN > 0)
+	(current-age >= tech-level-3)
+	(housing-headroom < 15) ; build lots of extra prefabs to prevent production from being capped
+	(population-headroom > 0)
+	(can-build BLDG-PREFAB)
+=>
+	(build BLDG-PREFAB)
+)
+
+; resilience go brrrr
+(defrule
+	(research-completed rt-resilience)
+	(building-type-count BLDG-PREFAB > 1)
+=>
+	(delete-complete-building BLDG-PREFAB)
+)
+
+;********* MEDICS *********
+
+#load-if-not-defined DIFFICULTY-HARDEST ; no need
+
+#load-if-not-defined CONFEDERACY
+#load-if-not-defined FEDERATION
+
+(defrule
+        (current-age >= tech-level-3)
+        (goal importantT3research DONE)
+        (unit-type-count-total UNIT-MEDIC < medic) ; is about 3 
+        (can-train UNIT-MEDIC)
+		(military-population > 25) ; try to not send a force of AA mobiles and medics !  (this const is not pop specific but That Is Okay I Think)
+		(not (population > stop-junk-threshold))
+        =>
+        (train UNIT-MEDIC)
+)
+
+#end-if
+#end-if
+
+#end-if
+
+;********* FARM **********
+
+(defrule
+	(true)
+=>
+	(set-goal allowfarm YES)
+	(disable-self)
+)
+
+; idle-farm-count now actually works now, yipee
+
+; if no berries are present
+; we would like the AI to hunt
+; but the AI's hunting capability is pretty incompetent
+; so better to just build farms as it can, and send any spare assigned food gatherers to hunt 
+
+; fish is also an option but that's even more clunky
+
+(defrule
+	(current-age == tech-level-1)
+	(current-age-time > 240)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(not (goal savetheanimals YES)) ; do not waste carbon on farms when nursery is needed
+	(goal hunt-present NO)
+	(unit-type-count GAIA-ANIMAL-HERD-LINE == 0)
+	(idle-farm-count < 1)
+	(can-build BLDG-FARM)
+	(not (goal berries-present YES))
+	(not (goal berries-present PLENTY))
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(current-age-time > 600)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(not (goal savetheanimals YES))
+	(goal hunt-present YES)
+	(or
+		(unit-type-count GAIA-ANIMAL-HERD-LINE == 0)
+		(building-type-count-total BLDG-DROPANIM > 0)
+	)
+	(idle-farm-count < 1)
+	(can-build BLDG-FARM)
+	(not (goal berries-present YES))
+	(not (goal berries-present PLENTY))
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+; TL1 food safety valve: once the opener is complete, spend surplus carbon
+; on farms if food is still dangerously low.
+(defrule
+	(current-age == tech-level-1)
+	(food-amount < 100)
+	(carbon-amount > 250)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPANIM > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(or
+		(and
+			(goal openingstyle STYLE-DEFENSIVE)
+			(building-type-count-total BLDG-DROPMETAL > 0)
+		)
+		(and
+			(not (goal openingstyle STYLE-DEFENSIVE))
+			(building-type-count-total BLDG-DROPNOVA > 0)
+		)
+	)
+	(not (goal savetheanimals YES))
+	(idle-farm-count < 2)
+	(can-build BLDG-FARM)
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+; if berries ARE present 
+; then wait for them to be too far 
+
+(defrule
+	(current-age == tech-level-1)
+	(current-age-time > 300)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(not (goal savetheanimals YES)) ; do not waste carbon on farms when nursery is needed
+	(or
+		(unit-type-count GAIA-ANIMAL-HERD-LINE == 0)
+		(building-type-count-total BLDG-DROPANIM > 0)
+	)
+	(idle-farm-count < 1)
+	(can-build BLDG-FARM)
+	(or
+		(goal berries-present YES)
+		(goal berries-present PLENTY)
+	)
+	(sheep-and-forage-too-far)
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal hunt-present NO)
+	(idle-farm-count < 9) ; maintain about 4 more spare farms than before
+	(can-build BLDG-FARM)
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal hunt-present YES)
+	(current-age-time > 180)
+	(idle-farm-count < 3)
+	(can-build BLDG-FARM)
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal hunt-present YES)
+	(current-age-time > 420)
+	(idle-farm-count < 6)
+	(can-build BLDG-FARM)
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(idle-farm-count < 10) ; maintain 9
+	(can-build BLDG-FARM)
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(idle-farm-count < 15) ; maintain LOTS
+	(can-build BLDG-FARM)
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(building-type-count-total BLDG-FARM < 15) ; always have 15 on hand regardless of idle count
+	(can-build BLDG-FARM)
+	(goal allowfarm YES)
+=>
+	(build BLDG-FARM)
+)
+
+; disabling farms can be done in two ways:
+; a, monument construction (defunct)
+; b, if the AI thinks it's dead due to no CC or other miscellany 
+
+(defrule
+	(current-age >= tech-level-2)
+	(game-time > 600)
+	(building-type-count-total BLDG-FARM > 0)
+	(building-type-count BLDG-MAIN == 0) ; if we do not have a CC
+	(building-type-count-total BLDG-MAIN > 0) ; but one is building
+=>
+	(set-goal allowfarm NO)
+)
+
+(defrule
+	(current-age >= tech-level-2)
+	(game-time > 600)
+	(dropsite-min-distance food > 8)
+	(building-type-count BLDG-FARM > 0)
+=>
+	(set-goal allowfarm NO)
+)
+
+(defrule
+	(goal allowfarm NO)
+	(building-type-count BLDG-FARM > 0)
+=>
+	(delete-complete-building BLDG-FARM)
+)
+
+(defrule
+	(goal allowfarm NO)
+	(building-type-count-total BLDG-FARM == 0)
+	(building-type-count BLDG-MAIN > 0)
+=>
+	(set-goal allowfarm YES)
+)
+
+
+
+
+
+;****** POWER CORE ****** 
+
+(defrule
+	(building-type-count-total BMIL-SHIP <= 1)
+	(not (strategic-number sn-max-unpowered-buildings == 1))
+=>
+	(set-strategic-number sn-max-unpowered-buildings 1) ; This variable had ranges between 0 and 2, but it triggers on 1 higher (so a value of 1 means it fires if 2 buildings are unpowered)
+	(chat-local-to-self "WAFFLE: SN max unpowered 1")
+)
+
+; and this set of weird logic is because the AI is HOPELESS at powering its shipyard
+(defrule
+	(building-type-count-total BMIL-SHIP > 1) 
+	(building-type-count-total BMIL-SHIP <= 3) ; 2 or 3 shipyards
+	(not (strategic-number sn-max-unpowered-buildings == 2))
+=>
+	(set-strategic-number sn-max-unpowered-buildings 2) ; so two buildings being unpowered is fine - one random building and one shipyard (hopefully), any more means power core
+	(chat-local-to-self "WAFFLE: SN max unpowered 2")
+)
+
+(defrule
+	(building-type-count-total BMIL-SHIP >= 4)
+	(not (strategic-number sn-max-unpowered-buildings == 3))
+=>
+	(set-strategic-number sn-max-unpowered-buildings 3) ; three buildings being unpowered is fine, two shipyards and one other random building
+	(chat-local-to-self "WAFFLE: SN max unpowered 3")
+)
+
+
+
+; so it turns out
+; AI troop center power logic is noticeably improved (~50% success rate -> 90% success rate)
+; if it builds the Power Core FIRST, then the Troop Center
+
+(defrule
+	(building-type-count BLDG-POWERCORE == 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count BLDG-MAIN > 0)
+	(can-build BLDG-POWERCORE)
+	=>
+	(build BLDG-POWERCORE)
+	(set-goal resourcerefund cpowercore) ; carbon cheat that refunds based on difficulty
+)
+
+; after your TC is built, build a second one if you can
+
+(defrule
+	(current-age == tech-level-1) ; T2-3-4 have rules with current age time down below
+	(building-type-count-total BLDG-POWERCORE < 2)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count BLDG-MAIN > 0)
+	(building-type-count BLDG-TRAINTROOPER > 0)
+	(unit-type-count UNIT-LASER-LINE <= 2) ; if troops are not being produced
+	(can-build BLDG-POWERCORE)
+	=>
+	(build BLDG-POWERCORE)
+	(set-goal resourcerefund cpowercore)
+)
+
+
+; (defrule
+; 	(goal special-map WATER)
+; 	(building-type-count BLDG-POWERCORE < 2) 
+; 	(building-type-count BLDG-DROPCHOW > 0)
+; 	(building-type-count BLDG-MAIN > 0)
+; 	(building-type-count BLDG-TRAINTROOPER > 0)
+; 	(building-type-count BLDG-TRAINBOAT > 0)
+; 	(can-build BLDG-POWERCORE)
+; 	=>
+; 	(build BLDG-POWERCORE)
+; )
+
+
+
+; so it turns out
+; if you ACTUALLY SET THIS TO A USEFUL VALUE
+; and ACTUALLY ALLOW ESCROW
+; this works really, really, really, well
+; added caps for tech levels as it would sometimes get a bit lost
+
+(defrule
+	(too-many-unpowered-buildings)
+	(building-type-count BLDG-MAIN > 0)
+	(can-build-with-escrow BLDG-POWERCORE)
+	(or
+		(and
+			(current-age == tech-level-2)
+			(building-type-count-total BLDG-POWERCORE < 4)
+		)
+		(or
+			(and
+				(current-age == tech-level-3)
+				(building-type-count-total BLDG-POWERCORE < 9)
+			)
+			(and
+				(current-age == tech-level-4)
+				(building-type-count-total BLDG-POWERCORE < 18)
+			)
+		)
+	)
+	=>
+	(release-escrow carbon)
+	(set-goal resourcerefund cpowercore) 
+	(build BLDG-POWERCORE)
+)
+
+; tacked on rule, does fire occasionally
+
+(defrule
+	(or
+		(and
+			(current-age == tech-level-2)
+			(building-type-count-total BLDG-POWERCORE < 2)
+		)
+		(or
+		(and
+			(current-age == tech-level-3)
+			(building-type-count-total BLDG-POWERCORE < 3)
+		)
+		(and
+			(current-age == tech-level-4)
+			(building-type-count-total BLDG-POWERCORE < 5)
+		)
+		)
+	)
+	(can-build-with-escrow BLDG-POWERCORE)
+	(or
+		(carbon-amount > 300)
+		(escrow-amount carbon > 250)
+	)
+	(current-age-time > 300) ; give some time for buildings to be dropped
+=>
+	(release-escrow carbon)
+	(set-goal resourcerefund cpowercore) 
+	(build BLDG-POWERCORE)
+	
+)
+
+; split off into its own rule to save on string table space
+(defrule
+	(goal resourcerefund cpowercore)
+=>
+	(chat-local-to-self "WAFFLE: Releasing escrow for power core") ; see cheats file for, well, the cheat
+)
+
+
+; Shield generators now part of Fortress
+
+; probot production in animal
+
+
+
+

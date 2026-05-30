@@ -1,0 +1,826 @@
+; =====================================================
+; FILE: spaceport
+; PURPOSE:
+;   Builds Spaceports and handles trade, tribute, and cargo growth.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: BUILDINGS
+;	Chapter 2: TRADE
+;	Chapter 3: TRIBUTE
+;	Chapter 4: TECHS
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+        (current-age >= tech-level-2)
+        (building-type-count-total BLDG-SPACEPORT == 0)
+        (can-build-with-escrow BLDG-SPACEPORT)
+=>
+        (release-escrow carbon)
+        (build BLDG-SPACEPORT)
+)
+
+(defrule
+	(player-in-game any-ally)
+=>
+	(set-goal tradestatus ALLOW)
+	(disable-self)
+)
+
+; these are in their own unitlines now to stop RS / BS from spamming them 
+(defrule
+        (goal tradestatus ALLOW)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)
+        (unit-type-count-total UNIT-CARGO-GROUND-LINE <= TL4-max-cargo-ground)
+        (can-train UNIT-CARGO-GROUND-LINE)
+		(or
+			(carbon-amount > 250)
+			(not (current-age == tech-level-2)) ; do not waste your carbon on these when you need buildings!
+		)
+=>
+        (train UNIT-CARGO-GROUND-LINE)
+)
+
+(defrule
+        (goal tradestatus ALLOW)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)
+        (unit-type-count-total UNIT-CARGO-AIR-LINE <= TL4-max-cargo-air)
+        (can-train UNIT-CARGO-AIR-LINE)
+		(nova-amount < 1000)
+		(not (population > stop-junk-threshold))
+=>
+        (train UNIT-CARGO-AIR-LINE)
+)
+
+; Once workers are marked as safely surplus, extend trading toward the full
+; late-game cap from the population file instead of stopping at the first wave.
+(defrule
+        (goal tradestatus ALLOW)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)
+        (unit-type-count-total UNIT-CARGO-AIR-LINE <= late-max-cargo-air) ; higher amount
+        (can-train UNIT-CARGO-AIR-LINE)
+		(population > stop-junk-threshold-lower)
+		(nova-amount < 2000) ; no need to train even more once you have this much nova
+		(goal lategameworker YES)
+=>
+        (train UNIT-CARGO-AIR-LINE)
+)
+
+; TRADING
+; ALMOST NEVER SELL METAL
+
+; SMALL RULES
+
+(defrule
+	(carbon-amount > 3000)
+	(carbon-amount > 500)
+	(nova-amount < 50)
+	(can-sell-commodity carbon)
+=>
+	(sell-commodity carbon)
+)
+
+(defrule
+	(food-amount > 3000)
+	(food-amount > 300)
+	(nova-amount < 50)
+	(can-sell-commodity food)
+=>
+	(sell-commodity food)
+)
+
+(defrule
+	(metal-amount > 3000)
+	(metal-amount > 10000)
+	(nova-amount < 50)
+	(can-sell-commodity metal)
+=>
+	(sell-commodity metal)
+)
+
+
+(defrule
+	(nova-amount > 3000)
+	(food-amount < 300)
+	(can-buy-commodity food)
+=>
+	(buy-commodity food)
+)
+
+(defrule
+	(nova-amount > 3000)
+	(carbon-amount < 300)
+	(can-buy-commodity carbon)
+=>
+	(buy-commodity carbon)
+)
+
+; BONUS: TECH 3 AFFORDING RULES
+
+(defrule
+	(current-age == tech-level-2)
+	(research-available tech-level-3)
+	(not (can-research-with-escrow tech-level-3))
+	(nova-amount > 400) ; escrow tends to be very little at this point in time
+	(food-amount < 1000)
+	(can-buy-commodity food)
+=>
+	(buy-commodity food)
+)
+
+; Defensive opener: if the TL3 timing is real but nova is the only missing
+; piece, very carefully cash in a little ore. This is intentionally stingy.
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal agingup NO)
+	(research-available tech-level-3)
+	(not (can-research-with-escrow tech-level-3))
+	(current-age-time > 120)
+	(food-amount > 800)
+	(carbon-amount > 250)
+	(nova-amount < 150)
+	(metal-amount > 600)
+	(can-sell-commodity metal)
+=>
+	(sell-commodity metal)
+)
+
+
+
+; MEDIUM TRADING
+; for when you're rich, but not rich rich
+
+
+(defrule
+	(carbon-amount > 3000)
+	(carbon-amount > 1000)
+	(nova-amount < 700)
+	(can-sell-commodity carbon)
+=>
+	(sell-commodity carbon)
+)
+
+(defrule
+	(food-amount > 3000)
+	(food-amount > 1000)
+	(nova-amount < 700)
+	(can-sell-commodity food)
+=>
+	(sell-commodity food)
+)
+
+(defrule
+	(metal-amount > 3000)
+	(metal-amount > 10000)
+	(nova-amount < 500)
+	(can-sell-commodity metal)
+=>
+	(sell-commodity metal)
+)
+
+#load-if-not-defined MONUMENT-RACE
+(defrule
+	(nova-amount > 3000)
+	(food-amount < 1000)
+	(can-buy-commodity food)
+=>
+	(buy-commodity food)
+)
+#end-if
+
+(defrule
+	(nova-amount > 3000)
+	(carbon-amount < 1000)
+	(can-buy-commodity carbon)
+=>
+	(buy-commodity carbon)
+)
+
+; BIG TRADING
+; for lategame amounts of resources
+; generally speaking if the AI has 2,500+ of a resource
+; it should probably trade it away for nova
+; and then buy whatever it needs with said nova if it has silly nova to spare
+; (eg: trade, holocron)
+
+(defrule
+	(carbon-amount > 3000)
+	(carbon-amount > 5000)
+	(nova-amount < 2000)
+	(can-sell-commodity carbon)
+=>
+	(sell-commodity carbon)
+)
+
+(defrule
+	(food-amount > 3000)
+	(food-amount > 5000)
+	(nova-amount < 2000)
+	(can-sell-commodity food)
+=>
+	(sell-commodity food)
+)
+
+(defrule
+	(metal-amount > 3000)
+	(metal-amount > 20000)
+	(nova-amount < 2000)
+	(can-sell-commodity metal)
+=>
+	(sell-commodity metal)
+)
+
+
+
+; there is also a trade rule in escrow for ore, well there was till I merged it with this one here
+
+; another ore rule for misc lategame
+
+(defrule
+	(current-age == tech-level-4)
+	(metal-amount < 550) ; building fort
+	(nova-amount > 1000)
+	(food-amount > 3000) ; only if the AI is actually rich enough to spare the conversion
+	(carbon-amount > 3000)
+	(can-buy-commodity metal)
+=>
+	(buy-commodity metal)
+)
+
+; buying ore specifically for research (escrow threshold of 500)
+
+(defrule
+	(current-age == tech-level-4)
+	(and
+		(escrow-amount metal < 500)
+		(metal-amount < 500)
+	)
+	(nova-amount > 1000)
+	(can-buy-commodity metal)
+=>
+	(buy-commodity metal)
+)
+
+; buying ore when no more ore mineable
+
+(defrule
+	(goal ore-found NO)
+	(nova-amount > 1500)
+	(food-amount > 1500)
+	(carbon-amount > 1500)
+	(can-buy-commodity metal)
+	(metal-amount < 600)
+=>
+	(buy-commodity metal)
+)
+
+
+; clobbered OG trade rules
+
+; TRIBUTE
+
+; DENY WHEN ON MONUMENT RACE
+
+#load-if-defined MONUMENT-RACE
+
+(defrule
+	(or
+		(taunt-detected any-ally 3)
+		(or
+		(taunt-detected any-ally 4)
+		(or
+		(taunt-detected any-ally 5)
+		(taunt-detected any-ally 6)
+		)
+		)
+	)
+=>
+	(acknowledge-taunt this-any-ally 3)
+	(acknowledge-taunt this-any-ally 4)
+	(acknowledge-taunt this-any-ally 5)
+	(acknowledge-taunt this-any-ally 6)
+	(chat-to-player this-any-ally "No, you can't have my resources! These are for MY monument!")
+)
+
+#end-if
+
+; FROM HUMANS
+
+(defrule
+	(or
+		(taunt-detected any-human-ally 3)
+		(or
+		(taunt-detected any-human-ally 4)
+		(or
+		(taunt-detected any-human-ally 5)
+		(taunt-detected any-human-ally 6)
+		)
+		)
+	)
+	(building-type-count BLDG-SPACEPORT < 1)
+	(goal scn-detected NO)
+=>
+	(acknowledge-taunt this-any-human-ally 3)
+	(acknowledge-taunt this-any-human-ally 4)
+	(acknowledge-taunt this-any-human-ally 5)
+	(acknowledge-taunt this-any-human-ally 6)
+	(chat-to-player-using-id this-any-human-ally 22164) ;"39 Commander, I have no spaceport."
+)
+
+(defrule
+	(taunt-detected any-human-ally 3)
+	(building-type-count BLDG-SPACEPORT < 1)
+	(false)
+=>
+	(acknowledge-taunt this-any-human-ally 3)
+	(chat-to-player-using-id this-any-human-ally 22164) ;"39 Commander, I have no spaceport."
+)
+(defrule
+	(taunt-detected any-human-ally 4)
+	(building-type-count BLDG-SPACEPORT < 1)
+	(false)
+=>
+	(acknowledge-taunt this-any-human-ally 3)
+	(chat-to-player-using-id this-any-human-ally 22164) ;"39 Commander, I have no spaceport."
+)
+(defrule
+	(taunt-detected any-human-ally 5)
+	(building-type-count BLDG-SPACEPORT < 1)
+	(false)
+=>
+	(acknowledge-taunt this-any-human-ally 3)
+	(chat-to-player-using-id this-any-human-ally 22164) ;"39 Commander, I have no spaceport."
+)
+(defrule
+	(taunt-detected any-human-ally 6)
+	(building-type-count BLDG-SPACEPORT < 1)
+	(false)
+=>
+	(acknowledge-taunt this-any-human-ally 3)
+	(chat-to-player-using-id this-any-human-ally 22164) ;"39 Commander, I have no spaceport."
+)
+
+
+
+; FOOD
+(defrule
+	(taunt-detected any-human-ally 3)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(not (research-completed rt-galactic-banking))
+	(goal scn-detected NO)
+	(food-amount > 3000)
+=>
+	(acknowledge-taunt this-any-human-ally 3)
+	(chat-to-player this-any-human-ally "Commander, I have not yet researched the tribute fee techs.")
+	(tribute-to-player this-any-human-ally food 100)
+)
+
+(defrule
+	(taunt-detected any-human-ally 3)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(research-completed rt-galactic-banking)
+	(goal scn-detected NO)
+	(food-amount > 3000)
+=>
+	(acknowledge-taunt this-any-human-ally 3)
+	(chat-to-player this-any-human-ally "Acknowledged, Commander! Put this food to good use.")
+	(tribute-to-player this-any-human-ally food 1000)
+)
+
+; CARBON
+(defrule
+	(taunt-detected any-human-ally 4)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(not (research-completed rt-galactic-banking))
+	(goal scn-detected NO)
+	(carbon-amount > 3000)
+=>
+	(acknowledge-taunt this-any-human-ally 4)
+	(chat-to-player this-any-human-ally "Commander, I have not yet researched the tribute fee techs.")
+	(tribute-to-player this-any-human-ally carbon 100)
+)
+
+(defrule
+	(taunt-detected any-human-ally 4)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(research-completed rt-galactic-banking)
+	(goal scn-detected NO)
+	(carbon-amount > 3000)
+=>
+	(acknowledge-taunt this-any-human-ally 4)
+	(chat-to-player this-any-human-ally "Acknowledged, Commander! Make good use of this carbon.")
+	(tribute-to-player this-any-human-ally carbon 1000)
+)
+
+; NOVA
+(defrule
+	(taunt-detected any-human-ally 5)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(not (research-completed rt-galactic-banking))
+	(goal scn-detected NO)
+	(nova-amount > 3000)
+=>
+	(acknowledge-taunt this-any-human-ally 5)
+	(chat-to-player this-any-human-ally "Commander, I have not yet researched the tribute fee techs.")
+	(tribute-to-player this-any-human-ally nova 100)
+)
+
+(defrule
+	(taunt-detected any-human-ally 5)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(research-completed rt-galactic-banking)
+	(goal scn-detected NO)
+	(nova-amount > 3000)
+=>
+	(acknowledge-taunt this-any-human-ally 5)
+	(chat-to-player this-any-human-ally "Acknowledged, Commander! Spend this nova wisely.")
+	(tribute-to-player this-any-human-ally nova 1000)
+)
+
+; ORE / METAL
+(defrule
+	(taunt-detected any-human-ally 6)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(not (research-completed rt-galactic-banking))
+	(goal scn-detected NO)
+	(metal-amount > 3000)
+=>
+	(acknowledge-taunt this-any-human-ally 6)
+	(chat-to-player this-any-human-ally "Commander, I have not yet researched the tribute fee techs.")
+	(tribute-to-player this-any-human-ally metal 100)
+)
+
+(defrule
+	(taunt-detected any-human-ally 6)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(research-completed rt-galactic-banking)
+	(goal scn-detected NO)
+	(metal-amount > 3000)
+=>
+	(acknowledge-taunt this-any-human-ally 6)
+	(chat-to-player this-any-human-ally "Acknowledged, Commander! Reinforce your position with this ore.")
+	(tribute-to-player this-any-human-ally metal 1000)
+)
+
+
+; BETWEEN THE BOTS
+
+; FOOD
+; ASKING FOR IT
+(defrule
+	(current-age > tech-level-2)
+	(players-current-age any-computer-ally == tech-level-4)
+	(food-amount < 50)
+	(timer-triggered t-tribute)
+=>
+	(chat-to-player every-computer "3")
+)
+
+; GIVING IT
+(defrule
+	(taunt-detected any-computer-ally 3)
+	(research-completed rt-galactic-banking)
+	(food-amount > 3000)
+	(food-amount > 1000)
+=>
+	(tribute-to-player this-any-computer-ally food 500)
+	(chat-local-to-self "WAFFLE: Giving food to ally AI")
+)
+(defrule
+	(taunt-detected any-computer-ally 3)
+	(research-completed rt-galactic-banking)
+	(food-amount > 3000)
+	(food-amount > 500)
+=>
+	(tribute-to-player this-any-computer-ally food 200)
+	(chat-local-to-self "WAFFLE: Giving food to ally AI")
+)
+(defrule
+	(taunt-detected any-computer-ally 3)
+	(research-completed rt-galactic-banking)
+	(food-amount > 3000)
+	(food-amount > 200)
+=>
+	(tribute-to-player this-any-computer-ally food 100)
+	(chat-local-to-self "WAFFLE: Giving food to ally AI")
+)
+
+; TAUNT CLEAR
+(defrule
+	(taunt-detected any-computer-ally 3)
+=>
+	(acknowledge-taunt this-any-computer-ally 3)
+)
+
+
+; CARBON
+; ASKING FOR IT
+(defrule
+	(current-age > tech-level-2)
+	(players-current-age any-computer-ally == tech-level-4)
+	(carbon-amount < 50)
+	(timer-triggered t-tribute)
+=>
+	(chat-to-player every-computer "4")
+)
+
+; GIVING IT
+(defrule
+	(taunt-detected any-computer-ally 4)
+	(research-completed rt-galactic-banking)
+	(carbon-amount > 3000)
+	(carbon-amount > 1000)
+=>
+	(tribute-to-player this-any-computer-ally carbon 500)
+	(chat-local-to-self "WAFFLE: Giving carbon to ally AI")
+)
+(defrule
+	(taunt-detected any-computer-ally 4)
+	(research-completed rt-galactic-banking)
+	(carbon-amount > 3000)
+	(carbon-amount > 500)
+=>
+	(tribute-to-player this-any-computer-ally carbon 200)
+	(chat-local-to-self "WAFFLE: Giving carbon to ally AI")
+)
+(defrule
+	(taunt-detected any-computer-ally 4)
+	(research-completed rt-galactic-banking)
+	(carbon-amount > 3000)
+	(carbon-amount > 250)
+=>
+	(tribute-to-player this-any-computer-ally carbon 100)
+	(chat-local-to-self "WAFFLE: Giving carbon to ally AI")
+)
+
+; TAUNT CLEAR
+(defrule
+	(taunt-detected any-computer-ally 4)
+=>
+	(acknowledge-taunt this-any-computer-ally 4)
+)
+
+; NOVA
+; ASKING FOR IT
+(defrule
+	(current-age > tech-level-2)
+	(players-current-age any-computer-ally == tech-level-4)
+	(nova-amount < 50)
+	(timer-triggered t-tribute)
+=>
+	(chat-to-player every-computer "5")
+)
+
+; GIVING IT
+(defrule
+	(taunt-detected any-computer-ally 5)
+	(research-completed rt-galactic-banking)
+	(nova-amount > 3000)
+	(nova-amount > 1000)
+=>
+	(tribute-to-player this-any-computer-ally nova 500)
+	(chat-local-to-self "WAFFLE: Giving nova to ally AI")
+)
+(defrule
+	(taunt-detected any-computer-ally 5)
+	(research-completed rt-galactic-banking)
+	(nova-amount > 3000)
+	(nova-amount > 500)
+=>
+	(tribute-to-player this-any-computer-ally nova 200)
+	(chat-local-to-self "WAFFLE: Giving nova to ally AI")
+)
+(defrule
+	(taunt-detected any-computer-ally 5)
+	(research-completed rt-galactic-banking)
+	(nova-amount > 3000)
+	(nova-amount > 200)
+=>
+	(tribute-to-player this-any-computer-ally nova 100)
+	(chat-local-to-self "WAFFLE: Giving nova to ally AI")
+)
+
+; TAUNT CLEAR
+(defrule
+	(taunt-detected any-computer-ally 5)
+=>
+	(acknowledge-taunt this-any-computer-ally 5)
+)
+
+; ORE
+; ASKING FOR IT
+(defrule
+	(current-age > tech-level-2)
+	(players-current-age any-computer-ally == tech-level-4)
+	(metal-amount < 50)
+	(timer-triggered t-tribute)
+=>
+	(chat-to-player every-computer "6")
+)
+; GIVING IT
+(defrule
+	(taunt-detected any-computer-ally 6)
+	(research-completed rt-galactic-banking)
+	(metal-amount > 3000)
+	(metal-amount > 200)
+=>
+	(tribute-to-player this-any-computer-ally metal 100)
+	(chat-local-to-self "WAFFLE: Giving ore to ally AI")
+)
+; TAUNT CLEAR
+(defrule
+	(taunt-detected any-computer-ally 6)
+=>
+	(acknowledge-taunt this-any-computer-ally 6)
+)
+
+; several IDs clobbered: 
+; (chat-to-player-using-id this-any-ally 22076)
+; (chat-to-player-using-id this-any-ally 22077)
+; (chat-to-player-using-id this-any-ally 22078)
+; (chat-to-player-using-id this-any-ally 22079)
+; (chat-to-player-using-id this-any-ally 22163)    ;"39 I'm sorry - our storehouses are depleted."
+; (chat-to-player-using-id every-ally 22122)      ;3
+; (chat-to-player-using-id every-ally 22123)      ;4
+; (chat-to-player-using-id every-ally 22124)      ;5
+; (chat-to-player-using-id every-ally 22125)      ;6
+
+
+
+; timer rules, nothing to see here
+
+(defrule
+		(current-age >= tech-level-3)
+		(building-type-count BLDG-SPACEPORT > 0)
+		(goal scn-detected NO)
+=>
+		(enable-timer t-tribute 60)
+		(disable-self)
+)
+; turn off in scenario
+(defrule
+	(goal scn-detected YES)
+=>
+	(disable-timer t-tribute)
+	(disable-self)
+)
+
+
+
+(defrule
+		(player-number 1)
+		(timer-triggered t-tribute)
+=>
+        (disable-timer t-tribute)
+        (enable-timer t-tribute 61)
+)
+
+(defrule
+		(player-number 2)
+		(timer-triggered t-tribute)
+=>
+        (disable-timer t-tribute)
+        (enable-timer t-tribute 62)
+)
+
+(defrule
+		(player-number 3)
+		(timer-triggered t-tribute)
+=>
+        (disable-timer t-tribute)
+        (enable-timer t-tribute 63)
+)
+
+(defrule
+		(player-number 4)
+		(timer-triggered t-tribute)
+=>
+        (disable-timer t-tribute)
+        (enable-timer t-tribute 64)
+)
+
+(defrule
+		(player-number 5)
+		(timer-triggered t-tribute)
+=>
+        (disable-timer t-tribute)
+        (enable-timer t-tribute 65)
+)
+
+(defrule
+		(player-number 6)
+		(timer-triggered t-tribute)
+=>
+        (disable-timer t-tribute)
+        (enable-timer t-tribute 66)
+)
+
+(defrule
+		(player-number 7)
+		(timer-triggered t-tribute)
+=>
+        (disable-timer t-tribute)
+        (enable-timer t-tribute 67)
+)
+
+(defrule
+		(player-number 8)
+		(timer-triggered t-tribute)
+=>
+        (disable-timer t-tribute)
+        (enable-timer t-tribute 68)
+)
+
+; =====================================================
+; CHAPTER X: CIV SPACEPORT TECH CATCHUP
+; =====================================================
+
+(defrule
+	; TF Neimoidian Endorsement
+	(can-research-with-escrow rt-neimoidian-endorse)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-neimoidian-endorse)
+)
+
+(defrule
+	; TF Insider Trading
+	(can-research-with-escrow rt-insider-trading)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-insider-trading)
+)
+
+(defrule
+	; GE Altered Bargains
+	(can-research-with-escrow rt-altered-bargains)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-altered-bargains)
+)
+
+(defrule
+	; TF Market Control
+	(can-research-with-escrow rt-market-control)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-market-control)
+)
+
+(defrule
+	; CF Confederacy Alliance
+	(can-research-with-escrow rt-confalli)
+	(goal tradestatus ALLOW)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-confalli)
+)
+
+(defrule
+	; ZC Piracy
+	(can-research-with-escrow rt-piracy)
+	(goal tradestatus ALLOW)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-piracy)
+)
+
+(defrule
+	; BS Cloaked Smuggling
+	(can-research-with-escrow rt-cloakedsmug)
+	(goal tradestatus ALLOW)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-cloakedsmug)
+)

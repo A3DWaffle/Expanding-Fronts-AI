@@ -1,0 +1,1262 @@
+; =====================================================
+; FILE: dip-bully
+; PURPOSE:
+;   Handles bully diplomacy behavior and related alliance pressure logic.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: LOGIC
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+#load-if-not-defined TEAMS-LOCKED
+#load-if-defined DIFFICULTY-EASIEST
+
+        (defrule
+                (true)
+        =>
+                (set-stance every-human neutral)
+                (set-stance every-computer neutral)
+                (disable-self)
+        )
+
+        (defrule
+                (cc-players-building-type-count any-human BLDG-SPACEPORT > 0)
+        =>
+                (generate-random-number 2)
+                (set-goal personality 50)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 50)
+                (random-number == 1)
+        =>
+                (disable-timer t-chat)
+                (enable-timer t-chat 10)
+                (set-goal personality 4)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 50)
+        =>
+                (set-goal personality 0)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 4)
+                (taunt-detected any-computer 218)
+        =>
+                (set-goal personality 0)
+                (acknowledge-taunt this-any-computer 218)
+                (disable-timer t-chat)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 4)
+                (timer-triggered t-chat)
+        =>
+                (set-goal personality ALLY)
+                (disable-timer t-chat)
+                (set-stance every-human neutral)
+                (set-stance every-computer neutral)
+                (chat-to-player-using-id every-human 22000)
+                        ;"41 100 resources would insure my allegiance."
+                (chat-to-player-using-id every-computer 22400)  ;218
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (or
+                        (or
+                                (players-tribute any-human-neutral carbon >= 100)
+                                (players-tribute any-human-neutral food >= 100)
+                        )
+                        (or
+                                (players-tribute any-human-neutral nova >= 100)
+                                (players-tribute any-human-neutral metal >= 100)
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22002)
+                (chat-to-player-using-id this-any-human-neutral 22003)
+                        ;"39 Your gift is appreciated."
+                        ;"39 I'd be willing to be your friend."
+                (set-stance this-any-human-neutral ally)
+                (set-stance every-computer enemy)
+                (disable-self)
+        )
+
+#end-if
+#load-if-defined DIFFICULTY-EASY
+        (defrule
+                (cc-players-building-type-count any-human BLDG-SPACEPORT > 0)
+        =>
+                (generate-random-number 2)
+                (set-goal personality 50)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 50)
+                (random-number == 1)
+        =>
+                (disable-timer t-chat)
+                (enable-timer t-chat 10)
+                (set-goal personality 4)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 50)
+        =>
+                (set-goal personality 0)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 4)
+                (taunt-detected any-computer 218)
+        =>
+                (set-goal personality 0)
+                (acknowledge-taunt this-any-computer 218)
+                (disable-timer t-chat)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 4)
+                (timer-triggered t-chat)
+        =>
+                (set-goal personality ALLY)
+                (set-stance every-human neutral)
+                (set-stance every-computer neutral)
+                (chat-to-player-using-id every-computer 22400)  ;218
+                (disable-timer t-chat)
+                (enable-timer t-chat 600)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (starting-resources == low-resources)
+        =>
+                (chat-to-player-using-id every-human 22004)
+;               (chat-to-player-using-id every-human 22005)
+                        ;"41 I demand 200 food, carbon, ore and nova crystals!"
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (starting-resources == medium-resources)
+        =>
+                (chat-to-player-using-id every-human 22006)
+;               (chat-to-player-using-id every-human 22005)
+                        ;"41 I demand 500 food, carbon, ore and nova crystals!"
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (starting-resources == high-resources)
+                (stance-toward any-human neutral)
+        =>
+                (chat-to-player-using-id every-human 22007)
+;               (chat-to-player-using-id every-human 22005)
+                        ;"41 I demand 1000 food, carbon, ore and nova crystals!"
+                (disable-self)
+        )
+
+        (defrule
+                (timer-triggered t-chat)
+                (goal personality ALLY)
+                (or
+                        (and
+                                (starting-resources == low-resources)
+                                (players-tribute any-human-neutral carbon < 200)
+                        )
+                        (or
+                                (and
+                                        (starting-resources == medium-resources)
+                                        (players-tribute any-human-neutral carbon < 500)
+                                )
+                                (and
+                                        (starting-resources == high-resources)
+                                        (players-tribute any-human-neutral carbon < 1000)
+                                )
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22008)
+                        ;"41 Send me more carbon!"
+                (disable-timer t-chat)
+                (enable-timer t-chat 300)
+        )
+
+        (defrule
+                (timer-triggered t-chat)
+                (goal personality ALLY)
+                (or
+                        (and
+                                (starting-resources == low-resources)
+                                (players-tribute any-human-neutral food < 200)
+                        )
+                        (or
+                                (and
+                                        (starting-resources == medium-resources)
+                                        (players-tribute any-human-neutral food < 500)
+                                )
+                                (and
+                                        (starting-resources == high-resources)
+                                        (players-tribute any-human-neutral food < 1000)
+                                )
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22009)
+                        ;"41 Send me more food!"
+                (disable-timer t-chat)
+                (enable-timer t-chat 300)
+        )
+
+        (defrule
+                (timer-triggered t-chat)
+                (goal personality ALLY)
+                (or
+                        (and
+                                (starting-resources == low-resources)
+                                (players-tribute any-human-neutral nova < 200)
+                        )
+                        (or
+                                (and
+                                        (starting-resources == medium-resources)
+                                        (players-tribute any-human-neutral nova < 500)
+                                )
+                                (and
+                                        (starting-resources == high-resources)
+                                        (players-tribute any-human-neutral nova < 1000)
+                                )
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22010)
+                        ;"41 Send me more nova crystals!"
+                (disable-timer t-chat)
+                (enable-timer t-chat 300)
+        )
+
+        (defrule
+                (timer-triggered t-chat)
+                (goal personality ALLY)
+                (or
+                        (and
+                                (starting-resources == low-resources)
+                                (players-tribute any-human-neutral metal < 200)
+                        )
+                        (or
+                                (and
+                                        (starting-resources == medium-resources)
+                                        (players-tribute any-human-neutral metal < 500)
+                                )
+                                (and
+                                        (starting-resources == high-resources)
+                                        (players-tribute any-human-neutral metal < 1000)
+                                )
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22011)
+                        ;"41 Send me more ore!"
+                (disable-timer t-chat)
+                (enable-timer t-chat 300)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (or
+                        (and
+                                (starting-resources == low-resources)
+                                (players-tribute any-human-neutral carbon >= 200)
+                        )
+                        (or
+                                (and
+                                        (starting-resources == medium-resources)
+                                        (players-tribute any-human-neutral carbon >= 500)
+                                )
+                                (and
+                                        (starting-resources == high-resources)
+                                        (players-tribute any-human-neutral carbon >= 1000)
+                                )
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22012)
+                        ;"41 That's an adequate amount of carbon."
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (or
+                        (and
+                                (starting-resources == low-resources)
+                                (players-tribute any-human-neutral food >= 200)
+                        )
+                        (or
+                                (and
+                                        (starting-resources == medium-resources)
+                                        (players-tribute any-human-neutral food >= 500)
+                                )
+                                (and
+                                        (starting-resources == high-resources)
+                                        (players-tribute any-human-neutral food >= 1000)
+                                )
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22013)
+                        ;"41 That's an adequate amount of food."
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (or
+                        (and
+                                (starting-resources == low-resources)
+                                (players-tribute any-human-neutral nova >= 200)
+                        )
+                        (or
+                                (and
+                                        (starting-resources == medium-resources)
+                                        (players-tribute any-human-neutral nova >= 500)
+                                )
+                                (and
+                                        (starting-resources == high-resources)
+                                        (players-tribute any-human-neutral nova >= 1000)
+                                )
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22014)
+                        ;"41 That's an adequate amount of nova crystals."
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (or
+                        (and
+                                (starting-resources == low-resources)
+                                (players-tribute any-human-neutral metal >= 200)
+                        )
+                        (or
+                                (and
+                                        (starting-resources == medium-resources)
+                                        (players-tribute any-human-neutral metal >= 500)
+                                )
+                                (and
+                                        (starting-resources == high-resources)
+                                        (players-tribute any-human-neutral metal >= 1000)
+                                )
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22015)
+                        ;"41 That's an adequate amount of ore."
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (starting-resources == low-resources)
+                (players-tribute any-human-neutral carbon >= 200)
+                (players-tribute any-human-neutral food >= 200)
+                (players-tribute any-human-neutral nova >= 200)
+                (players-tribute any-human-neutral metal >= 200)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22016)
+;               (chat-to-player-using-id this-any-human-neutral 22017)
+                        ;"39 We're overwhelmed with your gift."
+                (set-stance this-any-human-neutral ally)
+                (set-goal 35 NOTICE)
+                (set-goal 22 NO)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (starting-resources == medium-resources)
+                (players-tribute any-human-neutral carbon >= 500)
+                (players-tribute any-human-neutral food >= 500)
+                (players-tribute any-human-neutral nova >= 500)
+                (players-tribute any-human-neutral metal >= 500)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22016)
+;               (chat-to-player-using-id this-any-human-neutral 22017)
+                        ;"39 We're overwhelmed with your gift."
+                (set-stance this-any-human-neutral ally)
+                (set-goal 35 NOTICE)
+                (set-goal 22 NO)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (starting-resources == high-resources)
+                (players-tribute any-human-neutral carbon >= 1000)
+                (players-tribute any-human-neutral food >= 1000)
+                (players-tribute any-human-neutral nova >= 1000)
+                (players-tribute any-human-neutral metal >= 1000)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22016)
+;               (chat-to-player-using-id this-any-human-neutral 22017)
+                        ;"39 We're overwhelmed with your gift."
+                (set-stance this-any-human-neutral ally)
+                (set-goal 35 NOTICE)
+                (set-goal 22 NO)
+                (disable-self)
+        )
+
+#end-if
+#load-if-not-defined DIFFICULTY-EASIEST
+#load-if-not-defined DIFFICULTY-EASY
+
+        (defrule
+                (true)
+        =>
+                (set-goal personality NOTICE)
+                (set-goal 22 NO)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality NOTICE)
+                (taunt-detected any-computer-ally 218)
+        =>
+                (set-goal personality 12)
+                (set-stance every-human enemy)
+                (acknowledge-taunt this-any-computer-ally 218)
+                (set-stance every-computer ally)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality NOTICE)
+                (difficulty <= 2)
+                (or
+                        (building-type-count BLDG-PREFAB > 0)
+                        (building-type-count BLDG-GOVTCTR > 0)
+                )
+                (player-in-game any-computer-ally)
+        =>
+                (set-goal personality 50)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 50)
+        =>
+                (generate-random-number 4)
+                (set-goal 36 NO)
+                (set-goal 37 NO)
+                (set-goal 38 NO)
+                (set-goal 39 NO)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 50)
+                (random-number == 1)
+        =>
+                (set-goal personality ALLY)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 50)
+                (difficulty == moderate)
+                (or
+                        (random-number == 2)
+                        (random-number == 3)
+                )
+        =>
+                (set-goal personality ALLY)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 50)
+                (difficulty < 2)
+                (or
+                        (random-number == 2)
+                        (random-number == 3)
+                )
+        =>
+                (set-goal personality BULLY)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality 50)
+                (random-number == 4)
+        =>
+                (set-goal personality BULLY)
+                (disable-self)
+        )
+
+        ;make sure the other AIs don't try this!
+        (defrule
+                (or
+                        (goal personality BULLY)
+                        (goal personality ALLY)
+                )
+        =>
+                (chat-to-player-using-id every-computer 22400)  ;"218"
+                (disable-self)
+        )
+
+        ;no early rush!
+
+;end the deal
+(defrule
+        (stance-toward any-human enemy)
+        (or
+                (goal personality BULLY)
+                (goal personality ALLY)
+        )
+=>
+        (set-stance this-any-human neutral)
+        (set-stance every-computer neutral)
+        (disable-self)
+)
+
+;*******************************************************8
+;bully rules
+
+(defrule
+        (goal personality BULLY)
+        (goal get-mad NO)
+        (current-age >= tech-level-2)
+=>
+        (disable-timer t-chat)
+        (enable-timer t-chat 300)
+        (set-goal 25 NOTICE)
+        (disable-self)
+)
+
+(defrule
+        (goal personality BULLY)
+        (goal 25 NOTICE)
+        (timer-triggered t-chat)
+=>
+        (generate-random-number 4)
+)
+
+;***************************************************
+;feudal age demands
+(defrule
+        (goal personality BULLY)
+        (goal 25 NOTICE)
+        (current-age == tech-level-2)
+        (timer-triggered t-chat)
+        (stance-toward any-human neutral)
+        (random-number == 1)
+=>
+        (chat-to-player-using-id this-any-human 22040)
+                ;"41 You have 3 minutes to give me 100 carbon, or face the consequences."
+        (set-goal 25 CARBON)
+        (clear-tribute-memory this-any-human carbon)
+        (disable-timer t-chat)
+        (enable-timer t-chat 200)
+)
+
+(defrule
+        (goal personality BULLY)
+        (goal 25 NOTICE)
+        (current-age == tech-level-2)
+        (timer-triggered t-chat)
+        (stance-toward any-human neutral)
+        (random-number == 2)
+=>
+        (chat-to-player-using-id this-any-human 22038)
+                ;"41 You have 3 minutes to give me 100 food, or face the consequences."
+        (set-goal 25 FOOD)
+        (clear-tribute-memory this-any-human food)
+        (disable-timer t-chat)
+        (enable-timer t-chat 200)
+)
+
+(defrule
+        (goal personality BULLY)
+        (goal 25 NOTICE)
+        (current-age == tech-level-2)
+        (timer-triggered t-chat)
+        (stance-toward any-human neutral)
+        (random-number == 3)
+=>
+        (chat-to-player-using-id this-any-human 22037)
+                ;"41 You have 3 minutes to give me 100 nova crystals, or face the consequences."
+        (set-goal 25 NOVA)
+        (clear-tribute-memory this-any-human nova)
+        (disable-timer t-chat)
+        (enable-timer t-chat 200)
+)
+
+(defrule
+        (goal personality BULLY)
+        (goal 25 NOTICE)
+        (current-age == tech-level-2)
+        (timer-triggered t-chat)
+        (stance-toward any-human neutral)
+        (random-number == 4)
+=>
+        (chat-to-player-using-id this-any-human 22039)
+                ;"41 You have 3 minutes to give me 100 ore, or face the consequences."
+        (set-goal 25 METAL)
+        (clear-tribute-memory this-any-human metal)
+        (disable-timer t-chat)
+        (enable-timer t-chat 200)
+)
+
+(defrule
+        (goal personality BULLY)
+        (or
+                (and
+                        (goal 25 CARBON)
+                        (players-tribute-memory any-human-neutral carbon >= 100)
+                )
+                (and
+                        (goal 25 FOOD)
+                        (players-tribute-memory any-human-neutral food >= 100)
+                )
+        )
+=>
+        (chat-to-player-using-id this-any-human-neutral 22041)
+                ;"41 Very good.  There is promise for our relationship yet."
+        (set-goal 25 NOTICE)
+        (disable-timer t-chat)
+        (enable-timer t-chat 360)
+)
+
+(defrule
+        (goal personality BULLY)
+        (or
+                (and
+                        (goal 25 NOVA)
+                        (players-tribute-memory any-human-neutral nova >= 100)
+                )
+                (and
+                        (goal 25 METAL)
+                        (players-tribute-memory any-human-neutral metal >= 100)
+                )
+        )
+=>
+        (chat-to-player-using-id this-any-human-neutral 22041)
+                ;"41 Very good.  There is promise for our relationship yet."
+        (set-goal 25 NOTICE)
+        (disable-timer t-chat)
+        (enable-timer t-chat 360)
+)
+
+(defrule
+        (goal personality BULLY)
+        (timer-triggered t-chat)
+        (or
+                (or
+                        (goal 25 CARBON)
+                        (goal 25 FOOD)
+                )
+                (or
+                        (goal 25 NOVA)
+                        (goal 25 METAL)
+                )
+        )
+=>
+        (set-goal personality 10)
+        (disable-timer t-chat)
+        (disable-self)
+)
+
+;***************************************************
+;tech-level-3 demands
+(defrule
+        (goal personality BULLY)
+        (goal 25 NOTICE)
+        (timer-triggered t-chat)
+        (current-age == tech-level-3)
+        (stance-toward any-human neutral)
+        (random-number == 1)
+=>
+        (chat-to-player-using-id this-any-human 22045)
+                ;"41 You have 2 minutes to give me 200 carbon, or face the consequences."
+        (set-goal 25 CASTLE-AGE-CARBON)
+        (clear-tribute-memory this-any-human carbon)
+        (disable-timer t-chat)
+        (enable-timer t-chat 150)
+)
+
+(defrule
+        (goal personality BULLY)
+        (goal 25 NOTICE)
+        (timer-triggered t-chat)
+        (current-age == tech-level-3)
+        (stance-toward any-human neutral)
+        (random-number == 2)
+=>
+        (chat-to-player-using-id this-any-human 22043)
+                ;"41 You have 2 minutes to give me 200 food, or face the consequences."
+        (set-goal 25 CASTLE-AGE-FOOD)
+        (clear-tribute-memory this-any-human food)
+        (disable-timer t-chat)
+        (enable-timer t-chat 150)
+)
+
+(defrule
+        (goal personality BULLY)
+        (goal 25 NOTICE)
+        (timer-triggered t-chat)
+        (current-age == tech-level-3)
+        (stance-toward any-human neutral)
+        (random-number == 3)
+=>
+        (chat-to-player-using-id this-any-human 22042)
+                ;"41 You have 2 minutes to give me 200 nova crystals, or face the consequences."
+        (set-goal 25 CASTLE-AGE-NOVA)
+        (clear-tribute-memory this-any-human nova)
+        (disable-timer t-chat)
+        (enable-timer t-chat 150)
+)
+
+(defrule
+        (goal personality BULLY)
+        (goal 25 NOTICE)
+        (timer-triggered t-chat)
+        (current-age == tech-level-3)
+        (stance-toward any-human neutral)
+        (random-number == 3)
+=>
+        (chat-to-player-using-id this-any-human 22044)
+                ;"41 You have 2 minutes to give me 200 ore, or face the consequences."
+        (set-goal 25 CASTLE-AGE-METAL)
+        (clear-tribute-memory this-any-human metal)
+        (disable-timer t-chat)
+        (enable-timer t-chat 150)
+)
+
+(defrule
+        (goal personality BULLY)
+        (or
+                (and
+                        (goal 25 CASTLE-AGE-CARBON)
+                        (players-tribute-memory any-human-neutral carbon >= 200)
+                )
+                (and
+                        (goal 25 CASTLE-AGE-FOOD)
+                        (players-tribute-memory any-human-neutral food >= 200)
+                )
+        )
+=>
+        (chat-to-player-using-id this-any-human-neutral 22046)
+                ;"41 Thank you.  I can think of lots of ways to use your tribute."
+        (set-goal 25 NOTICE)
+        (disable-timer t-chat)
+        (enable-timer t-chat 360)
+)
+
+(defrule
+        (goal personality BULLY)
+        (or
+                (and
+                        (goal 25 CASTLE-AGE-NOVA)
+                        (players-tribute-memory any-human-neutral nova >= 200)
+                )
+                (and
+                        (goal 25 CASTLE-AGE-METAL)
+                        (players-tribute-memory any-human-neutral metal >= 200)
+                )
+        )
+=>
+        (chat-to-player-using-id this-any-human-neutral 22046)
+                ;"41 Thank you.  I can think of lots of ways to use your tribute."
+        (set-goal 25 NOTICE)
+        (disable-timer t-chat)
+        (enable-timer t-chat 360)
+)
+
+(defrule
+        (goal personality BULLY)
+        (timer-triggered t-chat)
+        (or
+                (or
+                        (goal 25 CASTLE-AGE-CARBON)
+                        (goal 25 CASTLE-AGE-FOOD)
+                )
+                (or
+                        (goal 25 CASTLE-AGE-NOVA)
+                        (goal 25 CASTLE-AGE-METAL)
+                )
+        )
+=>
+        (set-goal personality 10)
+        (disable-timer t-chat)
+        (disable-self)
+)
+;***************************************************
+;Imperial age demands
+(defrule
+        (timer-triggered t-chat)
+        (goal personality BULLY)
+        (current-age == tech-level-4)
+        (stance-toward any-human neutral)
+        (random-number == 1)
+=>
+        (chat-to-player-using-id this-any-human 22047)
+                ;"41 If you don't send 500 carbon in 2 minutes, your fate will be sealed."
+        (set-goal 25 IMPERIAL-AGE-CARBON)
+        (clear-tribute-memory this-any-human carbon)
+        (disable-timer t-chat)
+        (enable-timer t-chat 150)
+)
+
+(defrule
+        (timer-triggered t-chat)
+        (goal personality BULLY)
+        (current-age == tech-level-4)
+        (stance-toward any-human neutral)
+        (random-number == 2)
+=>
+        (chat-to-player-using-id this-any-human 22048)
+                ;"41 If you don't send 500 food in 2 minutes, your fate will be sealed."
+        (set-goal 25 IMPERIAL-AGE-FOOD)
+        (clear-tribute-memory this-any-human food)
+        (disable-timer t-chat)
+        (enable-timer t-chat 150)
+)
+
+(defrule
+        (timer-triggered t-chat)
+        (goal personality BULLY)
+        (current-age == tech-level-4)
+        (stance-toward any-human neutral)
+        (random-number == 3)
+=>
+        (chat-to-player-using-id this-any-human 22049)
+                ;"41 If you don't send 500 nova crystals in 2 minutes, your fate will be sealed."
+        (set-goal 25 IMPERIAL-AGE-NOVA)
+        (clear-tribute-memory this-any-human nova)
+        (disable-timer t-chat)
+        (enable-timer t-chat 150)
+)
+
+(defrule
+        (timer-triggered t-chat)
+        (goal personality BULLY)
+        (current-age == tech-level-4)
+        (stance-toward any-human neutral)
+        (random-number == 4)
+=>
+        (chat-to-player-using-id this-any-human 22051)
+                ;"41 If you don't send 500 ore in 2 minutes, your fate will be sealed."
+        (set-goal 25 IMPERIAL-AGE-METAL)
+        (clear-tribute-memory this-any-human metal)
+        (disable-timer t-chat)
+        (enable-timer t-chat 150)
+)
+
+(defrule
+        (goal personality BULLY)
+        (or
+                (and
+                        (goal 25 IMPERIAL-AGE-CARBON)
+                        (players-tribute-memory any-human-neutral carbon >= 500)
+                )
+                (and
+                        (goal 25 IMPERIAL-AGE-FOOD)
+                        (players-tribute-memory any-human-neutral food >= 500)
+                )
+        )
+=>
+        (chat-to-player-using-id this-any-human-neutral 22052)
+                ;"41 Extraordinary!  Your base is safe for the time being."
+        (set-goal 25 NOTICE)
+        (disable-timer t-chat)
+        (enable-timer t-chat 360)
+)
+
+(defrule
+        (goal personality BULLY)
+        (or
+                (and
+                        (goal 25 IMPERIAL-AGE-NOVA)
+                        (players-tribute-memory any-human-neutral nova >= 500)
+                )
+                (and
+                        (goal 25 IMPERIAL-AGE-METAL)
+                        (players-tribute-memory any-human-neutral metal >= 500)
+                )
+        )
+=>
+        (chat-to-player-using-id this-any-human-neutral 22052)
+                ;"41 Extraordinary!  Your base is safe for the time being."
+        (set-goal 25 NOTICE)
+        (disable-timer t-chat)
+        (enable-timer t-chat 360)
+)
+
+(defrule
+        (goal personality BULLY)
+        (timer-triggered t-chat)
+        (or
+                (or
+                        (goal 25 IMPERIAL-AGE-CARBON)
+                        (goal 25 IMPERIAL-AGE-FOOD)
+                )
+                (or
+                        (goal 25 IMPERIAL-AGE-NOVA)
+                        (goal 25 IMPERIAL-AGE-METAL)
+                )
+        )
+=>
+        (set-goal personality 10)
+        (disable-timer t-chat)
+        (disable-self)
+)
+
+;lots and lots of tribute
+(defrule
+        (goal personality BULLY)
+        (players-tribute any-human-neutral carbon > 500)
+        (players-tribute any-human-neutral food > 500)
+        (players-tribute any-human-neutral nova > 500)
+        (players-tribute any-human-neutral metal > 500)
+=>
+        (set-stance every-computer enemy)
+        (chat-to-player-using-id this-any-human-neutral 22053)
+                ;"39 You are now a part of the tribe!"
+        (set-goal personality NO)
+        (set-stance this-any-human-neutral ally)
+        (disable-self)
+)
+
+(defrule
+        (goal personality BULLY)
+        (or
+                (or
+                        (players-tribute any-human-neutral carbon >= 1500)
+                        (players-tribute any-human-neutral food >= 1500)
+                )
+                (or
+                        (players-tribute any-human-neutral nova >= 1500)
+                        (players-tribute any-human-neutral metal >= 1500)
+                )
+        )
+=>
+        (set-stance this-any-human-neutral ally)
+        (set-stance every-computer enemy)
+        (chat-to-player-using-id this-any-human-neutral 22053)
+                ;"39 You are now a part of the tribe!"
+        (set-goal personality NO)
+        (disable-timer t-chat)
+        (disable-self)
+)
+
+;********************************************
+;********************************************
+;THE ALLY RULES (goal personality ALLY)
+
+        (defrule
+                (goal personality ALLY)
+                (goal get-mad NO)
+                (stance-toward any-human neutral)
+                (current-age == tech-level-2)
+                (game-time > 600)
+        =>
+                (chat-to-player-using-id this-any-human 22055)
+;               (chat-to-player-using-id this-any-human 22056)
+                        ;"41 I'm going to need 500 each of carbon, food, nova crystals and ore!"
+                (set-goal 22 YES)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (goal 22 YES)
+                (starting-resources == low-resources)
+        =>
+                (enable-timer t-chat 600)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (goal 22 YES)
+                (starting-resources == medium-resources)
+        =>
+                (enable-timer t-chat 300)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (false)
+                (starting-resources == high-resources)
+        =>
+                (enable-timer t-chat 150)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (timer-triggered t-chat)
+                (players-tribute any-human-neutral carbon < 500)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22057)
+                        ;"41 You'll need to send more carbon if you want to remain allies."
+                (disable-timer t-chat)
+                (enable-timer t-chat 300)
+        )
+
+        (defrule
+                (timer-triggered t-chat)
+                (goal personality ALLY)
+                (players-tribute any-human-neutral food < 500)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22058)
+                        ;"41 You'll need to send more food if you want to remain allies."
+                (disable-timer t-chat)
+                (enable-timer t-chat 300)
+        )
+
+        (defrule
+                (timer-triggered t-chat)
+                (goal personality ALLY)
+                (players-tribute any-human-neutral nova < 500)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22059)
+                        ;"41 You'll need to send more nova crystals if you want to remain allies."
+                (disable-timer t-chat)
+                (enable-timer t-chat 300)
+        )
+
+        (defrule
+                (timer-triggered t-chat)
+                (goal personality ALLY)
+                (players-tribute any-human-neutral metal < 500)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22060)
+                        ;"41 You'll need to send more ore if you want to remain allies."
+                (disable-timer t-chat)
+                (enable-timer t-chat 300)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (players-tribute any-human-neutral carbon >= 500)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22061)
+                        ;"41 Thanks for the carbon.  That's enough for now."
+                (clear-tribute-memory this-any-human-neutral carbon)
+                (set-goal 36 YES)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (players-tribute any-human-neutral food >= 500)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22062)
+                        ;"41 Thanks for the food.  That's enough for now."
+                (clear-tribute-memory this-any-human-neutral food)
+                (set-goal 37 YES)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (players-tribute any-human-neutral nova >= 500)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22063)
+                        ;"41 Thanks for the nova crystals.  That's enough for now."
+                (clear-tribute-memory this-any-human-neutral nova)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (players-tribute any-human-neutral metal >= 500)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22064)
+                        ;"41 Thanks for the ore.  That's enough for now."
+                (clear-tribute-memory this-any-human-neutral metal)
+                (set-goal 38 YES)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (goal 36 YES)
+                (players-tribute-memory any-human-neutral carbon > 0)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22065)
+                        ;"41 You've sent plenty of carbon!  Stop already!"
+                (clear-tribute-memory this-any-human-neutral carbon)
+                (set-goal 39 YES)
+                (disable-self)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (goal 37 YES)
+                (players-tribute-memory any-human-neutral food > 0)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22066)
+                        ;"41 You've sent plenty of food!  Stop already!"
+                (clear-tribute-memory this-any-human-neutral food)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (goal 38 YES)
+                (players-tribute-memory any-human-neutral nova > 0)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22067)
+                        ;"41 You've sent plenty of nova crystals!  Stop already!"
+                (clear-tribute-memory this-any-human-neutral nova)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (goal 39 YES)
+                (players-tribute-memory any-human-neutral metal > 0)
+        =>
+                (chat-to-player-using-id this-any-human-neutral 22068)
+                        ;"41 You've sent plenty of ore!  Stop already!"
+                (clear-tribute-memory this-any-human-neutral metal)
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (players-tribute any-human-neutral carbon >= 500)
+                (players-tribute any-human-neutral food >= 500)
+                (players-tribute any-human-neutral nova >= 500)
+                (players-tribute any-human-neutral metal >= 500)
+                (stance-toward any-human neutral)
+        =>
+                (chat-to-player-using-id this-any-human 22016)
+                (chat-to-player-using-id this-any-human 22003)
+                        ;"39 We're overwhelmed with your gift."
+                        ;"39 I'd be willing to be your friend."
+                (set-stance this-any-human ally)
+                (set-stance every-computer enemy)
+                (set-goal personality NO)
+                (disable-self)
+        )
+
+;*************************************************
+;MODERATE DIFFICULTY
+        (defrule
+                (goal personality ALLY)
+                (game-time > 4800)
+                (stance-toward any-human neutral)
+                (difficulty == moderate)
+                (or
+                        (or
+                                (goal 36 NO)
+                                (goal 37 NO)
+                        )
+                        (or
+                                (goal 38 NO)
+                                (goal 39 NO)
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human 22069)
+;               (chat-to-player-using-id this-any-human 22070)
+                        ;"40 Our chronometers show that we've waited too long for the promised tribute."
+;                       ;"Thou art exceedingly lax in fulfilling my requests."
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (game-time > 4800)
+                (stance-toward any-human neutral)
+                (difficulty == moderate)
+                (or
+                        (or
+                                (goal 36 NO)
+                                (goal 37 NO)
+                        )
+                        (or
+                                (goal 38 NO)
+                                (goal 39 NO)
+                        )
+                )
+        =>
+                (set-stance this-any-human enemy)
+                (set-stance every-computer ally)
+                (set-goal personality 10)
+        )
+
+;*************************************************
+;HARD+ DIFFICULTY
+        (defrule
+                (goal personality ALLY)
+                (game-time > 3600)
+                (stance-toward any-human neutral)
+                (difficulty <= 1)
+                (or
+                        (or
+                                (goal 36 NO)
+                                (goal 37 NO)
+                        )
+                        (or
+                                (goal 38 NO)
+                                (goal 39 NO)
+                        )
+                )
+        =>
+                (chat-to-player-using-id this-any-human 22069)
+;               (chat-to-player-using-id this-any-human 22070)
+                        ;"40 Our chronometers show that we've waited too long for the promised tribute."
+;                       ;"Thou art exceedingly lax in fulfilling my requests."
+        )
+
+        (defrule
+                (goal personality ALLY)
+                (game-time > 3600)
+                (stance-toward any-human neutral)
+                (difficulty <= 1)
+                (or
+                        (or
+                                (goal 36 NO)
+                                (goal 37 NO)
+                        )
+                        (or
+                                (goal 38 NO)
+                                (goal 39 NO)
+                        )
+                )
+        =>
+                (set-stance this-any-human enemy)
+                (set-stance every-computer ally)
+                (set-goal personality 10)
+        )
+
+;*************************************************
+#end-if
+#end-if
+#end-if
+
+

@@ -1,0 +1,33 @@
+; =====================================================
+; FILE: agressive
+; PURPOSE:
+;   Aggressive personality overlay for opening posture and attack thresholds.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: LOGIC
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(goal openingstyle UNDEFINED)
+=>
+	(set-goal openingstyle STYLE-AGRESSIVE)
+	(disable-self)
+)
+
+(defrule
+	(current-age >= tech-level-2)
+	(goal openingstyle STYLE-AGRESSIVE)
+	(goal attacksonhold-auto YES)
+	(military-population >= 4)
+=>
+	(set-goal attacksonhold-auto NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 15)
+)

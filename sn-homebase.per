@@ -1,0 +1,1107 @@
+; =====================================================
+; FILE: sn-homebase
+; PURPOSE:
+;   Controls homebase strategic numbers, town size, camp distance, and expansion posture.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: TL1 TOWN SIZE
+;	Chapter 2: CAMP DISTANCE
+;	Chapter 3: EXPANSION
+;	Chapter 4: LATEGAME
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-initial-exploration-required 0) ; >.<
+	(set-goal camplevel 0)
+	(disable-self)
+)
+
+
+; ============ BORING UNIMPORTANT SNs =====================
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-food-dropsite-distance 4)
+	(set-strategic-number sn-carbon-dropsite-distance 4) ; these sn's affect dropsite placement more than anything else apparently
+	(set-strategic-number sn-metal-dropsite-distance 3)
+	(set-strategic-number sn-nova-dropsite-distance 3)
+	(set-strategic-number sn-retask-gather-amount 5)
+
+	(set-strategic-number sn-allow-civilian-defense 1)
+	(set-strategic-number sn-garrison-rams 1) ; don't think this does anything
+
+	(disable-self)
+)
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-town-defend-priority 1) ; don't think this is needed but oh well
+	(set-strategic-number sn-nova-defend-priority 2)
+	(set-strategic-number sn-metal-defend-priority 3)
+
+	(set-strategic-number sn-forage-defend-priority 0)
+	(set-strategic-number sn-holocron-defend-priority 0)
+	(set-strategic-number sn-cap-civilian-builders 250) ; very high please!
+
+	(disable-self)
+)
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-maximum-carbon-drop-distance 20)
+	(set-strategic-number sn-maximum-food-drop-distance 14)
+	(set-strategic-number sn-maximum-hunt-drop-distance 40) ; This isn't hunt "drop" distance as per se, but sheer HUNT distance. If a lure is out of this range, it will just not be targeted
+
+	(set-strategic-number sn-maximum-fish-boat-drop-distance -1) ; infinite
+	(set-strategic-number sn-maximum-nova-drop-distance 15)
+	(set-strategic-number sn-maximum-metal-drop-distance 15)
+	(disable-self)
+)
+
+(defrule
+	(or
+		(players-current-age any-enemy >= tech-level-2)
+		(players-military-population any-enemy > 2)
+	)
+=>
+	(set-strategic-number sn-allow-civilian-defense 0)
+	(disable-self)
+)
+
+
+
+
+;=======================TIMER LOGIC
+
+(defrule
+	(current-age >= tech-level-2)
+=>
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 60) ; 60s = 1min ; remind me, why is this timer turned on at the start of T2 anyway? ; for looping big check, easiest to just have it on
+	(set-goal townsizetrackertwo NULL)
+	(disable-self)
+)
+
+;======================= CAMP MAX DISTANCES
+; mill over in food
+
+(defrule
+	(game-time > 3)
+	(building-type-count-total BLDG-DROPCARBON == 0) ; none built, none under construction
+=>
+	(set-strategic-number sn-camp-max-distance 13)
+	(disable-self)
+)
+
+(defrule
+	(building-type-count-total BLDG-DROPCARBON > 0) ; one is being built
+=>
+	(set-strategic-number sn-camp-max-distance 18)
+	(disable-self)
+)
+
+(defrule
+	(building-type-count-total BLDG-DROPCARBON >= 2) ; two built
+	(dropsite-min-distance carbon > 6) ; and carbon's still really far away
+	(strategic-number sn-camp-max-distance <= 30)
+=>
+	(set-strategic-number sn-camp-max-distance 30) ; map shenanigans
+	(set-strategic-number sn-maximum-carbon-drop-distance 30) ; allow walking ages for it
+	(set-goal camplevel 2)
+	(disable-self)
+)
+
+(defrule
+	(or
+		(building-type-count BLDG-DROPMETAL > 0) ; or to alleviate minor issues where two nova procs were being built before ore proc/etc
+		(building-type-count BLDG-DROPNOVA > 0)
+	)
+	(building-type-count BLDG-DROPCARBON > 0)
+	(strategic-number sn-camp-max-distance < 30)
+=>
+	(set-strategic-number sn-camp-max-distance 30)
+	(set-goal camplevel 2)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(strategic-number sn-camp-max-distance < 30)
+=>
+	(set-strategic-number sn-camp-max-distance 30)
+	(set-goal camplevel 2)
+	(disable-self)
+)
+(defrule
+	(current-age == tech-level-4)
+	(strategic-number sn-camp-max-distance < 40)
+=>
+	(set-strategic-number sn-camp-max-distance 40)
+	(set-goal camplevel 3)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(game-time > 2700) ; 45min
+	(strategic-number sn-camp-max-distance < 40)
+=>
+	(set-strategic-number sn-camp-max-distance 40)
+	(set-goal camplevel 3)
+	(disable-self)
+)
+(defrule
+	(current-age == tech-level-3)
+	(game-time > 2700) ; 45min
+	(strategic-number sn-camp-max-distance < 40)
+=>
+	(set-strategic-number sn-camp-max-distance 40)
+	(set-goal camplevel 3)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(game-time > 3600) ; 1hr 
+	(strategic-number sn-camp-max-distance < 60)
+=>
+	(set-strategic-number sn-camp-max-distance 60)
+	(set-goal camplevel 4)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(game-time > 5400) ; 1h30
+	(strategic-number sn-camp-max-distance < 70)
+=>
+	(set-strategic-number sn-camp-max-distance 70)
+	(set-goal camplevel 5)
+	(disable-self)
+)
+(defrule
+	(current-age == tech-level-4)
+	(game-time > 5400) ; 1h30
+	(strategic-number sn-camp-max-distance < 70)
+=>
+	(set-strategic-number sn-camp-max-distance 70)
+	(set-goal camplevel 5)
+	(disable-self)
+)
+(defrule
+	(current-age == tech-level-4)
+	(game-time > 7200) ; 2hr
+	(strategic-number sn-camp-max-distance < 80)
+=>
+	(set-strategic-number sn-camp-max-distance 80)
+	(set-goal camplevel 6)
+	(disable-self)
+)
+
+
+;======================= TOWN SIZE ATTACK ASSIST
+
+; so, when town size attack is turned off
+; it is set to EXHAUSTED
+
+; we need to reset town size to the value it was previously
+; this is pretty easy to do
+
+; the issue is that
+; we need to reset it
+; AND WAIT A BIT FOR ENEMY BUILDINGS IN TOWN TO UPDATE
+; before the rest of the script is allowed to activate
+
+; we tried with file order but that didn't work
+; packaging it into exhausted would require changing every check for exhausted into exhausted-a and exhausted-b (technically possible)
+; it cannot be packed into trackertwo as that contains information about what the timer is doing (eg could get stuck at smol)
+; therefore we need a new variable
+
+(defrule
+	(not (goal attackTSAhold EXHAUSTED)) ; anything else
+	(not (goal townsizetrackerthree DENIED))
+=>
+	(set-goal townsizetrackerthree DENIED)
+)
+
+; takes a LOT of ticks to update apparently - so instead of writing out disable-n rules, we'll just slap it on a timer, and conveniently one already exists
+
+(defrule
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetrackerthree DENIED) 
+=>
+	(set-goal townsizetrackerthree DISABLE-1)
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 60) ; tons of time
+)
+
+(defrule
+	(goal townsizetrackerthree DISABLE-1)
+	(timer-triggered t-townsize)
+=>
+	(set-goal townsizetrackerthree ALLOW)
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 30) ; in case something else needed it
+)
+
+
+
+
+
+
+
+; tech 2
+(defrule
+	(current-age == tech-level-2)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker SMOL)
+	(not (strategic-number sn-maximum-town-size == TL2-townsize-smol))
+=>
+	(set-strategic-number sn-maximum-town-size TL2-townsize-smol)
+	(set-strategic-number sn-sentry-distance TL2-townsize-smol)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now SMOL")
+)
+(defrule
+	(current-age == tech-level-2)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker NORM)
+	(not (strategic-number sn-maximum-town-size == TL2-townsize))
+=>
+	(set-strategic-number sn-maximum-town-size TL2-townsize)
+	(set-strategic-number sn-sentry-distance TL2-townsize)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
+)
+(defrule
+	(current-age == tech-level-2)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker BIG)
+	(not (strategic-number sn-maximum-town-size == TL2-townsize-big))
+=>
+	(set-strategic-number sn-maximum-town-size TL2-townsize-big)
+	(set-strategic-number sn-sentry-distance TL2-townsize-big)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIG")
+)
+(defrule
+	(current-age == tech-level-2)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker BIGGER)
+	(not (strategic-number sn-maximum-town-size == TL2-townsize-bigger))
+=>
+	(set-strategic-number sn-maximum-town-size TL2-townsize-bigger)
+	(set-strategic-number sn-sentry-distance TL2-townsize-bigger)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
+)
+
+
+; tech 3
+(defrule
+	(current-age == tech-level-3)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker SMOL)
+	(not (strategic-number sn-maximum-town-size == TL3-townsize-smol))
+=>
+	(set-strategic-number sn-maximum-town-size TL3-townsize-smol)
+	(set-strategic-number sn-sentry-distance TL3-townsize-smol)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now SMOL")
+)
+(defrule
+	(current-age == tech-level-3)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker NORM)
+	(not (strategic-number sn-maximum-town-size == TL3-townsize))
+=>
+	(set-strategic-number sn-maximum-town-size TL3-townsize)
+	(set-strategic-number sn-sentry-distance TL3-townsize)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
+)
+(defrule
+	(current-age == tech-level-3)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker BIG)
+	(not (strategic-number sn-maximum-town-size == TL3-townsize-big))
+=>
+	(set-strategic-number sn-maximum-town-size TL3-townsize-big)
+	(set-strategic-number sn-sentry-distance TL3-townsize-big)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIG")
+)
+(defrule
+	(current-age == tech-level-3)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker BIGGER)
+	(not (strategic-number sn-maximum-town-size == TL3-townsize-bigger))
+=>
+	(set-strategic-number sn-maximum-town-size TL3-townsize-bigger)
+	(set-strategic-number sn-sentry-distance TL3-townsize-bigger)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
+)
+
+; tech 4
+(defrule
+	(current-age == tech-level-4)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker SMOL)
+	(not (strategic-number sn-maximum-town-size == TL4-townsize-smol))
+=>
+	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
+	(set-strategic-number sn-sentry-distance TL4-townsize-smol)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now SMOL")
+)
+(defrule
+	(current-age == tech-level-4)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker NORM)
+	(not (strategic-number sn-maximum-town-size == TL4-townsize))
+=>
+	(set-strategic-number sn-maximum-town-size TL4-townsize)
+	(set-strategic-number sn-sentry-distance TL4-townsize)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
+)
+(defrule
+	(current-age == tech-level-4)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker BIG)
+	(not (strategic-number sn-maximum-town-size == TL4-townsize-big))
+=>
+	(set-strategic-number sn-maximum-town-size TL4-townsize-big)
+	(set-strategic-number sn-sentry-distance TL4-townsize-big)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIG")
+)
+(defrule
+	(current-age == tech-level-4)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetracker BIGGER)
+	(not (strategic-number sn-maximum-town-size == TL4-townsize-bigger))
+=>
+	(set-strategic-number sn-maximum-town-size TL4-townsize-bigger)
+	(set-strategic-number sn-sentry-distance TL4-townsize-bigger)
+	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
+)
+
+
+
+
+
+
+;=======================TL1 RULES
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-sentry-distance 14)
+	(set-strategic-number sn-maximum-town-size 14)
+	(set-strategic-number sn-zero-priority-distance 250)
+
+	(set-strategic-number sn-maximum-gaia-attack-response 2)
+
+	(disable-self)
+)
+
+(defrule
+	(or
+		(game-time > 240) ; up town size a bit once enough time has passed
+		(and
+			(building-type-count-total BECO-CARB > 0)
+			(building-type-count-total BECO-FOOD > 0)
+		)
+	)
+	(current-age == tech-level-1)
+=>
+	(set-strategic-number sn-sentry-distance 16)
+    (set-strategic-number sn-maximum-town-size 16)
+	(disable-self) ; >.<
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(or
+		(game-time > 600) ; timeout
+		(and
+			(building-type-count BLDG-TRAINTROOPER > 0) ; we have a TC
+			(not (too-many-unpowered-buildings)) ; and it has power
+		)
+	)
+=>
+	(set-strategic-number sn-sentry-distance 18)
+    (set-strategic-number sn-maximum-town-size 18)
+	(disable-self)
+)
+
+
+(defrule
+	(building-type-count BECO-CARB > 0)
+=>
+	(set-strategic-number sn-carbon-dropsite-distance 3)
+	(disable-self)
+)
+
+
+; AI explores a little
+; to hopefully put its food proc in a less terrible spot
+; interesting note: turning civilian explorers back on, basically Does Not Work
+; any new workers get assigned to gathering
+; HOWEVER if you were to create a worker via triggers, then it correctly goes and scouts
+; so no idea what's up with that
+(defrule
+	(building-type-count BLDG-MAIN > 0) ; don't do this on Raiders starts
+=>
+	(set-strategic-number sn-minimum-civilian-explorers 1) ; one worker on scouting!
+	(set-strategic-number sn-cap-civilian-explorers 1)
+	(set-strategic-number sn-cap-civilian-builders 250)
+	(set-strategic-number sn-cap-civilian-gatherers 250)
+	(set-strategic-number sn-percent-civilian-explorers 40) ; apparently explorers+builders+gatherers equals 100
+	(set-strategic-number sn-percent-civilian-builders 30)
+	(set-strategic-number sn-percent-civilian-gatherers 30)
+	(disable-self)
+)
+
+
+; FUN RAIDERS STUFF
+; go explore
+; UPDATE THIS WAS VERY MUCH NOT-FUN
+; GETTING THE AI TO BUILD A CC IS A NIGHTMARE
+; what I THINK is happening is that the build logic for CCs is busted and does not take into account what the AI has explored
+; so it picks a CC spot out of its vision and goes "yep I'll build it there" but hasn't explored it
+; but if it DOES explore that, it plonks a CC down
+; this is why all the AI like to build their CC in the same place, as they all use the same placement algorithm
+; and said algorithm is invariant of what they've actually explored
+(defrule
+	(game-time < raiders-timeout)
+	(building-type-count BLDG-MAIN == 0) ; Raiders
+=>
+	(set-strategic-number sn-minimum-civilian-explorers 6) 
+	(set-strategic-number sn-cap-civilian-explorers 6)	; maximal scouts
+	(set-strategic-number sn-cap-civilian-builders 200)
+	(set-strategic-number sn-cap-civilian-gatherers 200)
+	(set-strategic-number sn-percent-civilian-explorers 100) ; 100 needed for all three workers to go scouting
+	(set-strategic-number sn-percent-civilian-builders 0) ; game is somehow intelligent enough to assign builders when needed
+	(set-strategic-number sn-percent-civilian-gatherers 0) 
+	;(set-strategic-number sn-number-forward-builders 0) ; HELP
+	;(set-strategic-number sn-number-forward-gatherers 0)
+	(disable-self)
+)
+; the AI pretty frequently resigns once the time has elapsed due to failing to build a CC, there isn't really a workaround
+
+
+
+
+
+(defrule
+	(building-type-count BLDG-MAIN > 0)
+	(game-time > 120)
+=>
+	(set-strategic-number sn-minimum-civilian-explorers 0) ; no more scouting
+	(set-strategic-number sn-cap-civilian-explorers 0)
+	(set-strategic-number sn-percent-civilian-explorers 0)
+	(set-strategic-number sn-percent-civilian-builders 50)
+	(set-strategic-number sn-percent-civilian-gatherers 50)
+	(set-strategic-number sn-number-forward-builders 0)
+	(set-strategic-number sn-number-forward-gatherers 0)
+	(disable-self)
+)
+
+
+;=======================TL2 RULES
+(defrule
+        (current-age >= tech-level-2)
+=>
+		(set-strategic-number sn-sentry-distance TL2-townsize)
+        (set-strategic-number sn-maximum-town-size TL2-townsize)
+		(set-goal townsizetracker NORM)
+
+        (set-strategic-number sn-percent-civilian-builders 50)
+        (set-strategic-number sn-percent-civilian-gatherers 50)
+
+		(set-strategic-number sn-allow-civilian-defense 0)
+        (disable-self)
+)
+
+
+; how this should go:
+; set townsize to usual at T2
+; oh no, there are enemy buildings in town! hold current townsize for like 10s to give military units enough of a chance to get their act together
+; and then go to small townsize
+; and start a timer for like 2-5min 
+; when timer goes off
+; try increasing back to T2 regular townsize 
+; if there are enemy buildings, do the whole shebang all over again
+; if there are not, continue as normal 
+
+; then when it comes to being jammed
+; check if either population headroom is high when housing headroom is not - actually, no, cause if a unit gets killed in combat this will mistakenly fire
+; or if buildings have not been built 
+; and carbon is in play 
+; check to see if those conditions hold for like 2-3min (to avoid situations where the AI gets an influx of res from cheat)
+; if so, increase
+
+; repeat
+
+
+(defrule
+	(current-age == tech-level-2)
+	(enemy-buildings-in-town)
+	(goal townsizetrackertwo NULL)
+	(goal townsizetrackerthree ALLOW) ; needed to avoid an issue where enemy buildings did not update quickly enough after TSA ended
+	(goal attackTSAhold EXHAUSTED) ; when TSA is active, do not adjust townsize
+=>		
+	(set-goal townsizetrackertwo GETYOURUNITSTOGETHER)
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 10) ; Give it 10s for units to get their bearing
+	(chat-local-to-self "WAFFLE: T2 enemy building. Starting 10s timer")
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal townsizetrackertwo GETYOURUNITSTOGETHER)
+	(timer-triggered t-townsize)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo WAITING)
+	(set-goal townsizetracker SMOL)
+	(set-strategic-number sn-maximum-town-size TL2-townsize-smol)
+	(chat-local-to-self "WAFFLE: T2 Enemy Building. TS Smol. Start timer")
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 300) ; 5min ought to be enough to poke our head above the water again and see if those buildings have gone
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal townsizetrackertwo WAITING)
+	(timer-triggered t-townsize)
+	; (not (enemy-buildings-in-town)) ; all clear! try upping townsize again ; it's better for the AI to just try and remove whatever was there again
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo NULL)
+	(set-goal townsizetracker NORM)
+	(set-strategic-number sn-maximum-town-size TL2-townsize)
+	(chat-local-to-self "WAFFLE: T2 Smol Timeout. Increasing to Norm")
+	(disable-timer t-townsize)
+
+)
+
+
+; if we have no space for our buildings
+
+(defrule
+	(current-age == tech-level-2)
+	(current-age-time > 450) ; give it a bit!
+	(or
+		(carbon-amount > 300)
+		(escrow-amount carbon > 300) ; if we can actually afford them
+	)
+	(or
+			(building-type-count-total BLDG-TRAINMECH == 0)
+			(or
+				(building-type-count-total BLDG-SPACEPORT == 0)
+				(building-type-count-total BLDG-WARCTR == 0)
+			)
+	)
+	(not (goal townsizetrackertwo NOBUILDINGS))
+	(not (town-under-attack))
+=>
+	(set-goal townsizetrackertwo NOBUILDINGS)
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 300) ; 5min to build them
+	(chat-local-to-self "WAFFLE: T2 TS: No bldgs. Timer on")
+)
+
+; if we have them, cancel the timer
+
+(defrule
+	(current-age == tech-level-2)
+	(goal townsizetrackertwo NOBUILDINGS)
+	(building-type-count-total BLDG-TRAINMECH > 0)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-WARCTR > 0)
+=>
+	(disable-timer t-townsize)
+	(set-goal townsizetrackertwo NULL)
+	(chat-local-to-self "WAFFLE: T2 TS: Yes bldgs. Disabling timer")
+)
+
+; if we don't when timer runs out, increase townsize
+
+(defrule
+	(current-age == tech-level-2)
+	(or
+			(building-type-count-total BLDG-TRAINMECH == 0)
+			(or
+				(building-type-count-total BLDG-SPACEPORT == 0)
+				(building-type-count-total BLDG-WARCTR == 0)
+			)
+	)
+	(goal townsizetrackertwo NOBUILDINGS)
+	(goal townsizetracker NORM) 
+	(timer-triggered t-townsize)
+	(goal attackTSAhold EXHAUSTED) ; except if TSA is on
+=>
+	(set-goal townsizetrackertwo NULL)
+	
+	(set-goal townsizetracker BIG)
+	(set-strategic-number sn-sentry-distance TL2-townsize-big)
+	(set-strategic-number sn-maximum-town-size TL2-townsize-big)
+	
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 300) ; Check for another 5min
+	
+	(chat-local-to-self "WAFFLE: T2 Town Size Big")
+)
+
+; if we STILL have no space for our buildings
+(defrule
+	(current-age == tech-level-2)
+	(or
+			(building-type-count-total BLDG-TRAINMECH == 0)
+			(or
+				(building-type-count-total BLDG-SPACEPORT == 0)
+				(building-type-count-total BLDG-WARCTR == 0)
+			)
+	)
+	(goal townsizetrackertwo NOBUILDINGS)
+	(goal townsizetracker BIG) 
+	(timer-triggered t-townsize)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo NULL)
+	
+	(set-goal townsizetracker BIGGER)
+	(set-strategic-number sn-sentry-distance TL2-townsize-bigger)
+	(set-strategic-number sn-maximum-town-size TL2-townsize-bigger)
+	
+	(disable-timer t-townsize)
+	
+	(chat-local-to-self "WAFFLE: T2 Town Size Bigger")
+)
+
+
+
+
+
+
+;======================== TL3 RULES
+;see age advancement rules for strategic number-settings <-- apparently not lol
+
+(defrule
+        (current-age == tech-level-3)
+=>
+        (set-strategic-number sn-sentry-distance TL3-townsize)
+        (set-strategic-number sn-maximum-town-size TL3-townsize)
+		(set-strategic-number sn-percent-civilian-builders 50)
+        (set-strategic-number sn-percent-civilian-gatherers 50)
+		
+		(set-strategic-number sn-allow-civilian-defense 0)
+
+		(disable-timer t-townsize) ; whatever it was doing was irrelvant
+		(set-goal townsizetrackertwo NULL)
+		(set-goal townsizetracker NORM)
+
+        (disable-self)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(enemy-buildings-in-town)
+	(goal townsizetrackertwo NULL)
+	(goal attackTSAhold EXHAUSTED) ; not TSA
+	(goal townsizetrackerthree ALLOW) ; needed to avoid an issue where enemy buildings did not update quickly enough after TSA ended
+=>		
+	(set-goal townsizetrackertwo GETYOURUNITSTOGETHER)
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 20) ; Give it 20s for units to get their bearing
+	(chat-local-to-self "WAFFLE: T3 enemy building. Starting 20s timer")
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal townsizetrackertwo GETYOURUNITSTOGETHER)
+	(timer-triggered t-townsize)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo WAITING)
+	(set-goal townsizetracker SMOL)
+	(set-strategic-number sn-maximum-town-size TL3-townsize-smol)
+	(chat-local-to-self "WAFFLE: T3 Enemy Building. TS Smol. Start timer")
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 300) ; 5min ought to be enough to poke our head above the water again and see if those buildings have gone
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal townsizetrackertwo WAITING)
+	(timer-triggered t-townsize)
+	(enemy-buildings-in-town) ; if buildings remain, try again in another 120s
+	(false) ; disable
+=>
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 60)
+
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal townsizetrackertwo WAITING)
+	(timer-triggered t-townsize)
+	; (not (enemy-buildings-in-town)) ; all clear! try upping townsize again
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo NULL)
+	(set-goal townsizetracker NORM)
+	(set-strategic-number sn-maximum-town-size TL3-townsize)
+	(chat-local-to-self "WAFFLE: T3 Smol Timeout. Increasing to Norm")
+	(disable-timer t-townsize)
+
+)
+
+
+; if we have no space for our buildings
+
+(defrule
+	(current-age == tech-level-3)
+	(current-age-time > 900)
+	(or
+		(carbon-amount > 400)
+		(escrow-amount carbon > 400)
+	)
+	(or
+			(building-type-count-total BLDG-TRAINAIR == 0)
+			(or
+				(building-type-count-total BLDG-RESCTR == 0)
+				(or
+					(building-type-count-total BLDG-TRAINHEAVY == 0)
+					(building-type-count-total BLDG-MAIN < 2)
+				)
+			)
+		)
+	(not (goal townsizetrackertwo NOBUILDINGS))
+	(not (town-under-attack))
+	(not (difficulty == easiest)) ; only builds 1 TC
+=>
+	(set-goal townsizetrackertwo NOBUILDINGS)
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 300) ; 5min to build them
+	(chat-local-to-self "WAFFLE: T3 TS: No bldgs. Timer on")
+)
+
+; if we have them, cancel the timer
+
+(defrule
+	(current-age == tech-level-3)
+	(goal townsizetrackertwo NOBUILDINGS)
+	(building-type-count-total BLDG-TRAINAIR > 0)
+	(building-type-count-total BLDG-TRAINHEAVY > 0)
+	(building-type-count-total BLDG-RESCTR > 0)
+	(building-type-count-total BLDG-MAIN > 1)
+=>
+	(disable-timer t-townsize)
+	(set-goal townsizetrackertwo NULL)
+	(chat-local-to-self "WAFFLE: T3 TS: Yes bldgs. Disabling timer")
+)
+
+; if we don't when timer runs out, increase townsize
+
+(defrule
+	(current-age == tech-level-3)
+	(or
+			(building-type-count-total BLDG-TRAINAIR == 0)
+			(or
+				(building-type-count-total BLDG-RESCTR == 0)
+				(or
+					(building-type-count-total BLDG-TRAINHEAVY == 0)
+					(building-type-count-total BLDG-MAIN < 2)
+				)
+			)
+		)
+	(goal townsizetrackertwo NOBUILDINGS)
+	(goal townsizetracker NORM) 
+	(timer-triggered t-townsize)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo NULL)
+	
+	(set-goal townsizetracker BIG)
+	(set-strategic-number sn-sentry-distance TL3-townsize-big)
+	(set-strategic-number sn-maximum-town-size TL3-townsize-big)
+	
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 300) ; Check for another 5min
+	
+	(chat-local-to-self "WAFFLE: T3 Town Size Big")
+)
+
+; if we STILL have no space for our buildings
+(defrule
+	(current-age == tech-level-3)
+	(or
+			(building-type-count-total BLDG-TRAINAIR == 0)
+			(or
+				(building-type-count-total BLDG-RESCTR == 0)
+				(or
+					(building-type-count-total BLDG-TRAINHEAVY == 0)
+					(building-type-count-total BLDG-MAIN < 2)
+				)
+			)
+		)
+	(goal townsizetrackertwo NOBUILDINGS)
+	(goal townsizetracker BIG) 
+	(timer-triggered t-townsize)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo NULL)
+	
+	(set-goal townsizetracker BIGGER)
+	(set-strategic-number sn-sentry-distance TL3-townsize-bigger)
+	(set-strategic-number sn-maximum-town-size TL3-townsize-bigger)
+	
+	(disable-timer t-townsize)
+	
+	(chat-local-to-self "WAFFLE: T3 Town Size Bigger")
+)
+
+
+
+
+
+
+;=============================TL4 RULES
+;see age advancement rules for strategic number-settings
+(defrule
+        (current-age == tech-level-4)
+=>
+		(set-strategic-number sn-sentry-distance TL4-townsize)
+        (set-strategic-number sn-maximum-town-size TL4-townsize)
+        (set-strategic-number sn-percent-civilian-builders 50)
+        (set-strategic-number sn-percent-civilian-gatherers 50)
+		
+        (set-strategic-number sn-maximum-food-drop-distance 12)
+        (set-strategic-number sn-maximum-hunt-drop-distance 20)
+
+        ; (set-strategic-number sn-max-unpowered-buildings 1) ; was originally 0
+		(set-strategic-number sn-allow-civilian-defense 0)
+		
+		(disable-timer t-townsize) ; whatever it was doing was irrelvant
+		(set-goal townsizetrackertwo NULL)
+		(set-goal townsizetracker NORM)
+
+        (disable-self)
+)
+
+; resource distances that the AI will walk to a dropoff 
+(defrule
+        (current-age == tech-level-4)
+		(current-age-time > 1800) ; 30min into T4
+=>
+        (set-strategic-number sn-maximum-carbon-drop-distance 50)
+        (set-strategic-number sn-maximum-food-drop-distance 12)
+        (set-strategic-number sn-maximum-hunt-drop-distance 20)
+
+        (set-strategic-number sn-maximum-fish-boat-drop-distance -1) ; infinite apparently? 
+        (set-strategic-number sn-maximum-nova-drop-distance 20)
+        (set-strategic-number sn-maximum-metal-drop-distance 20)
+		
+        (disable-self)
+)
+
+; upon reaching TL4
+; set the AI's TS to SMOL
+; so it doesn't all wander off
+
+(defrule
+	(current-age == tech-level-4)
+=>
+	(set-goal townsizetrackertwo WAITING)
+	(set-goal townsizetracker SMOL)
+	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
+	(chat-local-to-self "WAFFLE: T4 Start. TS Smol. Start timer")
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 420)
+	(disable-self)
+)
+
+
+
+
+(defrule
+	(current-age == tech-level-4)
+	(enemy-buildings-in-town)
+	(goal townsizetrackertwo NULL)
+	(goal attackTSAhold EXHAUSTED)
+	(goal townsizetrackerthree ALLOW) ; needed to avoid an issue where enemy buildings did not update quickly enough after TSA ended
+=>		
+	(set-goal townsizetrackertwo GETYOURUNITSTOGETHER)
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 20) ; Give it 20s for units to get their bearing
+	(chat-local-to-self "WAFFLE: T4 enemy building. Starting 20s timer")
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal townsizetrackertwo GETYOURUNITSTOGETHER)
+	(timer-triggered t-townsize)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo WAITING)
+	(set-goal townsizetracker SMOL)
+	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
+	(chat-local-to-self "WAFFLE: T4 Enemy Building. TS Smol. Start timer")
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 300) ; 5min ought to be enough to poke our head above the water again and see if those buildings have gone
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal townsizetrackertwo WAITING)
+	(timer-triggered t-townsize)
+	(enemy-buildings-in-town) ; if buildings remain, try again in another 120s
+	(false) ; disable
+=>
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 60)
+
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal townsizetrackertwo WAITING)
+	(timer-triggered t-townsize)
+	; (not (enemy-buildings-in-town)) ; all clear! try upping townsize again
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo NULL)
+	(set-goal townsizetracker NORM)
+	(set-strategic-number sn-maximum-town-size TL4-townsize)
+	(chat-local-to-self "WAFFLE: T4 Smol Timeout. Increasing to Norm")
+	(disable-timer t-townsize)
+
+)
+
+
+; if we have no space for our buildings
+
+(defrule
+	(current-age == tech-level-4)
+	(current-age-time > 600)
+	(goal importantT4research DONE ) ; building of extra buildings is tied to this
+	(or
+		(building-type-count-total BLDG-TRAINTROOPER < 2)
+		(or
+			(building-type-count-total BLDG-TRAINMECH < 2)
+			(or
+				(building-type-count-total BLDG-RESCTR == 0)
+				(or
+					(building-type-count-total BLDG-MAIN < 2)
+					(building-type-count-total BLDG-TRAINAIR == 0)
+				)
+			)
+		)
+	)
+	(not (goal townsizetrackertwo NOBUILDINGS))
+	(not (difficulty == easiest)) ; only builds 1 TC
+=>
+	(set-goal townsizetrackertwo NOBUILDINGS)
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 300) ; 5min to build them
+	(chat-local-to-self "WAFFLE: T4 TS: No bldgs. Timer on")
+)
+
+; if we have them, cancel the timer
+
+(defrule
+	(current-age == tech-level-4)
+	(goal townsizetrackertwo NOBUILDINGS)
+	(building-type-count-total BLDG-TRAINTROOPER >= 2)
+	(building-type-count-total BLDG-TRAINMECH >= 2)
+	(building-type-count-total BLDG-RESCTR > 0)
+	(building-type-count-total BLDG-MAIN >= 2)
+	(building-type-count-total BLDG-TRAINAIR > 0)
+=>
+	(disable-timer t-townsize)
+	(set-goal townsizetrackertwo NULL)
+	(chat-local-to-self "WAFFLE: T4 TS: Yes bldgs. Disabling timer")
+)
+
+; if we don't when timer runs out, increase townsize
+
+(defrule
+	(current-age == tech-level-4)
+	(goal importantT4research DONE ) 
+	(or
+		(building-type-count-total BLDG-TRAINTROOPER < 2)
+		(or
+			(building-type-count-total BLDG-TRAINMECH < 2)
+			(or
+				(building-type-count-total BLDG-RESCTR == 0)
+				(or
+					(building-type-count-total BLDG-MAIN < 2)
+					(building-type-count-total BLDG-TRAINAIR == 0)
+				)
+			)
+		)
+	)
+	(goal townsizetrackertwo NOBUILDINGS)
+	(goal townsizetracker NORM) 
+	(timer-triggered t-townsize)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo NULL)
+	
+	(set-goal townsizetracker BIG)
+	(set-strategic-number sn-sentry-distance TL4-townsize-big)
+	(set-strategic-number sn-maximum-town-size TL4-townsize-big)
+	
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 300) ; Check for another 5min
+	
+	(chat-local-to-self "WAFFLE: T4 Town Size Big")
+)
+
+; if we STILL have no space for our buildings
+(defrule
+	(current-age == tech-level-4)
+	(goal importantT4research DONE )
+	(or
+		(building-type-count-total BLDG-TRAINTROOPER < 2)
+		(or
+			(building-type-count-total BLDG-TRAINMECH < 2)
+			(or
+				(building-type-count-total BLDG-RESCTR == 0)
+				(or
+					(building-type-count-total BLDG-MAIN < 2)
+					(building-type-count-total BLDG-TRAINAIR == 0)
+				)
+			)
+		)
+	)
+	(goal townsizetrackertwo NOBUILDINGS)
+	(goal townsizetracker BIG) 
+	(timer-triggered t-townsize)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal townsizetrackertwo NULL)
+	
+	(set-goal townsizetracker BIGGER)
+	(set-strategic-number sn-sentry-distance TL4-townsize-bigger)
+	(set-strategic-number sn-maximum-town-size TL4-townsize-bigger)
+	
+	(disable-timer t-townsize)
+	
+	(chat-local-to-self "WAFFLE: T4 Town Size Bigger")
+)
+
+; go big when your population gets high
+; eh we'd like to do this at some point but expanding townsize => enemy buildings => go small is something we need Lots of extra logic for
+; besides we did literally just reduce the townsizes to improve behaviour...
+
+
+
+; there were thingies about forward builders on island maps but they seemed pretty useless

@@ -1,0 +1,5645 @@
+; =====================================================
+; FILE: warboat-island
+; PURPOSE:
+;   Handles island-mode helpers, late-game utility, and chat behavior.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: ISLAND LOGIC
+;	Chapter 2: CHAT
+;	Chapter 3: LATEGAME UTILITY
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(goal iamthechosenchatter ITSME)
+	(goal scn-detected NO)
+	(cc-players-unit-type-count any-enemy 1587 > 0)
+=>
+	(chat-to-player every-enemy "69 That's no moon...")
+	(disable-self)
+)
+
+; put this in chapter 5
+(defrule
+	(goal messagestatus msg-COMMANDEDNOTTOATTACK)
+=>
+	(chat-to-player every-ally "241 Standing by. We will attack when we hear Taunt 31, commander.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; put this at the start of chapter 10
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE)
+	(not (strategic-number snc-cheat-tier == 0))
+=>
+	(generate-random-number 3)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE)
+	(not (strategic-number snc-cheat-tier == 0))
+	(not (random-number == 1)) ; 2/3rds chance of complaining about it, otherwise continue as normal
+=>
+	(set-goal messagestatus msg-RESIGN-CHEAT)
+)
+
+
+(defrule
+	(goal messagestatus msg-RESIGN-CHEAT)
+	(strategic-number snc-cheat-tier == RESIGN-CHT-FISH)
+=>
+	(chat-to-all "You were the bigger fish.")
+	(set-goal messagestatus msg-NULL)
+)
+(defrule
+	(goal messagestatus msg-RESIGN-CHEAT)
+	(strategic-number snc-cheat-tier == RESIGN-CHT-TANTIVE)
+=>
+	(chat-to-all "We couldn't find the droids we were looking for.")
+	(set-goal messagestatus msg-NULL)
+)
+(defrule
+	(goal messagestatus msg-RESIGN-CHEAT)
+	(strategic-number snc-cheat-tier == RESIGN-CHT-BONGO)
+=>
+	(chat-to-all "Our neighbors were too scary.")
+	(set-goal messagestatus msg-NULL)
+)
+(defrule
+	(goal messagestatus msg-RESIGN-CHEAT)
+	(strategic-number snc-cheat-tier == RESIGN-CHT-FLYINGCAR)
+=>
+	(chat-to-all "We thought a 4-seater sedan would be a useless relic from a bygone age!")
+	(set-goal messagestatus msg-NULL)
+)
+(defrule
+	(goal messagestatus msg-RESIGN-CHEAT)
+	(strategic-number snc-cheat-tier == RESIGN-CHT-DECIMATOR)
+=>
+	(chat-to-all "Our forces were decimated.")
+	(set-goal messagestatus msg-NULL)
+)
+(defrule
+	(goal messagestatus msg-RESIGN-CHEAT)
+	(strategic-number snc-cheat-tier == RESIGN-CHT-STARDEST)
+=>
+	(chat-to-all "Anti-Air Troopers simply couldn't match a Star Destroyer's firepower.")
+	(set-goal messagestatus msg-NULL)
+)
+(defrule
+	(goal messagestatus msg-RESIGN-CHEAT)
+	(strategic-number snc-cheat-tier == RESIGN-CHT-SIMON)
+=>
+	(chat-to-all "Since when did Ewoks wield rapid laser blasters?!")
+	(set-goal messagestatus msg-NULL)
+)
+(defrule
+	(goal messagestatus msg-RESIGN-CHEAT)
+	(strategic-number snc-cheat-tier == RESIGN-CHT-DEATHSTAR)
+=>
+	(chat-to-all "We thought it was a moon...")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+; config ad, put this anywhere in the resign section
+
+(defrule
+	(goal messagestatus msg-RESIGN-CONFIGAD)
+=>
+	(chat-to-all "I have been defeated!")
+	(chat-to-all "To customize the AI's behaviour use Taunt 85 in your next game.")
+	(chat-to-all "This has options like a treaty, tech level lock, resign logic, and more!")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+
+; -----------------------------------------------------
+; *** Chapter 0: AI LOGIC AND MISC CHATS *** 
+; -----------------------------------------------------
+
+
+(defrule
+	(goal iamthechosenchatter ITSME)
+	(game-time > 40)
+	(goal scn-detected NO)
+	=>
+	(set-goal messagestatus msg-GREETING)
+	(disable-self)
+)
+
+(defrule
+	(goal iamthechosenchatter ITSME)
+	(game-time > 60)
+	(goal scn-detected NO)
+	=>
+	(set-goal messagestatus msg-OPENING)
+	(disable-self)
+)
+; there is a very slight (and I mean VERY SLIGHT) issue in that
+; if iamthechosenchatter hasn't been picked yet 
+; it's possible for msg-GREETING to get eaten up by msg-OPENING if game time hasn't gone far enough 
+; but I would really call this not much of an issue, as a) it's only a message and b) greeting is sent to allies anyway
+
+(defrule
+	(true)
+	=>
+	(set-goal iamthechosenchatter UNDECIDED)
+	(disable-self)
+)
+
+(defrule
+		(player-number 1)
+		(game-time > 1)
+		(goal iamthechosenchatter UNDECIDED)
+	=>
+		(set-goal iamthechosenchatter ITSME)
+)
+
+(defrule
+		(player-number 2)
+		(game-time > 8)
+		(goal iamthechosenchatter UNDECIDED)
+	=>
+		(set-goal iamthechosenchatter ITSME)
+)
+
+(defrule
+		(player-number 3)
+		(game-time > 15)
+		(goal iamthechosenchatter UNDECIDED)
+	=>
+		(set-goal iamthechosenchatter ITSME)
+)
+
+(defrule
+		(player-number 4)
+		(game-time > 22)
+		(goal iamthechosenchatter UNDECIDED)
+	=>
+		(set-goal iamthechosenchatter ITSME)
+)
+
+(defrule
+		(player-number 5)
+		(game-time > 29)
+		(goal iamthechosenchatter UNDECIDED)
+	=>
+		(set-goal iamthechosenchatter ITSME)
+)
+
+(defrule
+		(player-number 6)
+		(game-time > 36)
+		(goal iamthechosenchatter UNDECIDED)
+	=>
+		(set-goal iamthechosenchatter ITSME)
+)
+
+(defrule
+		(player-number 7)
+		(game-time > 43)
+		(goal iamthechosenchatter UNDECIDED)
+	=>
+		(set-goal iamthechosenchatter ITSME)
+)
+
+(defrule
+	(player-number 8)
+	(game-time > 50)
+	(goal iamthechosenchatter UNDECIDED)
+=>
+	(set-goal iamthechosenchatter ITSME)
+)
+
+(defrule
+	(goal iamthechosenchatter ITSME)
+=>
+	(chat-to-player every-computer "I am the chatty one!")
+	(chat-to-player every-computer "183")
+	(disable-self)
+)
+
+
+
+(defrule
+	(taunt-detected any-computer-ally 183)
+	=>
+	(acknowledge-taunt this-any-computer-ally 183)
+	(set-goal iamthechosenchatter SOMEBODYELSE)
+)
+
+
+
+; eat up messages if in scenario mode
+(defrule
+	(not (goal messagestatus msg-NULL))
+	(goal scn-detected YES)
+=>
+	(set-goal messagestatus msg-NULL)
+)
+
+
+
+
+(defrule
+	(goal messagestatus msg-BUSYTECHING)
+	=> 
+	(chat-to-player every-ally "Commander, I am reserving my forces for the next Tech Level's upgrades.")
+	(chat-to-player every-ally "If you really want me to attack, send Taunt 31 again.")
+	(chat-to-player every-ally "224 I really would rather not.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-NOMILITARY)
+	=> 
+	(chat-to-player every-ally "Commander, I have no forces to attack with!") 
+	(chat-to-player every-ally "168 I think we have a problem.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-MAXPOP)
+	=> 
+	(chat-to-player every-ally "Commander, I have an army ready: I await your signal with Taunt 31.")
+	(chat-to-player every-ally "202 I was beginning to wonder if you'd got my message.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+
+; -----------------------------------------------------
+; *** Chapter 2: GENERIC SMACK TALKING *** 
+; -----------------------------------------------------
+;Waffle Guide: The rest are set to military pop milestones so they can taunt a few times and stop.
+;Zel: Accent on the STOP. We do not want this to be a spam xD 
+
+(defrule
+	(military-population > 24)
+	(goal iamthechosenchatter ITSME)
+	(goal scn-detected NO)
+	=>
+	(set-goal messagestatus msg-MEAN)
+	(generate-random-number 9)
+	(disable-self)
+)
+
+(defrule
+	(military-population > 50)
+	(goal iamthechosenchatter ITSME)
+	(goal scn-detected NO)
+	=>
+	(set-goal messagestatus msg-MEAN)
+	(generate-random-number 9)
+	(disable-self)
+)
+
+(defrule
+	(military-population > 70)
+	(goal iamthechosenchatter ITSME)
+	(goal scn-detected NO)
+	=>
+	(set-goal messagestatus msg-MEAN)
+	(generate-random-number 9)
+	(disable-self)
+)
+
+(defrule
+	(military-population > 80)
+	(goal iamthechosenchatter ITSME)
+	(goal scn-detected NO)
+	=>
+	(set-goal messagestatus msg-MEAN)
+	(generate-random-number 9)
+	(disable-self)
+)
+
+(defrule
+	(random-number == 1)
+	(goal messagestatus msg-MEAN)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "80 You must realize, you are doomed!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(random-number == 2)
+	(goal messagestatus msg-MEAN)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "84 Now you will experience the full power of the Dark Side.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(random-number == 3)
+	(goal messagestatus msg-MEAN)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "118 Your situation is hopeless!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(random-number == 4)
+	(goal messagestatus msg-MEAN)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "165 Don't make me destroy you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(random-number == 5)
+	(goal messagestatus msg-MEAN)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "248 You and your friends are quite obnoxious.") 
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(random-number == 6)
+	(goal messagestatus msg-MEAN)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "233 Why don't you come out, General?") 
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(random-number == 7)
+	(goal messagestatus msg-MEAN)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "291 Run you cowards!") 
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(random-number == 8)
+	(goal messagestatus msg-MEAN)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "230 Pick up your visual scanning!") 
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(random-number == 9)
+	(goal messagestatus msg-MEAN)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "271 This is not going to go the way you think.") 
+	(set-goal messagestatus msg-NULL)
+)
+
+
+
+; -----------------------------------------------------
+; *** Chapter 3: AI ATTACK WAVES *** 
+; -----------------------------------------------------
+
+;----AI ANNOUNCES ATTACK----
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	=>
+	(chat-to-player every-ally "Commander, I am going on the assault!")
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "101 It will all be over soon.")
+	;(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "122 I am going to end this, once and for all!")
+	;(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "166 We need to mobilize, now!")
+	;(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally  "189 They won't be back for the sequel.")
+	;(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "30 Wipe them out! All of them!")
+	;(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+
+; -----------------------------------------------------
+; *** Chapter 2-1: CIV SMACK TALKING *** 
+; -----------------------------------------------------
+
+; was chapter 1, but got moved to 6-2 and is now chapter 2b I think? as to prevent doublefiring messagestatus is then eaten up and set to msg-NULL
+; however this ofc needs to happen AFTER the other attacking messages ("I'm going on the assault!") are sent
+
+; this HAS to be the one that sets to null or otherwise it's possible for two to fire at once
+
+; rule to shut mountie attacks up
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(current-age == tech-level-1)
+	=>
+	(set-goal messagestatus msg-NULL)
+)
+
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected GUNGANS)
+	(current-age >= tech-level-3)
+	=>
+	(chat-to-player every-enemy "276 You gonna get pasted, outlander!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected GUNGANS)
+	(current-age == tech-level-4)
+	(cc-players-building-type-count any-enemy BLDG-BARRIER-LINE > 0)
+	=>
+	(chat-to-player every-enemy "217 Attack the walls!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected REBEL)
+	(current-age == tech-level-3)
+	=>
+	(chat-to-player every-enemy "23 If it moves, blast it!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected REBEL)
+	(current-age == tech-level-4)
+	=>
+	(chat-to-player every-enemy "210 Your overconfidence is your weakness.")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected RESISTANCE)
+	(current-age == tech-level-2)
+	=>
+	(chat-to-player every-enemy "272 Are we really doing this?")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(not (current-age == tech-level-4))
+	(civ-selected EMPIRE)
+	=>
+	(chat-to-player every-enemy "21 Your base. Surrender it to me, or die!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(current-age == tech-level-4)
+	(civ-selected EMPIRE)
+	=>
+	(chat-to-player every-enemy "8 I have you now!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected IMPERIALREMNANT)
+	(research-completed rt-advparticlecannon)
+	=>
+	(chat-to-player every-enemy "84 Now you will experience the full power of the Dark Side!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(or
+		(civ-selected IMPERIALREMNANT)
+		(and
+			(or
+				(civ-selected EMPIRE)
+				(civ-selected FIRSTORDER)
+			)
+			(unit-type-count UNIT-MECH3-LINE > 0) ; only if Assault is in play
+		)
+	)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-enemy "245 On my signal, unleash hell.")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected CONFEDERACY)
+	(research-completed rt-droidupg)
+	=>
+	(chat-to-player every-enemy "80 You must realise, you are doomed!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected FEDERATION)
+	=>
+	(chat-to-player every-enemy "181 This is going to hurt.")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected REPUBLIC)
+	(not (current-age == tech-level-4))
+	=>
+	(chat-to-player every-enemy "139 Here's where the fun begins!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected REPUBLIC)
+	(current-age == tech-level-4)
+	=>
+	(chat-to-player every-enemy "192 Surrender, you should!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected REPUBLIC)
+	(current-age == tech-level-4)
+	(research-completed rt-gunship-lasers)
+	=>
+	(chat-to-player every-enemy "209 Things are about to get bloody.")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected ZANN)
+	=>
+	(chat-to-player every-enemy "142 No bounties on you. A shame.")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected WOOKIEES)
+	=>
+	(chat-to-player every-enemy "51 Let the Wookiee win!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(or
+		(civ-selected REBEL)
+		(or
+			(civ-selected WOOKIEES)
+			(or
+				(civ-selected NEWREPUBLIC)
+				(civ-selected RESISTANCE)
+			)
+		)
+	)
+	=>
+	(chat-to-player every-enemy "78 I'm sure this trouble must be your fault.")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected WOOKIEES)
+	(research-completed rt-self-regeneration)
+	=>
+	(chat-to-player every-enemy "57 Wookiee Roar")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected FIRSTORDER)
+	=>
+	(chat-to-player every-enemy "287 I'll show you the Dark Side.")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected FIRSTORDER)
+	(research-completed rt-stimpacks)
+	(research-completed rt-indoctrination)
+	=>
+	(chat-to-player every-enemy "257 You can't be so stupid as to think this would be easy.")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected NEWREPUBLIC)
+	(current-age >= tech-level-3)
+	=>
+	(chat-to-player every-enemy "232 You think you can take me?")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected BLACKSUN)
+	=>
+	(chat-to-player every-enemy "103 I don't like you either!")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	(goal scn-detected NO)
+	(civ-selected NABOO)
+	=>
+	(chat-to-player every-enemy "219 Meet the bigger fish.")
+	(set-goal messagestatus msg-NULL)
+	(disable-self)
+)
+
+; tidy up if none picked
+(defrule
+	(goal messagestatus msg-ATTACKING)
+	=>
+	(set-goal messagestatus msg-NULL)
+)
+
+
+; -----------------------------------------------------
+; *** Chapter 4: AI JOINS ATTACK*** 
+; -----------------------------------------------------
+
+(defrule
+	(goal messagestatus msg-JOININ)
+	=> 
+	(chat-to-player every-ally "And I'm joining in!")
+	(generate-random-number 5)
+)
+
+#load-if-not-defined FEDERATION
+#load-if-not-defined CONFEDERACY
+
+(defrule
+	(goal messagestatus msg-JOININ)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "117 I'm going to regret this.")
+	(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-JOININ)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "139 Here's where the fun begins.")
+	(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-JOININ)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "284 Hit the target hard! Give it everything you got!")
+	(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-JOININ)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally  "240 Watch that crossfire, boys!")
+	(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-JOININ)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally  "296 I like those odds.")
+	(set-goal messagestatus msg-NULL)
+	;(generate-random-number 5)
+)
+
+#end-if
+#end-if
+
+(defrule
+	(goal messagestatus msg-JOININ)
+	(or
+		(civ-selected CONFEDERACY)
+		(civ-selected FEDERATION)
+	)
+	=>
+	(chat-to-player any-ally "108 Roger roger.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; -----------------------------------------------------
+; *** Chapter 5: AI ORDERS *** 
+; -----------------------------------------------------
+
+(defrule
+	(goal messagestatus msg-COMMANDEDTOATTACK)
+	=> 
+	(chat-to-player every-ally "Acknowledged! I will attack immediately, Commander.")
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-CENTER)
+	=> 
+	(chat-to-player every-ally "Sending spare forces to center. Cancel this behaviour with taunt 172.") 
+	(generate-random-number 5)
+)
+
+#load-if-not-defined FEDERATION
+#load-if-not-defined CONFEDERACY
+
+(defrule
+	(or
+		(goal messagestatus msg-CENTER)
+		(goal messagestatus msg-COMMANDEDTOATTACK)
+	)
+	;(random-number == 1)
+	=>
+	(chat-to-player every-ally "25 At last we shall have our revenge.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(or
+; 		(goal messagestatus msg-CENTER)
+; 		(goal messagestatus msg-COMMANDEDTOATTACK)
+; 	)
+; 	(random-number == 2)
+; 	=>
+; 	(chat-to-player every-ally "117 I'm going to regret this.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(or
+; 		(goal messagestatus msg-CENTER)
+; 		(goal messagestatus msg-COMMANDEDTOATTACK)
+; 	)
+; 	(random-number == 3)
+; 	=>
+; 	(chat-to-player every-ally "139 Here's where the fun begins.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(or
+; 		(goal messagestatus msg-CENTER)
+; 		(goal messagestatus msg-COMMANDEDTOATTACK)
+; 	)
+; 	(random-number == 4)
+; 	=>
+; 	(chat-to-player every-ally "188 I thought you might say that.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(or
+; 		(goal messagestatus msg-CENTER)
+; 		(goal messagestatus msg-COMMANDEDTOATTACK)
+; 	)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-ally "189 They won't be back for the sequel.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+#end-if
+#end-if
+
+; (defrule
+; 	(or
+; 		(goal messagestatus msg-CENTER)
+; 		(goal messagestatus msg-COMMANDEDTOATTACK)
+; 	)
+; 	(or
+; 		(civ-selected CONFEDERACY)
+; 		(civ-selected FEDERATION)
+; 	)
+; 	=>
+; 	(chat-to-player every-ally "108 Roger roger.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+
+
+
+
+; -----------------------------------------------------
+; *** Chapter 6: AI RETREAT *** 
+; -----------------------------------------------------
+
+(defrule
+	(goal messagestatus msg-CANCELCENTER)
+	=> 
+	(chat-to-player every-ally "Removing forces from center.") 
+)
+
+#load-if-not-defined FEDERATION
+#load-if-not-defined CONFEDERACY
+
+(defrule
+	(goal messagestatus msg-CANCELCENTER)
+	;(random-number == 1)
+	=>
+	(chat-to-player every-ally "29 I find your lack of faith disturbing.")
+	(set-goal messagestatus msg-NULL)
+)
+; comment to save string slots
+; (defrule
+; 	(goal messagestatus msg-CANCELCENTER)
+; 	(random-number == 2)
+; 	=>
+; 	(chat-to-player every-ally "124 You underestimate my power.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-CANCELCENTER)
+; 	(random-number == 3)
+; 	=>
+; 	(chat-to-player every-ally "187 I think you overestimate their chances.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-CANCELCENTER)
+; 	(random-number == 4)
+; 	=>
+; 	(chat-to-player every-ally "279 Our strategy must now change.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-CANCELCENTER)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-ally "243 Your behavior frightens and confuses me, sir.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+#end-if
+#end-if
+
+; (defrule
+; 	(goal messagestatus msg-CANCELCENTER)
+; 	(or
+; 		(civ-selected CONFEDERACY)
+; 		(civ-selected FEDERATION)
+; 	)
+; 	=>
+; 	(chat-to-player every-ally "108 Roger roger.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; CONFEDERACY AND FEDERATION BODGE
+; Sorry about the mess, it's to help clear space in the string table
+
+(defrule
+	(or
+		(or
+			(goal messagestatus msg-CENTER)
+			(goal messagestatus msg-COMMANDEDTOATTACK)
+		)	
+		(or
+			(goal messagestatus msg-CANCELCENTER)
+			(goal messagestatus msg-JOININ)
+		)
+	)
+	=>
+	(chat-to-player every-ally "108 Roger roger.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+
+
+
+
+
+
+
+; -----------------------------------------------------
+; *** Chapter 7: AI NICE GUY *** 
+; -----------------------------------------------------
+
+(defrule
+	(players-current-age any-ally == tech-level-3)
+	(not (current-age >= tech-level-3))
+	(not (players-current-age any-enemy >= tech-level-3))
+	(not (goal techthreetaunt DONE))
+	(goal iamthechosenchatter ITSME)
+	(goal scn-detected NO)
+	=>
+	(chat-to-player this-any-ally "Well done on reaching Tech Level 3 first, Commander!")
+	(chat-to-player this-any-ally "88 Great kid, don't get cocky!")
+	(set-goal techthreetaunt DONE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(not (players-current-age any-enemy >= tech-level-3))
+	(not (players-current-age any-ally >= tech-level-3))
+	(goal iamthechosenchatter ITSME)
+	(not (goal techthreetaunt DONE))
+	(goal scn-detected NO)
+	=>
+	(chat-to-player every-ally "I have made it to Tech Level 3 first!")
+	(chat-to-player every-ally "17 Now I am the master.")
+	(set-goal techthreetaunt DONE)
+)
+
+(defrule
+	(players-current-age any-enemy == tech-level-3)
+	(not (players-current-age any-ally >= tech-level-3))
+	(not (current-age >= tech-level-3))
+	(goal iamthechosenchatter ITSME)
+	(not (goal techthreetaunt DONE))
+	(goal scn-detected NO)
+	=>
+	(chat-to-player this-any-enemy "You may have out-teched us, but this isn't over!")
+	(chat-to-player this-any-enemy "244 It's not over yet.")
+	(chat-to-player every-ally "Commander, the enemy is the first to Tech Level 3!")
+	(chat-to-player every-ally "109 Disen berry berry baaad!")
+	(set-goal techthreetaunt DONE)
+)
+
+; -----------------------------------------------------
+; *** Chapter 8: AI CRIPPLED *** 
+; -----------------------------------------------------
+
+;Waffle Guide: The idea is to notify player that AI is close to resigning.
+(defrule
+	(game-time > 900) ; 15min 
+	(unit-type-count-total UNIT-WORKER <= 15)
+	(goal scn-detected NO)
+	=>
+	(set-goal messagestatus msg-CRIPPLEDAI)
+	(generate-random-number 10)
+	(disable-self)
+)
+
+(defrule
+	(goal messagestatus msg-CRIPPLEDAI)
+	(random-number == 1)
+	=>
+	(chat-to-all "184 How can you do this?")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-CRIPPLEDAI)
+	(random-number == 2)
+	=>
+	(chat-to-all "86 I've just about had enough of you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-CRIPPLEDAI)
+	(random-number == 3)
+	=>
+	(chat-to-all "82 Maybe there's a lesson to be learned here.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-CRIPPLEDAI)
+	(random-number == 4)
+	(not (civ-selected GEONOSIANS))
+	(not (civ-selected WOOKIEES))
+	(not (civ-selected GUNGANS))
+	=>
+	(chat-to-all "286 Hey! Whose gonna pay for that droid, eh?")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: Hope I did this one right, Idk why ORs confuse me.
+(defrule
+	(goal messagestatus msg-CRIPPLEDAI)
+	(random-number == 4)
+	(or
+		(civ-selected GEONOSIANS)
+		(or
+			(civ-selected WOOKIEES)
+			(civ-selected GUNGANS)
+		)
+	)
+	=>
+	(chat-to-all "45 Strike me down, I'll become more powerful than you can possibly imagine.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-CRIPPLEDAI)
+	(random-number == 5)
+	=>
+	(chat-to-all "161 I can sense that you're angry.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-CRIPPLEDAI)
+	(random-number > 5) ; high chance of calling this one
+	=>
+	(chat-to-all "45 Strike me down, I'll become more powerful than you can possibly imagine.") 
+	(set-goal messagestatus msg-NULL)
+)
+
+
+; -----------------------------------------------------
+; *** Chapter 9: AI CIV START  *** 
+; -----------------------------------------------------
+
+;--------------------
+#load-if-defined EMPIRE
+
+;Waffle Guide: 7 Imperial Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 7)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "For the Empire!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "There will be no one to stop us this time.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "They have no hope of escape. Commence the attack!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "Be careful not to choke on your aspirations, commader.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "Our forces shall pacify them, then fear will keep them in line.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-ally "I want this installation fully operational within the hour!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 7)
+	=>
+	(chat-to-player every-ally "The only question we must ask is how tightly to close our fist.")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 9 Imperial Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 8)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "Your feeble skills are no match for the power of the Dark Side.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "Now you will experience the full power of the Dark Side.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "You will join us or die.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "The Empire will thrive, but you won't be alive to see it!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "I find your lack of skill, disturbing.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-enemy "Perhaps you would respond to an alternative form of persuasion.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 7)
+	=>
+	(chat-to-player every-enemy "You do not fear the Empire? Then you'll die braver than most.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 8)
+	=>
+	(chat-to-player every-enemy "It is a pity our first encounter might well be our last.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 9)
+; 	=>
+; 	(chat-to-player every-enemy "Defecting to the Rebel terrorists shall be your undoing.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+#end-if
+;--------------------
+#load-if-defined GUNGANS
+
+;Waffle Guide: 7 Gungan Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 7)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "Wesa ready to do our part!") 
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "Mesa your humble servant!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "Mesa no carin about da enemy. Dey think their brains so big.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "Mesa so smilin to seein yousa!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "Disen gonna be messy!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-ally "Wesa frens are riden inta maxibig battle together.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 7)
+	=>
+	(chat-to-player every-ally "Wesa ridin, and deysa dyin!")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 10 Gungan Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 7)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "Ouch time.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "Yousa gonna get pasted, outlander!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "Yousa got more den yousa bargain for wit disen Gungan!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "Yousa all bombad!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "Gungans no dyin' without a fight. Wesa warriors!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-enemy "Yousa in big doo-doo dis time!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 7)
+	=>
+	(chat-to-player every-enemy "Mesa gonna pound yousa to death!")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 8)
+; 	=>
+; 	(chat-to-player every-enemy "My warning yous; Gungans no likin outsiders.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 9)
+; 	=>
+; 	(chat-to-player every-enemy "Yousa will never get past mesa shields!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 10)
+; 	=>
+; 	(chat-to-player every-enemy "Tell yousa Boss dat da Grand Army tis comin for demsa!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+#end-if
+;--------------------
+#load-if-defined REBEL
+;Rebel Alliance
+
+;Waffle Guide: 7 Rebel Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 4)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "May the Force be with you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "Ready to pull the ears off a gundark?")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "So, what do we blow up first?")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 4)
+; 	=>
+; 	(chat-to-player every-ally "This is our Rebellion.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-ally "For the Alliance!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 6)
+; 	=>
+; 	(chat-to-player every-ally "Remember your training, we can win this!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "Do, or do not. There is no try.")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 5 Rebel Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 4)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "Good luck. You're gonna need it.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "Your overconfidence is your weakness.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "You'll find I'm full of surprises.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "I warn you not to underestimate my power.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-enemy "We will never betray the legacy of the Jedi.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+#end-if
+;--------------------
+#load-if-defined NABOO
+;Royal Naboo
+
+;Waffle Guide: 10 Naboo Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 6)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "The negotiations will be short.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 2)
+; 	=>
+; 	(chat-to-player every-ally "Greed can be a very powerful ally.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "Time for some aggressive negotiations.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "It seems the Senate is powerless to resolve this crisis.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "Pleased to meet you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 6)
+; 	=>
+; 	(chat-to-player every-ally "For the Queen!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "Everything depends on our victory.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 8)
+; 	=>
+; 	(chat-to-player every-ally "We will watch your career with great interest.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 9)
+; 	=>
+; 	(chat-to-player every-ally "If we do not act quickly, all will be lost forever!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-ally "Together, we shall bring peace and prosperity to the galaxy.")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 8 Naboo Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "You can kiss your trade franchise goodbye.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "Meet the bigger fish.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "You've gone too far this time.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "Your occupation here has ended!")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-enemy "The ability to speak does not make you intelligent.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "This attack on our sovereignty will not be accepted.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 7)
+; 	=>
+; 	(chat-to-player every-enemy "We will take back what's ours!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 8)
+; 	=>
+; 	(chat-to-player every-enemy "I don't know what you wish to accomplish with this.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+#end-if
+;--------------------
+#load-if-defined FEDERATION
+;Trade Federation:
+
+;Waffle Guide: 8 Federation Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 3)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "At last, we shall have our revenge.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "Activate the droids.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "Wipe them out. All of them.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 4)
+; 	=>
+; 	(chat-to-player every-ally "Your arrival is most unexpected.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-ally "Their resistance is insignificant.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 6)
+; 	=>
+; 	(chat-to-player every-ally "We must send all available droids into battle!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 7)
+; 	=>
+; 	(chat-to-player every-ally "Use caution, our enemies are not to be underestimated.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 8)
+; 	=>
+; 	(chat-to-player every-ally "They will be no match for us.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+;Waffle Guide: 10 Federation Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "Your situation is hopeless!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "We will persuade you to see our point of view.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 3)
+; 	=>
+; 	(chat-to-player every-enemy "I can thrive in the chaos that is to come!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "This planet is ours.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-enemy "You serve yourself best when you serve me.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 6)
+; 	=>
+; 	(chat-to-player every-enemy "I welcome you to your doom!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 7)
+; 	=>
+; 	(chat-to-player every-enemy "You will not stay hidden for long.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "I don't want your stunted slime in my sight!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "I look forward to conquering your land.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 10)
+; 	=>
+; 	(chat-to-player every-enemy "You are more foolish than I thought.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+#end-if
+;--------------------
+#load-if-defined WOOKIEES
+;Wookiees
+
+;Waffle Guide: 6 Wookiee Openings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 4)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "The roots of a tree survive through summer and winter.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "You may be afraid, but go forward all the same.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "Fight well, friend.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 4)
+; 	=>
+; 	(chat-to-player every-ally "Your pledge of support has earned our gratitude.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "May the forest spirits grant you blessings.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 6)
+; 	=>
+; 	(chat-to-player every-ally "We only request help from those we trust.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+;Waffle Guide: 11 Wookiee Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 6)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "Let the Wookiee win. Surely you've heard that before?")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "It is unwise to upset a Wookiee.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "You will be cast into the shadowlands.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "My Berserkers have already begun sharpening their Ryyk blades.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-enemy "Now you have made yourself a sworn enemy of Kashyyyk.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 6)
+; 	=>
+; 	(chat-to-player every-enemy "The people of the trees will do what we must to defend our kin.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 7)
+; 	=>
+; 	(chat-to-player every-enemy "My people will be victorious.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 8)
+; 	=>
+; 	(chat-to-player every-enemy "You do not have the strength to defeat me.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 9)
+; 	=>
+; 	(chat-to-player every-enemy "By the blade of Bacca's sword, I will end your treachery!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "I won't be your trophy, dead or enslaved!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-enemy "You are but animals in armor. There is no honor amongst you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+;--------------------
+#load-if-defined REPUBLIC
+;Republic
+
+;Waffle Guide: 11 Republic Greetings. Zel: Took one out, really didn't like it
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 6)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 1)
+; 	=>
+; 	(chat-to-player every-ally "For the Republic!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "Hello there! I was wondering if you'd got my message!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "Here's where the fun begins.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "Watch out for those wrist rockets!")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-ally "For the Chancellor!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+;(defrule
+;	(goal messagestatus msg-GREETING)
+;	(random-number == 6)
+;	=>
+;	(chat-to-player every-ally "In my book, experience outranks everything.")
+;	(set-goal messagestatus msg-NULL)
+;)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 7)
+; 	=>
+; 	(chat-to-player every-ally "Good soldiers follow orders.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "Your assistance is a surprise, to be sure, but a welcome one.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "This'll be just like the simulations.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-ally "Enemy forces are closing in. Prepare for battle!")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 6)
+; 	=>
+; 	(chat-to-player every-ally "Long is the war. Only by surviving it, will we prevail.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+;Waffle Guide: 8 Republic Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 7)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "My powers have doubled since the last time we met.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "Surrender, you should.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "If you're not with me, then you're my enemy!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "Lay down your weapons or face the consequences!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "This is going to be easy.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-enemy "Why don't you come on out, commander?")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 7)
+; 	=>
+; 	(chat-to-player every-enemy "I sense much fear in you.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 7)
+	=>
+	(chat-to-player every-enemy "In the name of the Galactic Senate, you are under arrest!")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+;--------------------
+#load-if-defined CONFEDERACY
+;Confederacy:
+
+;Waffle Guide: 7 Confederacy Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "My armies are at your disposal.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 2)
+; 	=>
+; 	(chat-to-player every-ally "I protect my investments.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "I wonder how many they'll send.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "How pleasant of you to join us.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-ally "Crush them! Make them suffer!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "Another world shall soon be part of the Confederacy.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "There can be no mistakes this time.")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 8 Confederacy Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "You must realize, you are doomed.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 2)
+; 	=>
+; 	(chat-to-player every-enemy "I will grant you a warrior's death. Prepare!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "I've been looking forward to this.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "This will all be over soon.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "We've been waiting for you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 6)
+; 	=>
+; 	(chat-to-player every-enemy "My powers are far beyond yours. Back down.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "Your chances of survival are approximately 3,720 to 1!")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 8)
+; 	=>
+; 	(chat-to-player every-enemy "You are made of flimsy materials.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+#end-if
+;--------------------
+#load-if-defined ZANN
+;Zann
+
+;Waffle Guide: 7 Zann Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "Everyone has a price.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "Time is money.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "This world is ripe for corruption.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 4)
+; 	=>
+; 	(chat-to-player every-ally "Why speak of conflict when cooperation can make us all rich?")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-ally "I am in complete control, that's the way I like it.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "Your credits are good. Let's hope your skills are too.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "Sometimes corruption requires a little effort.")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 7 Zann Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 6)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "You aren't ready for me, or my plans.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "I'll kill you just for the pleasure!")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 3)
+; 	=>
+; 	(chat-to-player every-enemy "Soon you will understand the true meaning of power!")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "And here I thought we were going to be business partners.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "It has been a long time since I had a challenging opponent.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-enemy "Keep out of my way, and I just might let you live.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "We'll do you a favor, and put you out of your misery.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+;--------------------
+#load-if-defined GEONOSIANS
+;Geonosians:
+
+;Waffle Guide: 6 Geonosian Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "Let the executions begin!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "If they find out what we are planning to build, we're doomed.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "We build weapons. War is our business!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "Allow us to introduce our best war machines for your appraisal.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "My warriors are eagerly looking forward to this coming battle.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 6)
+; 	=>
+; 	(chat-to-player every-ally "We will have the finest army in the galaxy.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+;Waffle Guide: 5 Geonosian Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "You have interfered with our affairs for the last time.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "You're impossibly outnumbered.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "Surrender, and your lives will be spared.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "I would have thought you'd have learned your lesson.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "Your inferior technology has no hope of beating us.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+;--------------------
+#load-if-defined FIRSTORDER
+;First Order:
+
+;Waffle Guide: 9 First Order Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 7)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "Kill them all.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "All systems will bow to the First Order!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "Our weapons are ready. The time has come to use them.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "I don't care if you win, I need them to lose.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "There will be no surrender.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-ally "Fulfill your destiny.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 7)
+	=>
+	(chat-to-player every-ally "No quarter. No prisoners.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 8)
+; 	=>
+; 	(chat-to-player every-ally "We will root out and destroy any seditious elements.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 9)
+; 	=>
+; 	(chat-to-player every-ally "I will let nothing stand in our way.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+;Waffle Guide: 6 First Order Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 6)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "There will be no negotiations.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "You will bow before the might of the First Order!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "I'll show you the Dark Side.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "So that's where you're hiding...")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "I cannot be beaten. I see your every intent.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-enemy "You can't be so stupid as to think this will be easy.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+;--------------------
+#load-if-defined RESISTANCE
+;Resistance:
+
+;Waffle Guide: 6 Resistance Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 4)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "Hit 'em hard! Give them everything you've got!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "Good people will fight if we lead them.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 3)
+; 	=>
+; 	(chat-to-player every-ally "We are the spark that will restore justice to the galaxy.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+; (defrule
+; 	(goal messagestatus msg-GREETING)
+; 	(random-number == 4)
+; 	=>
+; 	(chat-to-player every-ally "I'm a big deal in the Resistance.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "We've pulled crazier stunts than this!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "The galaxy is counting on us! We cannot fail.")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 7 Resistance Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 5)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 1)
+; 	=>
+; 	(chat-to-player every-enemy "You're a monster.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "Are we really doing this?")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "You gotta tell us where your base is.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "I see the conflict in you, it's tearing you apart.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 5)
+; 	=>
+; 	(chat-to-player every-enemy "So, who talks first? You talk first? I talk first?")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "The Resistance will not be intimidated by you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "This is not going to go the way you think.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+;--------------------
+#load-if-defined IMPERIALREMNANT
+;Imperial Remnant:
+
+;Waffle Guide: 6 Imperial Remnant Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 6)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "Rejoice, for the Empire will rise again!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "To defeat an enemy, you must know them.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "They've revealed their meager defenses. Now, we will crush them.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "One Empire, one fleet. Only this will guarantee victory.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "The Emperor may be dead, but the Empire lives on!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-ally "Hope cannot save them.")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 6 Imperial Remnant Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "I promise a swift and reasonably honorable death.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "A friendly piece of advice; assume that I know everything.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "At last, you have come to me. I knew you would.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "I serve no Emperor. My power is for myself alone!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "Do you require a reminder of what it means to defy the Empire?")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+;--------------------
+#load-if-defined NEWREPUBLIC
+;New Republic:
+
+;Waffle Guide: 5 New Republic Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "Long live the New Republic.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "Today we stand together as allies.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "Remember why we fight. For hope. For the New Republic.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-ally "Loyalty to the New Republic is paramount. Loyalty to democracy.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-ally "Every moment that we dawdle broadens the target on our backs.")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 6 New Republic Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "We will not rest until we bring an end to your forces.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 2)
+; 	=>
+; 	(chat-to-player every-enemy "It is not easy to rouse a democracy to war.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "Hope through agitation. The light grows stronger as we resist.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "The New Republic did not come this far just to lose to you!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "No one can ever be truly ready for what war brings.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "Settling scores is no way to govern a galaxy.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+;--------------------
+#load-if-defined BLACKSUN
+;Black Sun:
+
+;Waffle Guide: 3 Black Sun Greetings.
+(defrule
+	(goal messagestatus msg-GREETING)
+	=>
+	(generate-random-number 3)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-ally "You couldn't have found a more amenable business partner.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-ally "Every atom of my being is at your command.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-GREETING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-ally "Black Sun's reach extends everywhere.")
+	(set-goal messagestatus msg-NULL)
+)
+
+;Waffle Guide: 8 Black Sun Openings.
+(defrule
+	(goal messagestatus msg-OPENING)
+	=>
+	(generate-random-number 7)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 1)
+	=>
+	(chat-to-player every-enemy "To contend with the Black Sun, is to lose.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 2)
+	=>
+	(chat-to-player every-enemy "Congratulations. You have come to the attention of Black Sun.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 3)
+	=>
+	(chat-to-player every-enemy "Your talks have failed. This is how I negotiate.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 4)
+	=>
+	(chat-to-player every-enemy "It would be my pleasure to deal with you personally.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 5)
+	=>
+	(chat-to-player every-enemy "My... employer wants to get even with you. Simple as that.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 6)
+	=>
+	(chat-to-player every-enemy "Nothing personal, but the bounty on you is too good to ignore.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-OPENING)
+	(random-number == 7)
+	=>
+	(chat-to-player every-enemy "You have been a thorn in my side for too long!")
+	(set-goal messagestatus msg-NULL)
+)
+
+; (defrule
+; 	(goal messagestatus msg-OPENING)
+; 	(random-number == 8)
+; 	=>
+; 	(chat-to-player every-enemy "If it's a war you want, that's precisely what you'll get.")
+; 	(set-goal messagestatus msg-NULL)
+; )
+
+#end-if
+
+
+; -----------------------------------------------------
+; *** Chapter 10: RESIGN EXCUSE *** 
+; -----------------------------------------------------
+
+
+
+(defrule 
+	(goal messagestatus msg-RESIGN-EXCUSE)
+=>
+	(generate-random-number 7)
+)
+
+(defrule 
+	(goal messagestatus msg-RESIGN-EXCUSE)
+	(random-number == 1)
+=>
+	(set-goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+)
+
+(defrule 
+	(goal messagestatus msg-RESIGN-EXCUSE)
+	(random-number == 2)
+=>
+	(set-goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+)
+
+(defrule 
+	(goal messagestatus msg-RESIGN-EXCUSE)
+	(random-number == 3)
+=>
+	(set-goal messagestatus msg-RESIGN-EXCUSE-JOKE)
+)
+
+(defrule 
+	(goal messagestatus msg-RESIGN-EXCUSE)
+	(random-number == 4)
+=>
+	(set-goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+)
+
+(defrule 
+	(goal messagestatus msg-RESIGN-EXCUSE)
+	(random-number == 5)
+=>
+	(set-goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+)
+
+(defrule 
+	(goal messagestatus msg-RESIGN-EXCUSE)
+	(or
+		(random-number == 6) ; Double chance of this one firing
+		(random-number == 7)
+	)
+=>
+	(set-goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC) 
+)
+
+
+; -----------------------------------------------------
+; Sub-Chapter: Technical
+; Zel: I'll handle the technical section as it requires linking to misc bits of script and other oddballs. (It's in the resign file)
+; Let me know if you have any other ideas!
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+	(goal resignreason HOLOFAIL)
+=>
+	(chat-to-all "I wasn't able to collect any Holocrons.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+	(goal resignreason TECHLEVELFAIL)
+=>
+	(chat-to-all "I couldn't get to the next Tech Level in time.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+	(goal resignreason AIRFAIL)
+=>
+	(chat-to-all "Your control of the air was absolute.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+	(goal resignreason WATERFAIL)
+=>
+	(chat-to-all "Your control of the water couldn't be stopped.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+	(goal resignreason TRAWLERFAIL)
+=>
+	(chat-to-all "I didn't defend my Utility Trawlers.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+	(goal resignreason TRADEFAIL)
+=>
+	(chat-to-all "I couldn't trade with my own Spaceports.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+	(goal resignreason STEALTHFAIL)
+=>
+	(chat-to-all "My stealth units were revealed immediately.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+	(goal resignreason WALLBUILDFAIL)
+=>
+	(chat-to-all "I lost all my Workers trying to build my walls.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+	(goal resignreason WALLCHOPFAIL)
+=>
+	(chat-to-all "My Carbon gatherers chopped a hole in my walls.")
+	(set-goal messagestatus msg-NULL)
+)
+
+; failsafe for if no resignreason was picked and messagestatus is still not cleared
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-TECHNICAL)
+=>
+	(set-goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC) ; fallback
+)
+
+
+
+; -----------------------------------------------------
+; Sub-Chapter: Generic
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+=>
+	(generate-random-number 13) ; 13 Generic Excuses
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 1)
+=>
+	(chat-to-all "I thought AA Troopers countered everything.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 2)
+=>
+	(chat-to-all "I accidentally trained Medics instead of Workers.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Clearly I didn't train enough Troopers.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Vicious animals kept eating my Workers.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 5)
+=>
+	(chat-to-all "I spent too much time gathering ore in Tech Level 1.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 6)
+=>
+	(chat-to-all "I couldn't find my berries at the start.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 7)
+=>
+	(chat-to-all "I didn't know how to pronounce the names of my units.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 8)
+=>
+	(chat-to-all "I couldn't remember my hotkeys.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 9)
+=>
+	(chat-to-all "My Artillery didn't have enough range.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 10)
+=>
+	(chat-to-all "All I wanted was to just build a nice city.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 11)
+=>
+	(chat-to-all "I only needed another hour to prepare my army.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 12)
+=>
+	(chat-to-all "I couldn't power all of my Prefab Shelters.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-GENERIC)
+	(random-number == 13)
+=>
+	(chat-to-all "There wasn't enough water to feed my animals.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+
+; -----------------------------------------------------
+; Sub-Chapter: Incompetent AI
+
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+=>
+	(generate-random-number 14) ; 14 Bad AI
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 1)
+=>
+	(chat-to-all "My Workers all died attacking a Turret.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 2)
+=>
+	(chat-to-all "I forgot to power my Troop Center.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 3)
+=>
+	(chat-to-all "My Workers refused to drop off Food at the Animal Nursery.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 4)
+=>
+	(chat-to-all "I couldn't garrison fruit bushes into my Animal Nursery.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 5)
+=>
+	(chat-to-all "I locked my Workers outside of my base.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 6)
+=>
+	(chat-to-all "I built my turrets at the back of my base.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 7)
+=>
+	(chat-to-all "The distance between my Spaceports was too low.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 8)
+=>
+	(chat-to-all "My Force users were afflicted with Force Paralysis!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 9)
+=>
+	(chat-to-all "My air units ran straight onto a turret. ")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 10)
+=>
+	(chat-to-all "I ate my Nerfs instead of garrisoning them. ")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 11)
+=>
+	(chat-to-all "The fauna was so beautiful, I couldn't bring myself to hunt it!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 12)
+=>
+	(chat-to-all "Only a single Worker was building my Fortress.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 13)
+=>
+	(chat-to-all "All of my Turrets were built right next to each other.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-BADAI)
+	(random-number == 14)
+=>
+	(chat-to-all "My Power Cores were never repaired.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+; -----------------------------------------------------
+; Sub-Chapter: Joke and Meme
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-JOKE)
+=>
+	(generate-random-number 6) ; 6 Jokes
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-JOKE)
+	(random-number == 1)
+=>
+	(chat-to-all "I now understand that spinning was not a good trick.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-JOKE)
+	(random-number == 2)
+=>
+	(chat-to-all "The ability to speak did not make me intelligent.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-JOKE)
+	(random-number == 3)
+=>
+	(chat-to-all "Somehow, Palpatine returned.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-JOKE)
+	(random-number == 4)
+=>
+	(chat-to-all "There was too much sand on the battlefield.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-JOKE)
+	(random-number == 5)
+=>
+	(chat-to-all "It seems I underestimated your power.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-JOKE)
+	(random-number == 6)
+=>
+	(chat-to-all "It was over the moment you took the high ground.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+; -----------------------------------------------------
+; Sub-Chapter: Classic
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+=>
+	(generate-random-number 16) ; 16 Classic Messages (Originally 22, but some got cut)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 1)
+=>
+	(chat-to-all "My forces couldn't mobilize fast enough.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 2)
+=>
+	(chat-to-all "You are the superior commander.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 3)
+=>
+	(chat-to-all "I was at a disadvantage from the beginning.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 4)
+=>
+	(chat-to-all "With your persistent attacks, I couldn't keep my forces fighting.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 5)
+=>
+	(chat-to-all "I gave it my best shot.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 6)
+=>
+	(chat-to-all "I was good. You were better.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 7)
+=>
+	(chat-to-all "My workers may have been defective.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 8)
+=>
+	(chat-to-all "I respect your superior skill and cunning.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 9)
+=>
+	(chat-to-all "I will restructure my strategies.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 10)
+=>
+	(chat-to-all "My base was inferior to yours.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 11)
+=>
+	(chat-to-all "I knew I should have rushed sooner.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 12)
+=>
+	(chat-to-all "Many factors prevented me from emerging victorious.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 13)
+=>
+	(chat-to-all "My surrender is unconditional.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 14)
+=>
+	(chat-to-all "Our technology proved to be less advanced than yours.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 15)
+=>
+	(chat-to-all "What is left of my civilization salutes you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CLASSIC)
+	(random-number == 16)
+=>
+	(chat-to-all "You definitely commanded control over the resources.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+; -----------------------------------------------------
+; Sub-Chapter: Civ specific (the big section)
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+=>
+	(do-nothing)
+)
+
+
+#load-if-defined EMPIRE
+
+; 9 Empire Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 9)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "The power I was dealing with was immeasurable.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "I was on the verge of greatness. I was this close!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "I shall assume full responsibility for this defeat.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Impressive. Most impressive.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "There are some things far more frightening than death.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "How unfortunate, but the weak died to make room for the strong.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 7)
+=>
+	(chat-to-all "All you've done is delay the inevitable.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 8)
+=>
+	(chat-to-all "My stormtroopers were unable to hit their targets.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 9)
+=>
+	(chat-to-all "I never found the droids I was looking for.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined GUNGANS
+
+; 9 Gungan Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 9)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "Mesa couldn't defend against yousa machineeks.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "Yousa win disen round.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Better dead here den dead at da core.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Mesa people have been destroyed!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "Mesa hatin crunchen!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "Mesa glurrgs started too close to mesa Command Center!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 7)
+=>
+	(chat-to-all "Mesa militiagungs was too clumsy!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 8)
+=>
+	(chat-to-all "Mesa made one or duey little bitty accidentes.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 9)
+=>
+	(chat-to-all "Mesa bongos all gots crunchen!")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined REBEL
+
+; 6 Empire Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 6)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "The Rebellion is over.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "Too many Bothans died updating my minimap.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "My R2 units all had bad motivators.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "We couldn't repel firepower of that magnitude.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "Our forces are too few to continue.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "We've lost control of the situation; there's no choice but to retreat.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+#end-if
+
+#load-if-defined NABOO
+
+; 10 Naboo Excuses ; trimmed down to 6
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 6)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "So this is how liberty dies?")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "You've destroyed all that we worked so hard to build.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Our security volunteers were no match for your forces.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "This is a battle I do not think that we can win.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "I cannot condone a course of action that will draw out this war.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "I would have preferred a diplomatic solution.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+#end-if
+
+#load-if-defined FEDERATION
+
+; 7 Trade Federation Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 7)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "This was never supposed to escalate this far.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "I thought the battle was going to take place far from here.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "My Droidekas never arrived. ")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "This scheme of ours has failed.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "My Droid Control Program was abducted.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "The droids should have been activated sooner.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 7)
+=>
+	(chat-to-all "This attack was not my idea.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined WOOKIEES
+
+; 9 Wokie Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 9)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "My trees were not tall enough.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "I had to construct my base at ground level.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "You have proven yourself a fearsome foe.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "I am unable to continue this fight.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "For the sake of my people, I must resign.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "Our claws are tools, not weapons.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 7)
+=>
+	(chat-to-all "We have lost something that can never be restored.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 8)
+=>
+	(chat-to-all "All hope is lost to me.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 9)
+=>
+	(chat-to-all "Battling further is futile. We have already lost.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined REPUBLIC
+
+; 9 Republic Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 9)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "The shroud of the Dark Side has fallen.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "My clones suddenly attacked my Jedi!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "This was nothing at all like the simulations.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "This is outrageous! It's unfair!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "We're just clones... we're meant to be expendable.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "Our ability to use the Force has diminished.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 7)
+=>
+	(chat-to-all "My clones weren't very impressive.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 8)
+=>
+	(chat-to-all "My forces were spread too thin.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 9)
+=>
+	(chat-to-all "We were unable to maintain control of the high ground.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined CONFEDERACY
+
+; 5 Confederacy of Independent Systems excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "It's time to abandon ship.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "These useless droids are a greater danger to us than to Jedi.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "I cannot achieve victory when all I have is battle droids.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Your powers were far beyond my own.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "I must have made a slight miscalculation.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+#end-if
+
+#load-if-defined ZANN
+
+; 7 Zann Consortium Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 7)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "This effort is no longer profitable.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "It's been too long since I've had a challenging opponent.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Your armies have proven to be incorruptible.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "This battle has not done wonders for the Consortium.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "You put up a better fight than I expected.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "I should have hired better mercenaries.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 7)
+=>
+	(chat-to-all "You just got lucky.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined GEONOSIANS
+
+; 5 Geonosian Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "The hive must relocate.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "My production lines were not optimized.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "I was unable to tame our beasts.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "We can no longer afford to continue production.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "My Workers all got lost in the catacombs.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined FIRSTORDER
+
+; 4 First Order Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 4)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "Perhaps a clone army would have been superior.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "Too many of my troopers defected.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "There must have been a saboteur amongst our ranks.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "How could we have been defeated by the likes of you?")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+#end-if
+
+#load-if-defined RESISTANCE
+
+; 5 Resistance Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "My calls for help went unanswered.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "The junk our forces were using just wasn't strong enough.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "I bet the fate of the Resistance on bad odds.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "There aren't enough of us left to continue fighting.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "We couldn't destroy what we hated... or save what we loved.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined IMPERIALREMNANT
+
+; 6 Imperial Remnant Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 6)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "Some toxic gas leaked into my Command Center.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "But it was so artistically done...")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "You've earned your victory today.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "If we're destroyed, the ideals of the New Order die with us.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "We cannot sustain more losses.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "I've found this whole endeavor to be quite enlightening.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined NEWREPUBLIC
+
+; 5 New Republic Excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "Has the sun truly set on the New Republic?")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "Not the first time we did nothing about an emerging threat...")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "We may yield here, but our fight for freedom continues!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Our defeat is temporary; our resolve is eternal!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "The New Republic's ideals will outlast any setback.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined BLACKSUN
+
+; 5 Black Sun excuses
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "I have more pressing matters to attend to.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "My Gladiator Droids lacked a third phase.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "I was destined to become... so much more.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "At least I don't have to pay all those dead mercs.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-EXCUSE-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "I don't take fights that I can't afford to lose.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+
+
+
+
+
+
+; -----------------------------------------------------
+; *** Chapter 11: RESIGN ACTUAL *** 
+; -----------------------------------------------------
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN)
+=>
+	(generate-random-number 7) ; Needed for less likely weighting of Force
+)
+
+; CHANCE: 
+; One unit: Force Message			; 1
+; Three units: General Message		; 2,3,4
+; Three units: Civ Specific Message	; 5,6,7
+
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN)
+	(random-number == 1)
+=> 
+	(set-goal messagestatus msg-RESIGN-RESIGN-FORCE)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN)
+	(or
+		(or
+			(random-number == 2)
+			(random-number == 3)
+		)
+			(random-number == 4)
+	)
+=> 
+	(set-goal messagestatus msg-RESIGN-RESIGN-GENERAL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN)
+	(random-number >= 5)
+=> 
+	(set-goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+)
+
+
+
+; GENERAL RESIGN MESSAGES
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-GENERAL)
+=>
+	(generate-random-number 4) ; 4 general resign messages 
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-GENERAL)
+	(random-number == 1)
+=>
+	(chat-to-all "Your forces were superior.  This time.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-GENERAL)
+	(random-number == 2)
+=>
+	(chat-to-all "I must cede this planet to you. For now.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-GENERAL)
+	(random-number == 3)
+=>
+	(chat-to-all "You have won this battleground. There will be another.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-GENERAL)
+	(random-number == 4)
+=>
+	(chat-to-all "Good game.")
+	(set-goal messagestatus msg-NULL)
+)
+
+
+; FORCE RESIGN MESSAGES
+; bit of a mess
+
+; FIRST: FILTER OUT NEUTRAL
+#load-if-not-defined ZANN
+#load-if-not-defined GEONOSIANS
+#load-if-not-defined BLACKSUN
+
+; THEN
+; LIGHT SIDE
+
+#load-if-not-defined EMPIRE
+#load-if-not-defined FEDERATION
+#load-if-not-defined CONFEDERACY
+#load-if-not-defined FIRSTORDER
+#load-if-not-defined IMPERIALREMNANT
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-FORCE)
+=>
+	(chat-to-all "May the Force be with you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if ; of if not dark side
+
+; DARK SIDE
+
+#load-if-not-defined GUNGANS
+#load-if-not-defined REBEL
+#load-if-not-defined NABOO
+#load-if-not-defined WOOKIEES
+#load-if-not-defined REPUBLIC
+#load-if-not-defined RESISTANCE
+#load-if-not-defined NEWREPUBLIC
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-FORCE)
+=>
+	(chat-to-all "The Dark Side has failed us.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if ; of if not light side
+
+#end-if
+#end-if
+#end-if ; of if not neutral side
+
+; NEUTRAL CIVS
+#load-if-not-defined EMPIRE
+#load-if-not-defined FEDERATION
+#load-if-not-defined CONFEDERACY
+#load-if-not-defined FIRSTORDER
+#load-if-not-defined IMPERIALREMNANT
+#load-if-not-defined GUNGANS
+#load-if-not-defined REBEL
+#load-if-not-defined NABOO
+#load-if-not-defined WOOKIEES
+#load-if-not-defined REPUBLIC
+#load-if-not-defined RESISTANCE
+#load-if-not-defined NEWREPUBLIC
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-FORCE)
+=>
+	(chat-to-all "Maybe there is a mystical energy field that controls my destiny.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if 
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if 
+
+
+
+; CIV-SPECIFIC RESIGN MESSAGES
+
+#load-if-defined EMPIRE
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "I will return... somehow.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "I will not underestimate you again.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Long live the Empire.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "I lose nothing but time.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "Even if you win today, the Empire will crush any rebellion.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined GUNGANS
+
+; 6 Resign Messages
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 6)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "My give up. My give up!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "No wonder yousa was victorious! Mesa abdicatin!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Count mesa outta dis.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Yousa force was superior. Disen time.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "Mesa seeden dis planet to yousa. ... for nows.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 6)
+=>
+	(chat-to-all "Yousa point is... well-seein.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined REBEL
+
+; 5 Rebel Resigns
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "Give the evacuation code signal... and get to your transports.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "May the Force be with you.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "We have no choice but to surrender.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Save the rebellion; save the dream.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "We must prepare for the worst.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined NABOO
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 4)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "We will bow to your wishes.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "This victory will gain you nothing.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "You win this round.")	
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "This is your arena; I must return to mine.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined FEDERATION
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 4)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "All droid units must shut down immediately.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "We should not have made this bargain.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "We will not survive this.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Oh well, it's my programming.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined WOOKIEES
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 4)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "Until we meet again.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "The trees are gone, and with them, we go too.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "We submit to your control.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Victory is yours.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined REPUBLIC
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "Into exile I must go. Failed, I have.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "Lost the battle, I have... How embarrassing.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "No longer certain that one ever does win a war, I am.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Pack it up, we're through here.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "Sorry, but it's time for me to leave.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined CONFEDERACY
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "You have only delayed the inevitable.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "Victory here or not, you must realize that you are doomed.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Our retreat today is a tactical manoeuver, not a surrender.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "We will maintain our independence through any means necessary.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "This turn of events is unfortunate.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined ZANN
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "You will pay for this indignity.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "No one denies the Zann Consortium. No one.")	
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Watch your back.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "This isn't over.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "The Zann Consortium will ensure that you regret this.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined GEONOSIANS
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "I'm ordering a full retreat of my warriors.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "This is just the beginning.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "We will rebuild, stronger than before!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "Our loyalty to the Separatist cause remains unwavering!")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "This setback is going to get me tossed into the arena...")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined FIRSTORDER
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 3)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "Pull the division out.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "We're not done yet.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "This isn't over.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined RESISTANCE
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "Failure is the greatest teacher.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "We all need to run.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Godspeed, rebels.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "No one's ever really gone.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "Our spark has not been extinguished.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined IMPERIALREMNANT
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "The Empire is doomed, there is little more than need be said.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "In light of this disaster, I hereby resign.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Enjoy your meager reward.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "We have not been defeated... merely delayed.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "We will send an emissary to discuss the terms of our surrender.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined NEWREPUBLIC
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "We've survived worse defeats.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "Let's be honest; it's not the first time we lost a planet. ")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "Our banners may lower today, but our spirit cannot be extinguished.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "We'll regroup, rebuild, and continue championing the cause of liberty.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "Our defeat is a setback, not a surrender, in the fight for a better galaxy.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+#load-if-defined BLACKSUN
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+=>
+	(generate-random-number 5)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 1)
+=>
+	(chat-to-all "The Black Sun will return to the shadows. For now.")	
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 2)
+=>
+	(chat-to-all "Enjoy your victory. While it lasts.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 3)
+=>
+	(chat-to-all "I'll be back... when you least expect it.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 4)
+=>
+	(chat-to-all "This is not the last you shall see of me.")
+	(set-goal messagestatus msg-NULL)
+)
+
+(defrule
+	(goal messagestatus msg-RESIGN-RESIGN-CIVSPECIFIC)
+	(random-number == 5)
+=>
+	(chat-to-all "You will regret this.")
+	(set-goal messagestatus msg-NULL)
+)
+
+#end-if
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

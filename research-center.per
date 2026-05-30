@@ -1,0 +1,182 @@
+; =====================================================
+; FILE: research-center
+; PURPOSE:
+;   Builds Research Centers and researches Research Center-owned techs.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: BUILDINGS
+;	Chapter 2: CORE TECHS
+;	Chapter 3: DEFENSIVE TECHS
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(current-age >= tech-level-3)
+	(building-type-count BLDG-MAIN > 2)
+	(building-type-count-total BLDG-RESCTR < 1)
+	(can-build-with-escrow BLDG-RESCTR)
+=>
+	(release-escrow carbon)
+	(build BLDG-RESCTR)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(building-type-count-total BLDG-RESCTR == 1)
+	(can-build-with-escrow BLDG-RESCTR)
+=>
+	(release-escrow carbon)
+	(build BLDG-RESCTR)
+)
+
+; -----------------------------------------------------
+; *** Chapter 1: CORE TECHS ***
+; -----------------------------------------------------
+
+(defrule
+    ; Homing Sensors
+	(can-research-with-escrow rt-homing-sensors)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-homing-sensors)
+)
+
+(defrule
+    ; Tracking and Targeting Computers
+	(goal importantT3research DONE)
+	(can-research-with-escrow rt-tracking-computer)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(research rt-tracking-computer)
+)
+
+(defrule
+    ; Durasteel Reinforced Support Beams
+	(current-age >= tech-level-4)
+	(building-type-count-total BLDG-GOVTCTR > 0)
+	(goal importantT4research DONE)
+=>
+	(release-escrow food)
+	(release-escrow metal)
+	(research rt-durasteel)
+)
+
+(defrule
+    ; Permacite Plating
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-permacite-plating)
+	(goal importantT4research DONE)
+=>
+	(release-escrow metal)
+	(release-escrow food)
+	(research rt-permacite-plating)
+)
+
+(defrule
+    ; Power Calibrator
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-power-calibrator)
+	(goal importantT4research DONE)
+=>
+	(release-escrow food)
+	(release-escrow metal)
+	(research rt-power-calibrator)
+)
+
+(defrule
+	; Hvy Weapons Engineers
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-hvy-weapons-engineers)
+	(building-type-count-total BLDG-TRAINHEAVY > 0)
+	(goal importantT4research DONE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(research rt-hvy-weapons-engineers)
+)
+
+; -----------------------------------------------------
+; *** Chapter 2: UNIQUE TECHS ***
+; -----------------------------------------------------
+
+(defrule
+    ; CF Droid Upgrades
+    (current-age >= tech-level-4)
+    (can-research-with-escrow rt-droidupg)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+    (research rt-droidupg)
+)
+
+(defrule
+    ; RA Evacuation Protocols
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-evac)
+	(goal importantT4research DONE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-evac)
+)
+
+(defrule
+    ; IR Fortress Worlds
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-fortressworlds)
+	(goal importantT4research DONE)
+=>
+	(release-escrow carbon)
+	(release-escrow metal)
+	(research rt-fortressworlds)
+)
+
+(defrule
+    ; FO Advanced Torpedoes
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-adv-torpedoes)
+=>
+	(release-escrow carbon)
+	(release-escrow metal)
+	(research rt-adv-torpedoes)
+)
+
+; -----------------------------------------------------
+; *** Chapter 3: DEFENSIVE TECHS ***
+; -----------------------------------------------------
+
+(defrule
+	; Rotation Bearings
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-rotation-bearings)
+	(or
+		(goal importantT4research DONE)
+		(goal openingstyle STYLE-DEFENSIVE)
+	)
+=>
+	(release-escrow food)
+	(release-escrow metal)
+	(research rt-rotation-bearings)
+)
+
+(defrule
+	; Ion Accu-Accelerator
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-ion-accelerator)
+	(or
+		(goal importantT4research DONE)
+		(goal openingstyle STYLE-DEFENSIVE)
+	)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(research rt-ion-accelerator)
+)

@@ -1,0 +1,956 @@
+; =====================================================
+; FILE: warboat
+; PURPOSE:
+;   Legacy late-game utility and spam file retained under its warboat name.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: LATEGAME UTILITY
+;	Chapter 2: TRAINABLES
+;	Chapter 3: CIV SUPPORT
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(true)
+=>
+	(set-goal allowlategamecomp NO) ; initialize
+	(set-goal lategameac 0)
+	(disable-self)
+)
+
+
+
+; ok so the BULK of this file is the below but there's some important stuff that should happen in lategame too
+
+; many values now set as part of t-tenmin as part of constants
+
+
+(defrule
+	(goal lategamemaster ALLOW)
+	(unit-type-count-total UNIT-MASTER-LINE > 0) ; one master
+=>
+	(set-goal lategamemaster DONE)
+)
+
+;combined rule (less helpful for debug spectating)
+; (defrule
+; 	(or
+; 		(and
+; 			(goal lategamecannon TWO)						; option a: as part of 10min timer lategame
+; 			(unit-type-count-total SIEGE-CANNON-LINE < 2) 
+; 		)
+; 			(goal lategamecannon ALLOW)						; option b: as part of requirement for lategamecomp
+; 	)
+; 	(can-train-with-escrow SIEGE-CANNON-LINE)
+; =>
+; 	(release-escrow carbon)
+; 	(release-escrow nova)
+; 	(train SIEGE-CANNON-LINE)
+; 	(chat-local-to-self "WAFFLE: Escrow cannon")
+; )
+
+(defrule
+	(goal lategamecannon TWO)						; option a: as part of 10min timer lategame
+	(unit-type-count-total SIEGE-CANNON-LINE < 2) 
+	(can-train-with-escrow SIEGE-CANNON-LINE)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(train SIEGE-CANNON-LINE)
+	(chat-local-to-self "WAFFLE: Escrow cannon: up to two")
+)
+
+(defrule
+	(goal lategamecannon ALLOW)						; option b: as part of requirement for lategamecomp
+	(can-train-with-escrow SIEGE-CANNON-LINE)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(train SIEGE-CANNON-LINE)
+	(chat-local-to-self "WAFFLE: Escrow cannon: required for lategamecomp")
+)
+
+
+
+
+(defrule
+	(unit-type-count-total SIEGE-CANNON-LINE >= 2)
+	(goal lategamecannon TWO)
+=>
+	(set-goal lategamecannon NO)
+)
+
+
+
+(defrule
+	(goal lategamemaster ALLOW)
+	(unit-type-count-total UNIT-MASTER-LINE < 1)
+	(can-train-with-escrow UNIT-MASTER-LINE)
+	(research-completed rt-jedi-concentration)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(train UNIT-MASTER-LINE)
+	(chat-local-to-self "WAFFLE: Escrow master")
+)
+
+; ore
+
+(defrule
+	(metal-amount > 3000) ; skip
+	(not (goal lategameore THREE))
+=>
+	(set-goal lategameore THREE)
+)
+
+(defrule
+	(goal lategameore ALLOW)
+	(can-buy-commodity metal)
+=>
+	(buy-commodity metal)
+	(set-goal lategameore ONE)
+	(chat-local-to-self "WAFFLE: Ore Purchase up to 3")
+)
+
+(defrule
+	(goal lategameore ONE)
+	(can-buy-commodity metal)
+=>
+	(buy-commodity metal)
+	(set-goal lategameore TWO)
+	;(chat-local-to-self "WAFFLE: Ore Purchase 2")
+)
+
+(defrule
+	(goal lategameore TWO)
+	(can-buy-commodity metal)
+=>
+	(buy-commodity metal)
+	(set-goal lategameore THREE)
+	;(chat-local-to-self "WAFFLE: Ore Purchase 3")
+)
+
+; try with escrow
+
+; lower amount
+(defrule
+	(goal lategameore ALLOW)
+	(not (can-buy-commodity metal))
+	(commodity-buying-price metal < 250)
+	(escrow-amount nova > 250)
+	(building-type-count BLDG-SPACEPORT > 0)
+=>
+	(release-escrow nova)
+	(buy-commodity metal)
+	(set-goal lategameore ONE)
+	(chat-local-to-self "WAFFLE: Escrow Low Ore Purchase up to 3")
+)
+
+(defrule
+	(goal lategameore ONE)
+	(not (can-buy-commodity metal))
+	(commodity-buying-price metal < 250)
+	(escrow-amount nova > 250)
+	(building-type-count BLDG-SPACEPORT > 0)
+=>
+	(release-escrow nova)
+	(buy-commodity metal)
+	(set-goal lategameore TWO)
+	;(chat-local-to-self "WAFFLE: Escrow Low Ore Purchase 2")
+)
+
+(defrule
+	(goal lategameore TWO)
+	(not (can-buy-commodity metal))
+	(commodity-buying-price metal < 250)
+	(escrow-amount nova > 250)
+	(building-type-count BLDG-SPACEPORT > 0)
+=>
+	(release-escrow nova)
+	(buy-commodity metal)
+	(set-goal lategameore THREE)
+	;(chat-local-to-self "WAFFLE: Escrow Low Ore Purchase 3")
+)
+
+;upper amount: give up at 350
+(defrule
+	(goal lategameore ALLOW)
+	(not (can-buy-commodity metal))
+	(commodity-buying-price metal >= 250)
+	(commodity-buying-price metal < 350)
+	(escrow-amount nova > 350)
+	(building-type-count BLDG-SPACEPORT > 0)
+=>
+	(release-escrow nova)
+	(buy-commodity metal)
+	(set-goal lategameore ONE)
+	(chat-local-to-self "WAFFLE: Escrow High Ore Purchase up to 3")
+)
+
+(defrule
+	(goal lategameore ONE)
+	(not (can-buy-commodity metal))
+	(commodity-buying-price metal >= 250)
+	(commodity-buying-price metal < 350)
+	(escrow-amount nova > 350)
+	(building-type-count BLDG-SPACEPORT > 0)
+=>
+	(release-escrow nova)
+	(buy-commodity metal)
+	(set-goal lategameore TWO)
+	;(chat-local-to-self "WAFFLE: Escrow High Ore Purchase 2")
+)
+
+(defrule
+	(goal lategameore TWO)
+	(not (can-buy-commodity metal))
+	(commodity-buying-price metal >= 250)
+	(commodity-buying-price metal < 350)
+	(escrow-amount nova > 350)
+	(building-type-count BLDG-SPACEPORT > 0)
+=>
+	(release-escrow nova)
+	(buy-commodity metal)
+	(set-goal lategameore THREE)
+	;(chat-local-to-self "WAFFLE: Escrow High Ore Purchase 3")
+)
+
+#load-if-not-defined DIFFICULTY-EASIEST
+#load-if-not-defined DIFFICULTY-EASY
+#load-if-not-defined DIFFICULTY-MODERATE
+
+#load-if-not-defined GUNGANS
+#load-if-not-defined FEDERATION
+#load-if-not-defined CONFEDERACY
+#load-if-not-defined GEONOSIANS
+#load-if-not-defined FIRSTORDER
+#load-if-not-defined IMPERIALREMNANT
+#load-if-not-defined BLACKSUN
+#load-if-not-defined ZANN
+
+; rebels, naboo, resistance, new republic
+; empire, wookiees
+
+(defrule
+	(goal lategameac 2) ; 20min see constants
+	(can-train-with-escrow UNIT-AIRCRUISER-LINE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(train UNIT-AIRCRUISER-LINE)
+	(set-goal lategameac 0)
+	(chat-local-to-self "WAFFLE: Escrow AC")
+)
+
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+#end-if
+
+
+#end-if
+#end-if
+#end-if
+
+
+
+
+
+#load-if-not-defined DIFFICULTY-EASIEST
+#load-if-not-defined DIFFICULTY-EASY
+#load-if-not-defined DIFFICULTY-MODERATE
+
+; ONLY WORKS ON HARD OR HARDEST
+
+; THE CORE OF THIS FILE IS 
+; (population >= stop-junk-threshold)) ; update: it became a lot more complicated than that 
+; stop-junk-threshold is defined per population (thanks C++ script) as 10% of pop cap
+; Stuff like Troopers, workers, trade units (edit: not trade units), halts at this point
+; And civs should go REALLY REALLY HAM with the remaining 10% pop with THE BEST OF THE BEST units, not caring about number, simply caring that they can be massed
+
+; was a rule for ACs but that was mostly just being silly
+
+
+; rules for overall enable/disable
+(defrule
+	(true)
+=>
+	(set-goal allowlategamecomp 999) ; disable on game start
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-3) ; allow in late T3
+=>
+	(set-goal allowlategamecomp NO)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+=>
+	(set-goal allowlategamecomp 999) ; disable while research is coming in
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal importantT4research DONE)
+=>
+	(set-goal allowlategamecomp NO) ; allow enabling
+	(disable-self)
+)
+
+
+; the way this works now is to reset it to NO each time, and then every time it has to run the checks, which SHOULD be okay ? 
+; possible lag issue but it really should not be a problem, just like resign rules really
+; I think any lag was from having a Computer Classic in the match tbh
+(defrule
+	(not (goal allowlategamecomp 999)) ; disabled
+	(not (goal allowlategamecomp NO))
+=>
+	(set-goal allowlategamecomp NO)
+)
+
+; cannon reset
+(defrule
+	(goal allowlategamecomp NO)
+	(not (goal lategamecannon TWO)) ; do not delete this information
+	(not (goal lategamecannon NO))
+=>
+	(set-goal lategamecannon NO)
+)
+
+
+
+; population check:
+; in essence, one of the following must be true:
+(defrule
+	(goal allowlategamecomp NO)
+	(or
+		(population >= stop-junk-threshold); 0.9x pop cap: 225(250)
+	(or
+		(and
+			(goal lategameworker YES)
+			(population >= stop-junk-threshold-lower); 0.8x pop cap: 200(250)
+		)
+	(or
+		(and
+			(cc-players-building-type-count any-ally BLDG-MONUMENT > 0)
+			(population >= stop-junk-threshold-lower)
+		)
+	(or
+		(and
+			(cc-players-building-type-count any-enemy BLDG-MONUMENT > 0)
+			(population >= stop-junk-threshold-lower)
+		)
+		(and
+			(building-type-count-total BLDG-MONUMENT > 0)
+			(population >= stop-junk-threshold-lower)
+		)
+	)
+	)
+	)
+	)
+
+=>
+	(set-goal allowlategamecomp 10) ; 10 is temp value
+)
+
+; aa check
+(defrule
+	(goal allowlategamecomp 10)
+	(or
+		(and
+			(goal enemyairsighted AIR-ALERT-NONE)
+			(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-low-p1)	; require a light AA screen
+		)
+	(or
+		(and
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-low-p1)
+		)
+	(or
+		(and
+			(goal enemyairsighted AIR-ALERT-GUARD)
+			(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2) ; require full amount
+		)
+		(and
+			(or
+				(goal enemyairsighted AIR-ALERT-DANGER)
+				(goal enemyairsighted AIR-ALERT-CRISIS)
+			)
+			(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3) 
+		)
+	)
+	)
+	)
+=>
+	(set-goal allowlategamecomp 11)
+)
+
+; siege check - use live package p1 caps as the minimum late-comp unlock gate
+(defrule
+	(goal allowlategamecomp 11)
+	(not (goal special-map WATER))
+	(or
+		(unit-type-count-total SIEGE-CANNON-LINE >= TL4-cannon-arm-p1)
+		(current-age == tech-level-3) ; cannons do not exist in T3
+	)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1)
+=>
+	(set-goal allowlategamecomp YES)
+)
+
+(defrule
+	(goal allowlategamecomp 11)
+	(goal special-map WATER)
+	(or
+		(unit-type-count-total SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-water)
+		(current-age == tech-level-3) ; cannons do not exist in T3
+	)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1-water)
+=>
+	(set-goal allowlategamecomp YES)
+)
+
+; siege fail due to cannon
+(defrule
+	(current-age == tech-level-4)
+	(goal allowlategamecomp 11)
+	(not (goal special-map WATER))
+	(not (unit-type-count-total SIEGE-CANNON-LINE >= TL4-cannon-arm-p1))
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1)
+	(not (goal lategamecannon ALLOW))
+=>
+	(set-goal lategamecannon ALLOW)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal allowlategamecomp 11)
+	(goal special-map WATER)
+	(not (unit-type-count-total SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-water))
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1-water)
+	(not (goal lategamecannon ALLOW))
+=>
+	(set-goal lategamecannon ALLOW)
+)
+
+
+
+; also note a rule exists to train assaults when above 1200n 1200f in mech-factory
+
+
+; in civ by civ order
+
+; / --------------------------- \
+; | ----- GALACTIC EMPIRE ----- |
+; \ --------------------------- /
+
+; Hordes of mechs
+
+#load-if-defined EMPIRE
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH3-LINE)
+	=>
+	(train UNIT-MECH3-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH2-LINE)
+	=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH1-LINE)
+	=>
+	(train UNIT-MECH1-LINE)
+)
+
+#end-if
+
+
+; / --------------------------- \
+; | ---- GUNGAN GRAND ARMY ---- |
+; \ --------------------------- /
+
+; Assaults, arty, and MDs
+
+#load-if-defined GUNGANS
+
+
+(defrule
+	(goal allowlategamecomp YES)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm) ; Allow strike mechs up to cap (the rule was only causing MDs)
+	(can-train UNIT-MECH1-LINE)
+	=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH3-LINE)
+	=>
+	(train UNIT-MECH3-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train SIEGE-ARTILLERY-LINE)
+	=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH2-LINE)
+	=>
+	(train UNIT-MECH2-LINE)
+)
+
+#end-if
+
+
+; / --------------------------- \
+; | ----- REBEL ALLIANCE ------ |
+; \ --------------------------- /
+
+; Uhhhhhh
+; Snowspeeders? 
+; Assaults?
+; Allow training Repeaters and Mounties
+
+#load-if-defined REBEL
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-AIRSPEEDER-LINE)
+	=>
+	(train UNIT-AIRSPEEDER-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH3-LINE)
+	=>
+	(train UNIT-MECH3-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+    (unit-type-count UNIT-LASER-LINE < TL4-trooper-arm)
+    (can-train UNIT-LASER-LINE)
+=>
+    (train UNIT-LASER-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(unit-type-count UNIT-MOUNTED-LINE < TL3-mounted-core)
+	(can-train UNIT-MOUNTED-LINE)
+=>
+	(train UNIT-MOUNTED-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | ---------- NABOO ---------- |
+; \ --------------------------- /
+
+; Infinite amounts of Royal Crusaders coming your way!
+
+#load-if-defined NABOO
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-KNIGHT-LINE)
+	=>
+	(train UNIT-KNIGHT-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH3-LINE)
+	=>
+	(train UNIT-MECH3-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | ---- TRADE FEDERATION ----- |
+; \ --------------------------- /
+
+; Hordes of mechs. Also with Destroyer Droids. Also artillery.
+
+#load-if-defined FEDERATION
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH3-LINE)
+	=>
+	(train UNIT-MECH3-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH2-LINE)
+	=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH1-LINE)
+	=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train SIEGE-ARTILLERY-LINE)
+	=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-DESTDROID-LINE)
+	=>
+	(train UNIT-DESTDROID-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | ---------- WOKIES --------- |
+; \ --------------------------- /
+; (is it one O, two Is, and three Es, or what?)
+
+; Oops, All Artillery
+; Also troopers are allowed up to cap
+
+#load-if-defined WOOKIEES ; aaaaa
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train SIEGE-ARTILLERY-LINE)
+	=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+    (unit-type-count UNIT-LASER-LINE < TL4-trooper-arm)
+    (can-train UNIT-LASER-LINE)
+=>
+    (train UNIT-LASER-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | ---- GALACTIC REPUBLIC ---- |
+; \ --------------------------- /
+
+; uhhhhhhhhhhhh
+; masters ??? 
+
+#load-if-defined REPUBLIC
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | --- CONFEDERACY ALLIANCE -- |
+; \ --------------------------- /
+
+; A mix: Assaults, MDs, uncapped MGs
+; Also, allow training troops up to the allocated amount.
+
+#load-if-defined CONFEDERACY
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MAGNAGUARD-LINE)
+	=>
+	(train UNIT-MAGNAGUARD-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH3-LINE)
+	=>
+	(train UNIT-MECH3-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH2-LINE)
+	=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+    (unit-type-count UNIT-LASER-LINE < TL4-trooper-arm)
+    (can-train UNIT-LASER-LINE)
+=>
+    (train UNIT-LASER-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | ----- ZANN CONSORTIUM ----- |
+; \ --------------------------- /
+
+; Oops, All Mechs
+
+#load-if-defined ZANN
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH3-LINE)
+	=>
+	(train UNIT-MECH3-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH2-LINE)
+	=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH1-LINE)
+	=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train SIEGE-ARTILLERY-LINE)
+	=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-DEFILER-LINE)
+	=>
+	(train UNIT-DEFILER-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | ------- GEONOSIANS -------- |
+; \ --------------------------- /
+
+
+; Oops, All Artillery 2: Geonosian Boogaloo
+; MDs also acceptable
+
+#load-if-defined GEONOSIANS
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train SIEGE-ARTILLERY-LINE)
+	=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH2-LINE)
+	=>
+	(train UNIT-MECH2-LINE)
+)
+
+#end-if
+
+
+; / --------------------------- \
+; | ------- FIRST ORDER ------- |
+; \ --------------------------- /
+
+; Instructions unclear, infinite Assault Mechs headed your way
+; update: the AI never has enough res for that lol
+; uhhhh flametroopers?
+
+#load-if-defined FIRSTORDER
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH3-LINE)
+	=>
+	(train UNIT-MECH3-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+    (unit-type-count UNIT-LASER-LINE < TL4-trooper-arm) ; Capped troopers
+    (can-train UNIT-LASER-LINE)
+=>
+    (train UNIT-LASER-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(unit-type-count UNIT-MOUNTED-LINE < TL3-mounted-core) ; Capped Flametroopers
+    (can-train UNIT-MOUNTED-LINE)
+=>
+    (train UNIT-MOUNTED-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train SIEGE-ARTILLERY-LINE)
+	=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | ------- RESISTANCE -------- |
+; \ --------------------------- /
+
+; I'm sorry, I didn't understand. Did you mean:
+; INFINITE TURBOCHEAP MDs? 
+; Also Bunkerbusters
+
+; (sorry Ski Speeder, you're being left out of this one)
+
+#load-if-defined RESISTANCE
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH2-LINE)
+	=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-BOMBER-LINE)
+	=>
+	(train UNIT-BOMBER-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | ----- IMPERIAL REMNANT ---- |
+; \ --------------------------- /
+
+; A thousand murderMDs are ready, with a million Shadowtroopers on the way
+
+#load-if-defined IMPERIALREMNANT
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH2-LINE)
+	=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-SHADOWTROOPER-LINE)
+	=>
+	(do-nothing)
+	; (train UNIT-SHADOWTROOPER-LINE) ; AI control of Jedi is very broken
+)
+
+#end-if
+
+; / --------------------------- \
+; | ------- NEW REPUBLIC ------ |
+; \ --------------------------- /
+
+; Attackers, V-Wings, and max HP mechs for some reason
+
+
+#load-if-defined NEWREPUBLIC
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-VWING-LINE)
+	=>
+	(train UNIT-VWING-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-ATTACKER-LINE)
+	=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH2-LINE)
+	=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-MECH1-LINE)
+	=>
+	(train UNIT-MECH1-LINE)
+)
+
+#end-if
+
+; / --------------------------- \
+; | -------- BLACK SUN -------- |
+; \ --------------------------- /
+
+; Infinite Gladiator Droids
+
+#load-if-defined BLACKSUN
+
+(defrule
+	(goal allowlategamecomp YES)
+	(can-train UNIT-GLADIATORDROID1-LINE)
+=>
+	(train UNIT-GLADIATORDROID1-LINE)
+)
+
+#end-if
+
+
+#end-if
+#end-if
+#end-if ; difficulty
+
+
