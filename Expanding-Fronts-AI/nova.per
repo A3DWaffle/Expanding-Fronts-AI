@@ -1,0 +1,264 @@
+; =====================================================
+; FILE: nova
+; PURPOSE:
+;   Builds nova processing centers and tracks nova resource availability.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: PRIORITY
+;	Chapter 2: NOVA CTR
+;	Chapter 3: RESOURCE-FOUND
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(cc-players-unit-type-count 0 GAIA-NOVA-LINE >= 6) ; this has several issues detailed elsewhere but does work at game start
+=>
+	(set-goal nova-found YES)
+	(disable-self)
+)
+
+; -----------------------------------------------------
+; *** Chapter 1: PRIORITY *** 
+; -----------------------------------------------------
+;Waffle Guide: This section is reserved for code reliant on load order. Here it is used for Zeldrake's notes.
+
+; Zel: added checks for Troop C. so it doesn't die terribly
+
+; note: dropsite-min-distance does require the AI to have scouted said resource
+
+; interesting bug for you: dropsite-min-distance is not always correctly updated after building a first nova proc
+; it will update correctly on the SECOND nova proc built or the first ORE proc built
+; this means if the AI has no nova proc
+; and builds a nova proc (eg: for t1 mounties)
+; the distance won't update and it goes "well the nova is too far so I'm not mining it!"
+; and then in T2 if it goes an builds an ore proc
+; it goes "aha the nova is now within munching distance"
+; another way this manifests is if the ore procs are built first, then a nova proc, the nova won't update till a second nova proc is built
+
+; distances for nova and ore proc are controlled by sn camp max distance
+; which is set in sn homebase
+
+; -----------------------------------------------------
+; *** Chapter 2: NOVA CTR *** 
+; -----------------------------------------------------
+
+; T1 rule: only occasionally
+(defrule
+	(or
+		(current-age == tech-level-1)
+		(current-age == tech-level-2)
+	)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-DROPNOVA < 1)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(can-build-with-escrow BLDG-DROPNOVA)
+=>
+	(release-escrow carbon)
+	(set-goal resourcerefund cnovaproc)
+	(build BLDG-DROPNOVA)
+)
+
+; Generic rule for T3+, controlled by camplevel which is set in sn homebase
+; Camplevel:
+; 0: Game start (ignore)
+; 1: TL2 after 1 of each dropoff built (ignore)
+; 2: TL3
+; 3: TL4 
+; 4: In TL4 for 30min
+; 5: In TL4 for 1hr (or T3 for 1hr)
+; 6: In TL4 for 1h30m
+(defrule
+	(current-age >= tech-level-3)
+	(or
+		(or
+			(and
+				(goal camplevel 2)
+				(building-type-count-total BLDG-DROPNOVA < 4)  
+			)
+			(and
+				(goal camplevel 3)
+				(building-type-count-total BLDG-DROPNOVA < 5) 
+			)
+		)
+		(or
+			(and
+				(goal camplevel 4)
+				(building-type-count-total BLDG-DROPNOVA < 7)
+			)
+			(and
+				(goal camplevel 5)
+				(building-type-count-total BLDG-DROPNOVA < 8)
+			)
+		)
+	)
+	(goal nova-found YES) ; checks several things
+	(building-type-count-total BLDG-MAIN > 0)
+	(dropsite-min-distance nova > 7)
+	(can-build BLDG-DROPNOVA)
+=>
+	(set-goal resourcerefund cnovaproc)
+	(build BLDG-DROPNOVA)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(and
+		(goal camplevel 6)
+		(building-type-count-total BLDG-DROPNOVA < 10)  
+	)
+	(goal nova-found YES)
+	(building-type-count-total BLDG-MAIN > 0)
+	(dropsite-min-distance nova > 7)
+	(can-build BLDG-DROPNOVA)
+=>
+	(set-goal resourcerefund cnovaproc)
+	(build BLDG-DROPNOVA)
+)
+
+(defrule
+    ; Beamdrill Mining Nova, TL2
+	(can-research rt-beamdrill-nova-mining) ; allow with general spare res in T2
+	(goal importantT2research DONE)
+	(or
+		(goal agingup YES)
+		(food-amount > 1000)
+	)
+=>
+	(research rt-beamdrill-nova-mining)
+)
+
+(defrule
+    ; Beamdrill Mining Nova, TL2 Alt
+    (can-research-with-escrow rt-beamdrill-nova-mining)
+	(goal importantT3research DONE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+    (research rt-beamdrill-nova-mining)
+)
+
+(defrule
+    ; Hvy Beamdrill Mining Nova, TL3
+    (can-research-with-escrow rt-hvy-beamdrill-nova)
+	(goal importantT3research DONE) ; allow getting this in T3
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+    (research rt-hvy-beamdrill-nova)
+)
+
+(defrule
+    ; CF Fusion Extractor Nova, TL4
+    (can-research-with-escrow rt-nova-fusion-extractor)
+	(goal importantT4research DONE)
+=>
+	(release-escrow carbon)
+	(release-escrow food)
+    (research rt-nova-fusion-extractor)
+)
+
+; -----------------------------------------------------
+; *** Chapter 3: RESOURCE-FOUND *** 
+; --- 4a: None Found ---
+; --- 4b: Nova Detection ---
+; --- 4c: Tidy Up ---
+; -----------------------------------------------------
+
+; -------------------------
+; --- 4a: None Found ---
+; -------------------------
+
+; turn off once either too far or none on map
+
+(defrule
+	(not (goal nova-found NO))
+	(dropsite-min-distance nova >= 70) ; too far
+=>
+	(set-goal nova-found NO)
+)
+
+(defrule
+	(not (goal nova-found NO))
+	(dropsite-min-distance nova == -1) ; not found
+	(game-time > 1800) ; 30min 
+=>
+	(set-goal nova-found NO)
+)
+
+(defrule
+	(goal nova-found NO)
+	(building-type-count BLDG-DROPNOVA > 1)
+=>
+	(delete-building BLDG-DROPNOVA)
+)
+
+; -----------------------
+; --- 4b: Nova Detection ---
+; -----------------------
+
+; COMPLICATED RULES TO CHECK FOR NOVA BY MINERS
+
+; ordering is a little awkward, but bear with me here: 
+
+; rule 1: check for nova on game start. if so, we find nova. already done above
+
+; rule 3: if we have nova miners, there must be nova on the map. This resets cooldown if needed
+(defrule
+	(not (goal nova-found YES))
+	(or
+		(unit-type-count 579 > 0)
+		(unit-type-count 581 > 0)
+	)
+=>
+	(set-goal nova-found YES)
+)
+
+; rule 4: if timer triggered and still no nova miners, there's no nova left on the map
+(defrule
+	(goal nova-found MAYBENOT)
+	(and
+		(unit-type-count 579 == 0)
+		(unit-type-count 581 == 0)
+	)
+	(game-time > 3000) ; 50min
+	(goal resource-search SEARCH) ; essentially the timer going off
+=>
+	(set-goal nova-found NO)
+	(chat-local-to-self "WAFFLE: No nova.")
+)
+
+; rule 2: if timer triggered and we have no nova miners, maybe there's no nova left on the map.
+(defrule
+	(goal nova-found YES)
+	(and
+		(unit-type-count 579 == 0)
+		(unit-type-count 581 == 0)
+	)
+	(game-time > 3000) ; 50min
+	(goal resource-search SEARCH) ; essentially the timer going off
+=>
+	(set-goal nova-found MAYBENOT)
+	(chat-local-to-self "WAFFLE: maybe no nova?")
+)
+
+; -------------------
+; =====================================================
+; CHAPTER X: CIV PROCESSING TECH CATCHUP
+; =====================================================
+
+(defrule
+	; CF Fusion Extractor (Nova)
+	(can-research-with-escrow rt-nova-fusion-extractor)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-nova-fusion-extractor)
+)

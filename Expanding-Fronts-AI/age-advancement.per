@@ -1,0 +1,633 @@
+; =====================================================
+; FILE: age-advancement
+; PURPOSE:
+;   Age up logic, config menu, extra cheats and treaty mode.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: TL-ADVANCE
+;	Chapter 2: CONFIG-START
+;	Chapter 3: DIFFICULTIES
+;	Chapter 4: TECH-LOCK
+;	Chapter 5: BEHAVIOURS
+;	Chapter 6: CHEATS
+;	Chapter 7: TREATY
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(true)
+=>
+	(set-shared-goal age-match-human NO)
+	(set-shared-goal treatytimer 0)
+	(set-shared-goal customdifficulty NULL)
+	(set-shared-goal resignoverride NO)
+	(disable-self)
+)
+
+(defrule
+	(not (player-in-game any-human))
+=>
+	(set-shared-goal age-match-human NO) ; accounts for all AI matches
+	(disable-self)
+)
+
+; =====================================================
+; *** Chapter 1: TL-ADVANCE *** 
+; =====================================================
+
+(defrule
+	(can-research-with-escrow tech-level-2)
+	(shared-goal age-match-human NO) ; default config settings
+=>
+	(release-escrow food)
+	(set-goal attacksonhold-auto YES)
+	(set-goal agingup YES)
+	(research tech-level-2)
+)
+
+(defrule
+	(can-research-with-escrow tech-level-3)
+	(shared-goal age-match-human NO)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(set-goal agingup YES)
+	(set-goal attacksonhold-auto YES); pause attacks
+	(research tech-level-3)
+)
+
+(defrule
+	(can-research-with-escrow tech-level-4)
+	(shared-goal age-match-human NO)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(set-goal agingup YES)
+	(set-goal attacksonhold-auto YES)
+	(research tech-level-4)
+)
+
+
+; fun config stuff (or easy/easiest)
+(defrule
+	(can-research-with-escrow tech-level-2)
+	(shared-goal age-match-human YES)
+	(players-current-age any-human >= tech-level-2)
+=>
+	(release-escrow food)
+	(set-goal attacksonhold-auto YES)
+	(set-goal agingup YES)
+	(research tech-level-2)
+)
+(defrule
+	(can-research-with-escrow tech-level-3)
+	(shared-goal age-match-human YES)
+	(players-current-age any-human >= tech-level-3)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research tech-level-3)
+	(set-goal agingup YES)
+	(set-goal attacksonhold-auto YES)
+)
+
+(defrule
+	(can-research-with-escrow tech-level-4)
+	(shared-goal age-match-human YES)
+	(players-current-age any-human >= tech-level-4)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(set-goal attacksonhold-auto YES)
+	(set-goal agingup YES)
+	(research tech-level-4)
+)
+
+; turn off agingup when tech level reached
+(defrule
+	(current-age == tech-level-1)
+=>
+	(set-goal agingup NO) ; convenient initial reset
+	(disable-self)
+)
+(defrule
+	(current-age == tech-level-2)
+=>
+	(set-goal agingup NO)
+	(disable-self)
+)
+(defrule
+	(current-age == tech-level-3)
+=>
+	(set-goal agingup NO)
+	(disable-self)
+)
+(defrule
+	(current-age == tech-level-4)
+=>
+	(set-goal agingup NO)
+	(disable-self)
+)
+
+; =====================================================
+; *** Chapter 2: CONFIG-START *** 
+; =====================================================
+
+(defrule
+	(true)
+=>
+	(set-goal config-in-progress NULL)
+	(set-shared-goal pickingupthecall NULL)
+	(disable-self)
+)
+
+(defrule 
+	(taunt-detected any-human 85) ; I am altering the deal
+	(shared-goal pickingupthecall NULL)
+	(goal scn-detected NO)
+=>
+	(set-shared-goal pickingupthecall ITSME) ; this works just fine
+	(chat-to-player every-human "Hello! You've accessed the AI Control Panel. All options here ONLY apply to Computer AI.")
+	(chat-to-player every-human "Use taunts to select an option.")
+	(set-goal config-in-progress CONFIG-LISTING)
+	(disable-timer t-config)
+	(enable-timer t-config 5)
+)
+
+(defrule
+	(taunt-detected any-human 85)
+=>
+	(acknowledge-taunt every-human 1)
+	(acknowledge-taunt every-human 2)
+	(acknowledge-taunt every-human 101)
+	(acknowledge-taunt every-human 102)
+	(acknowledge-taunt every-human 103)
+	(acknowledge-taunt every-human 110)
+	(acknowledge-taunt every-human 111)
+	(acknowledge-taunt every-human 112)
+	(acknowledge-taunt every-human 113)
+	(acknowledge-taunt every-human 100)
+	(acknowledge-taunt every-human 121)
+	(acknowledge-taunt every-human 122)
+)
+(defrule
+	(taunt-detected any-human 85)
+=>
+	(acknowledge-taunt every-human 85)
+
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTING)
+	(timer-triggered t-config)
+=>
+	(chat-to-player every-human "--- DIFFICULTY --- ")
+	(chat-to-player every-human "Taunt 101: Enables Extreme Difficulty, which cheats significantly more resources.")
+	(chat-to-player every-human "Taunt 102: Enables Treaty Timer. You are then able to select a list of treaty times.")
+	(chat-to-player every-human "Taunt 103: Cheat Tech Bypass: AI researches cheat techs regardless of game settings")
+	(disable-timer t-config)
+	(enable-timer t-config 5)
+	(set-goal config-in-progress 101)
+)
+
+(defrule
+	(goal config-in-progress 101)
+	(timer-triggered t-config)
+=>
+	(chat-to-player every-human "--- BEHAVIOUR --- ")
+	(chat-to-player every-human "Taunt 111: Toggle Tech-Locked setting. AI match the Tech Level of the highest-teched human.")
+	(chat-to-player every-human "Taunt 112: Toggle Tech Disable. AI will not tech up. (Overrides above option)")
+	(chat-to-player every-human "Taunt 113: Toggle AI resigning.")
+	(disable-timer t-config)
+	(enable-timer t-config 5)
+	(set-goal config-in-progress 102)
+)
+
+(defrule
+	(goal config-in-progress 102)
+	(timer-triggered t-config)
+=>
+	(chat-to-player every-human "--- CHEATS --- ")
+	(chat-to-player every-human "Taunt 121: All AI immediately cheat 500 carbon")
+	(chat-to-player every-human "Taunt 122: All AI immediately cheat 1000 food, carbon, and nova")
+	(disable-timer t-config)
+	(enable-timer t-config 5)
+	(set-goal config-in-progress CONFIG-LISTED)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(timer-triggered t-config)
+=>
+	(disable-timer t-config)
+	(chat-to-player every-human "--- TIDY UP --- ")
+	(chat-to-player every-human "Taunt 100: Clear all, return to default")
+	(chat-to-player every-human "Taunt 1: Repeat this list")
+	(chat-to-player every-human "Taunt 2: Close config, no changes.")
+	(chat-to-player every-human "If you cannot read the config, ")
+	(chat-to-player every-human " because the text is cut off,")
+	(chat-to-player every-human " open the main chat menu (default Alt+T).")
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 1)
+=>
+	(acknowledge-taunt this-any-human 1)
+	(set-goal config-in-progress CONFIG-LISTING)
+	(disable-timer t-config)
+	(enable-timer t-config 1) ; oops
+)
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 2)
+=>
+	(acknowledge-taunt this-any-human 2)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 100)		; reset
+=>
+	(acknowledge-taunt this-any-human 100)
+	(chat-to-player every-human "Resetting all behaviour to defaults.")
+	(set-goal config-in-progress CONFIG-RESET)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-RESET)
+=>
+	(set-shared-goal customdifficulty NULL)
+	;(set-shared-goal treatytimer 0) ; needs extra handling
+	(set-shared-goal age-match-human NO)
+	(set-shared-goal resignoverride NO)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-RESET)
+	(not (shared-goal treatytimer 1))
+	(not (shared-goal treatytimer 0))
+=>
+	(set-shared-goal treatytimer 1)
+	(chat-to-all "Immediately expiring treaty due to reset. A new treaty cannot be set.")
+)
+
+(defrule
+	(goal config-in-progress CONFIG-RESET)
+=>
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+; =====================================================
+; *** Chapter 3: DIFFICULTIES *** 
+; =====================================================
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 101)
+=>
+	(acknowledge-taunt this-any-human 101)
+	(chat-to-player every-human "Extreme Difficulty enabled. AI will now cheat significantly more resources.")
+	(set-shared-goal customdifficulty EXTREME)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 102)
+	(shared-goal treatytimer 1)
+=>
+	(acknowledge-taunt this-any-human 102)
+	(chat-to-player every-human "Treaty Timer has elapsed. A new one cannot be set due to script contraints.")
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 102)
+=>
+	(acknowledge-taunt this-any-human 102)
+	(chat-to-player every-human "Treaty Timer selected. Please select the time:")
+	(chat-to-player every-human "Taunt 1: 15 minutes")
+	(chat-to-player every-human "Taunt 2: 30 minutes")
+	(chat-to-player every-human "Taunt 3: 45 minutes")
+	(chat-to-player every-human "Taunt 4: 60 minutes")
+	(chat-to-player every-human "Taunt 99: Never attack at all")
+	(chat-to-player every-human "Note: Due to script contraints, the treaty timer cannot be reset after it has expired.")
+	(set-goal config-in-progress CONFIG-TREATYTIME)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-TREATYTIME)
+	(taunt-detected any-human 1)
+=>
+	(acknowledge-taunt this-any-human 1)
+	(chat-to-player every-human "Treaty timer set to 5 minutes.")
+	(set-shared-goal treatytimer 15)
+	(chat-to-player every-human "AI will not automatically attack after this much in-game time has elapsed since game start.")
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+(defrule
+	(goal config-in-progress CONFIG-TREATYTIME)
+	(taunt-detected any-human 2)
+=>
+	(acknowledge-taunt this-any-human 2)
+	(chat-to-player every-human "Treaty timer set to 30 minutes.")
+	(set-shared-goal treatytimer 30)
+	(chat-to-player every-human "AI will not automatically attack after this much in-game time has elapsed.")
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+(defrule
+	(goal config-in-progress CONFIG-TREATYTIME)
+	(taunt-detected any-human 3)
+=>
+	(acknowledge-taunt this-any-human 3)
+	(chat-to-player every-human "Treaty timer set to 45 minutes.")
+	(set-shared-goal treatytimer 45)
+	(chat-to-player every-human "AI will not automatically attack after this much in-game time has elapsed.")
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+(defrule
+	(goal config-in-progress CONFIG-TREATYTIME)
+	(taunt-detected any-human 4)
+=>
+	(acknowledge-taunt this-any-human 4)
+	(chat-to-player every-human "Treaty timer set to 60 minutes.")
+	(set-shared-goal treatytimer 60)
+	(chat-to-player every-human "AI will not automatically attack after this much in-game time has elapsed.")
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+(defrule
+	(goal config-in-progress CONFIG-TREATYTIME)
+	(taunt-detected any-human 99)
+=>
+	(acknowledge-taunt this-any-human 99)
+	(chat-to-player every-human "Automatic attacks disabled.")
+	(set-shared-goal treatytimer 99)
+	(chat-to-player every-human "AI will not automatically attack at all.")
+	(chat-to-player every-human "To clear and enable AI aggression again, use Taunt 100 to clear all settings.")
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 103)
+=>
+	(acknowledge-taunt this-any-human 103)
+	(chat-to-player every-human "Cheat Tech Bypass. Since the AI does not play the way the same as a human does,")
+	(chat-to-player every-human " it misses out on some things. Cheat techs rectify this, but with side effects.")
+	(chat-to-player every-human " This option bypasses their normal requirements.")
+	(chat-to-player every-human "Current list: Gunship Arnaments, garrisoned Adv Turrets")
+	(chat-to-player every-human "Use 1 to enable and 2 to go back.")
+	(set-goal config-in-progress CONFIG-CHEATTECH)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-CHEATTECH)
+	(taunt-detected any-human 1)
+=>
+	(acknowledge-taunt this-any-human 1)
+	(chat-to-player every-human "Standard requirements for cheat techs are now bypassed.")
+	(chat-to-player every-human "Now that this has been enabled, it cannot be disabled.")
+	(set-shared-goal purgebypass TURBO)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+(defrule
+	(goal config-in-progress CONFIG-CHEATTECH)
+	(taunt-detected any-human 2)
+=>
+	(acknowledge-taunt this-any-human 2)
+	(chat-to-player every-human "Returning to main config list")
+	(set-goal config-in-progress CONFIG-LISTING)
+	(enable-timer t-config 1)
+)
+
+; =====================================================
+; *** Chapter 4: TECH-LOCK *** 
+; =====================================================
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 111)
+	(shared-goal age-match-human NO)
+=>
+	(acknowledge-taunt this-any-human 111)
+	(chat-to-player every-human "Tech Lock enabled. AI will not tech up beyond any player in the match.")
+	(set-shared-goal age-match-human YES)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 111)
+	(shared-goal age-match-human YES)
+=>
+	(acknowledge-taunt this-any-human 111)
+	(chat-to-player every-human "Tech Lock disabled. AI will tech up whenever available.")
+	(set-shared-goal age-match-human NO)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 112)
+	(not (shared-goal age-match-human DISABLE))
+=>
+	(acknowledge-taunt this-any-human 112)
+	(chat-to-player every-human "Tech Level Disable activated. AI will not tech up at all.")
+	(set-shared-goal age-match-human DISABLE)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 112)
+	(shared-goal age-match-human DISABLE)
+=>
+	(acknowledge-taunt this-any-human 112)
+	(chat-to-player every-human "Tech Level Disable disabled. AI will tech up whenever available.")
+	(set-shared-goal age-match-human NO) ; restore normal teching
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 113)
+	(shared-goal resignoverride NO)
+=>
+	(acknowledge-taunt this-any-human 113)
+	(chat-to-player every-human "Resign toggle turned to OFF. AI will not resign automatically.")
+	(set-shared-goal resignoverride YES)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 113)
+	(shared-goal resignoverride YES)
+=>
+	(acknowledge-taunt this-any-human 113)
+	(chat-to-player every-human "Resign toggle turned to ON. AI will resign as per usual rules.")
+	(set-shared-goal resignoverride NO)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+; =====================================================
+; *** Chapter 5: BEHAVIOURS *** 
+; =====================================================
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 111)
+	(shared-goal age-match-human NO)
+=>
+	(acknowledge-taunt this-any-human 111)
+	(chat-to-player every-human "Tech Lock enabled. AI will not tech up beyond any player in the match.")
+	(set-shared-goal age-match-human YES)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 111)
+	(shared-goal age-match-human YES)
+=>
+	(acknowledge-taunt this-any-human 111)
+	(chat-to-player every-human "Tech Lock disabled. AI will tech up whenever available.")
+	(set-shared-goal age-match-human NO)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 112)
+	(not (shared-goal age-match-human DISABLE))
+=>
+	(acknowledge-taunt this-any-human 112)
+	(chat-to-player every-human "Tech Level Disable activated. AI will not tech up at all.")
+	(set-shared-goal age-match-human DISABLE)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 112)
+	(shared-goal age-match-human DISABLE)
+=>
+	(acknowledge-taunt this-any-human 112)
+	(chat-to-player every-human "Tech Level Disable disabled. AI will tech up whenever available.")
+	(set-shared-goal age-match-human NO) ; restore normal teching
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 113)
+	(shared-goal resignoverride NO)
+=>
+	(acknowledge-taunt this-any-human 113)
+	(chat-to-player every-human "Resign toggle turned to OFF. AI will not resign automatically.")
+	(set-shared-goal resignoverride YES)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 113)
+	(shared-goal resignoverride YES)
+=>
+	(acknowledge-taunt this-any-human 113)
+	(chat-to-player every-human "Resign toggle turned to ON. AI will resign as per usual rules.")
+	(set-shared-goal resignoverride NO)
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+; =====================================================
+; *** Chapter 6: CHEATS ***
+; =====================================================
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 121)
+=>
+	(acknowledge-taunt this-any-human 121)
+	(chat-to-player every-human "Cheating 500c for all AI. This cheat can be sent multiple times.")
+	(chat-to-player every-computer "121") ; you need the quotes!
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(taunt-detected any-computer 121)
+=>
+	(acknowledge-taunt this-any-computer 121)
+	(cc-add-resource carbon 500)
+)
+
+(defrule
+	(goal config-in-progress CONFIG-LISTED)
+	(taunt-detected any-human 122)
+=>
+	(acknowledge-taunt this-any-human 122)
+	(chat-to-player every-human "Multi-resource cheat. This cheat can be sent multiple times.")
+	(chat-to-player every-computer "106") ; Taunt 122 is being sent as part of attack chitchat, "I am going to end this once and for all!" Now is "Utinii!" - which is being used as part of CE diplo. Now 106 "Yub yub"
+	(set-goal config-in-progress CONFIG-CLOSE)
+)
+
+(defrule
+	(taunt-detected any-computer 106)
+=>
+	(acknowledge-taunt this-any-computer 106)
+	(cc-add-resource carbon 1000)
+	(cc-add-resource food 1000)
+	(cc-add-resource nova 1000)
+)
+
+(defrule ; Tidy up
+	(goal config-in-progress CONFIG-CLOSE)
+=>
+	(chat-to-player every-human "Closing config.")
+	(set-goal config-in-progress NULL)
+	(set-shared-goal pickingupthecall NULL)
+)
+
+; =====================================================
+; *** Chapter 7: TREATY ***
+; =====================================================
+; TREATY SHENANIGANS HANDLED HERE (a little)
+
+(defrule
+	(shared-goal treatytimer 15)
+	(game-time > 900)
+=>
+	(set-shared-goal treatytimer 1)
+	(chat-to-all "The treaty timer is now over! Prepare for battle!")
+)
+(defrule
+	(shared-goal treatytimer 30)
+	(game-time > 1800)
+=>
+	(set-shared-goal treatytimer 1)
+	(chat-to-all "The treaty timer is now over! Prepare for battle!")
+)
+(defrule
+	(shared-goal treatytimer 45)
+	(game-time > 2700)
+=>
+	(set-shared-goal treatytimer 1)
+	(chat-to-all "The treaty timer is now over! Prepare for battle!")
+)
+(defrule
+	(shared-goal treatytimer 60)
+	(game-time > 3600)
+=>
+	(set-shared-goal treatytimer 1)
+	(chat-to-all "The treaty timer is now over! Prepare for battle!")
+)

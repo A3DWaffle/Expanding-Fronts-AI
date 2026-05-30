@@ -1,0 +1,177 @@
+; =====================================================
+; FILE: escrow
+; PURPOSE:
+;   Controls escrow settings and release support for the AI economy.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: LOGIC
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+        (current-age == tech-level-1)
+		(current-age-time > 600) ; if longer in T1 for about 10min, save up
+        =>
+        (set-escrow-percentage food 60)
+        (set-escrow-percentage carbon 0)
+        (set-escrow-percentage nova 0)
+		(set-escrow-percentage metal 0)
+		(disable-self)
+)
+
+
+(defrule
+        (current-age == tech-level-2)
+        =>
+        (set-escrow-percentage food 20)
+        (set-escrow-percentage carbon 40) ; was being spent on trawlers
+        (set-escrow-percentage nova 10)
+		(set-escrow-percentage metal 0)
+		(disable-self)
+)
+
+(defrule
+		(goal importantT2research DONE)
+		(current-age == tech-level-2)
+=> 
+		(set-escrow-percentage food 30) ; save for T3
+		(set-escrow-percentage carbon 30) ; escrow carbon still needed for the occasional building
+		(set-escrow-percentage nova 20)
+		(set-escrow-percentage metal 0)
+		(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(escrow-amount carbon > 300)
+	=>
+	(release-escrow carbon) ; bodge rule for T2 where carbon required is a lot less than it is lategame
+)
+
+
+
+(defrule
+        (current-age == tech-level-3)
+        =>
+        (set-escrow-percentage food 40)
+        (set-escrow-percentage carbon 40)
+        (set-escrow-percentage nova 25)
+		(set-escrow-percentage metal 0) ; don't escrow, so you build a fort instead
+		(disable-self)
+)
+
+(defrule
+		(goal importantT3research DONE)
+		(current-age == tech-level-3)
+=> 
+		(set-escrow-percentage food 40) ; save for T4
+		(set-escrow-percentage carbon 30) ; carbon still needed for buildings
+		(set-escrow-percentage nova 25)
+		(set-escrow-percentage metal 10) ; maybe the occasional research or smth, not a biggie though; or saving up for adv aa turret
+		(disable-self)
+)
+
+(defrule
+        (current-age == tech-level-4)
+        =>
+        (set-escrow-percentage food 40)
+        (set-escrow-percentage carbon 70) ; buildings, power cores, units...
+        (set-escrow-percentage nova 50)
+		(set-escrow-percentage metal 50)
+		(disable-self)
+) ; a ton of good techs need researching
+
+(defrule
+		(goal importantT4research DONE)
+=> 
+		(set-escrow-percentage food 20) 
+		(set-escrow-percentage carbon 33)
+		(set-escrow-percentage nova 20)
+		(set-escrow-percentage metal 50)
+		(disable-self)
+) ; still lotsa good techs that need researching but we can slack off a bit now
+
+; releasing escrow once techs are done SOUNDS straightforward but has a few issues;
+; a) advancing to the next TL if the other resource isn't there yet (eg: food is there, but no nova)
+; b) monument
+; c) metal (ore) has its own handling
+
+; update: b) wasn't working and a) has been adjusted by just kicking the numbers up higher and hoping that helps
+
+(defrule
+	(escrow-amount food > 1500) ; Faith
+=>
+	(release-escrow food)
+)
+(defrule
+	(escrow-amount carbon > 1000) ; misc upgrades
+=>
+	(release-escrow carbon)
+)
+(defrule
+	(escrow-amount nova > 1500) ; Purge
+=>
+	(release-escrow nova)
+)
+
+
+
+
+
+
+
+; if we have not researched all our important T4 techs yet, reset the escrow
+
+(defrule
+        (current-age == tech-level-4)
+		(not (goal importantT4research DONE))
+        =>
+        (set-escrow-percentage food 40)
+        (set-escrow-percentage carbon 60) ; keeps being released for all sorts of constructions etc
+        (set-escrow-percentage nova 65) ; lotsa techs!
+)
+
+
+; metal gets special handling as it doesn't get trickled like all other res do
+; 500o is needed for Adv AA Turret / Galactic Senate Hub
+; with a few techs like building armor or UTs needing ore too
+
+(defrule
+	(escrow-amount metal > 510)
+	(current-age == tech-level-4)
+=>
+	(set-escrow-percentage metal 0)
+)
+
+(defrule
+	(escrow-amount metal > 1000) 
+=>
+	(release-escrow metal)
+	(set-escrow-percentage metal 50)
+)
+
+(defrule
+	(escrow-amount metal < 500)
+	(current-age == tech-level-4)
+=>
+	(set-escrow-percentage metal 50)
+)
+
+
+
+; if we don't have enough spare metal/ore but too much nova, buy some
+; rule moved to spaceport as it made more sense there 
+
+
+
+
+
+
+
+

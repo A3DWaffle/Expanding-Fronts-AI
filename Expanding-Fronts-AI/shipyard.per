@@ -1,0 +1,741 @@
+; =====================================================
+; FILE: shipyard
+; PURPOSE:
+;   Builds Shipyards, researches naval upgrades, and trains naval packages.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: BUILDINGS
+;	Chapter 2: UPGRADES
+;	Chapter 3: FISHING
+;	Chapter 4: NAVAL PACKAGES
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(goal special-map WATER)
+	(game-time > 5)
+=>
+	(chat-local-to-self "WAFFLE: Water on, boats enabled.")
+	(disable-self)
+)
+
+(defrule
+	(not (map-type precipice))
+=>
+	(set-strategic-number sn-minimum-water-body-size-for-dock 500)
+	(disable-self)
+)
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-number-boat-explore-groups 1)
+	(set-strategic-number sn-dock-defend-priority 1)
+	(disable-self)
+)
+
+(defrule
+	(game-time > 2400)
+=>
+	(set-strategic-number sn-number-boat-explore-groups 0)
+	(set-strategic-number sn-maximum-boat-explore-group-size 0)
+	(set-strategic-number sn-minimum-boat-explore-group-size 0)
+	(disable-self)
+)
+
+(defrule
+	(true)
+=>
+	(set-goal boattobuild FISHBOAT)
+	(set-goal lategamefish NO)
+	(disable-self)
+)
+
+; =====================================================
+; CHAPTER 1: BUILDINGS
+; =====================================================
+
+(defrule
+	(not (goal fish-present NO))
+	(not (goal special-map NOTWATER))
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-TRAINBOAT == 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-TRAINBOAT)
+	(not (too-many-unpowered-buildings))
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINBOAT)
+	(set-goal resourcerefund cshipyard)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(goal special-map WATER)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-TRAINBOAT < 2)
+	(can-build BLDG-TRAINBOAT)
+	(not (too-many-unpowered-buildings))
+=>
+	(build BLDG-TRAINBOAT)
+	(set-goal resourcerefund cshipyard)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal special-map WATER)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-TRAINMECH > 0)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-TRAINBOAT < 2)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(goal importantT2research DONE)
+	(can-build-with-escrow BLDG-TRAINBOAT)
+	(not (too-many-unpowered-buildings))
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINBOAT)
+	(set-goal resourcerefund cshipyard)
+)
+
+(defrule
+	(or
+		(current-age == tech-level-3)
+		(current-age == tech-level-4)
+	)
+	(goal special-map WATER)
+	(building-type-count-total BLDG-TRAINBOAT < 4)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(or
+		(building-type-count-total BLDG-MAIN > 2)
+		(building-type-count-total BLDG-TRAINAIR >= 2)
+	)
+	(goal importantT3research DONE)
+	(can-build-with-escrow BLDG-TRAINBOAT)
+	(not (too-many-unpowered-buildings))
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINBOAT)
+	(set-goal resourcerefund cshipyard)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(goal combat-arm SEA)
+	(building-type-count-total BLDG-TRAINBOAT < 5)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(goal importantT4research DONE)
+	(can-build-with-escrow BLDG-TRAINBOAT)
+	(not (too-many-unpowered-buildings))
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINBOAT)
+	(set-goal resourcerefund cshipyard)
+)
+
+; ============================================================================
+; RESEARCH
+; ============================================================================
+
+(defrule
+	(can-research-with-escrow ut-boat-laser-2)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(research ut-boat-laser-2)
+)
+
+(defrule
+	(can-research-with-escrow ut-boat-laser-3)
+	(goal importantT4research DONE)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(research ut-boat-laser-3)
+)
+
+(defrule
+	(can-research-with-escrow ut-boat-cutlaser-2)
+	(goal importantT4research DONE)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(research ut-boat-cutlaser-2)
+)
+
+(defrule
+	(can-research-with-escrow ut-boat-missile-2)
+	(goal importantT4research DONE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research ut-boat-missile-2)
+)
+
+(defrule
+	(can-research-with-escrow ut-boat-artillery-2)
+	(goal importantT4research DONE)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(research ut-boat-artillery-2)
+)
+
+(defrule
+	(can-research-with-escrow ut-boat-grenade-2)
+	(goal importantT4research DONE)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(research ut-boat-grenade-2)
+)
+
+; ============================================================================
+; FISHING BOATS
+; ============================================================================
+
+(defrule
+	(current-age == tech-level-1)
+	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats)
+	(not (goal fish-present NO))
+	(can-train BOAT-WORKER)
+=>
+	(train BOAT-WORKER)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(warboat-count >= 2)
+	(goal boattobuild FISHBOAT)
+	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats)
+	(not (goal fish-present NO))
+	(can-train BOAT-WORKER)
+=>
+	(train BOAT-WORKER)
+	(set-goal boattobuild ATTACKBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(warboat-count >= 3)
+	(goal boattobuild FISHBOAT)
+	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats)
+	(or
+		(goal lategamefish NO)
+		(goal fish-present VENTSIGHTED)
+	)
+	(not (goal fish-present NO))
+	(can-train BOAT-WORKER)
+=>
+	(train BOAT-WORKER)
+	(set-goal boattobuild ATTACKBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(warboat-count >= 4)
+	(goal boattobuild FISHBOAT)
+	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats)
+	(or
+		(goal lategamefish NO)
+		(goal fish-present VENTSIGHTED)
+	)
+	(not (goal fish-present NO))
+	(can-train BOAT-WORKER)
+=>
+	(train BOAT-WORKER)
+	(set-goal boattobuild ATTACKBOAT)
+)
+
+(defrule
+	(goal lategamefish YES)
+	(not (goal fish-present VENTSIGHTED))
+	(unit-type-count-total BOAT-WORKER > 2)
+=>
+	(delete-unit BOAT-WORKER)
+)
+
+(defrule
+	(population >= popcap)
+	(not (goal fish-present VENTSIGHTED))
+=>
+	(set-goal lategamefish YES)
+	(disable-self)
+)
+
+(defrule
+	(goal lategameworker YES)
+	(not (goal fish-present VENTSIGHTED))
+=>
+	(set-goal lategamefish YES)
+	(disable-self)
+)
+
+; ============================================================================
+; WARBOATS
+; ============================================================================
+
+; TL2 opening: frigates are the main body, AA destroyers only answer real air.
+
+(defrule
+	(current-age == tech-level-2)
+	(not (goal fish-present NO))
+	(not (goal special-map NOTWATER))
+	(unit-type-count-total BOAT-MISSILE-LINE < TL2-aa-destroyer-detect-air-alert-low)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(not (goal fish-present NO))
+	(not (goal special-map NOTWATER))
+	(unit-type-count-total BOAT-MISSILE-LINE < TL2-aa-destroyer-detect-air-alert-guard)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(not (goal fish-present NO))
+	(not (goal special-map NOTWATER))
+	(unit-type-count-total BOAT-MISSILE-LINE < TL2-aa-destroyer-detect-air-alert-danger)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(not (goal fish-present NO))
+	(not (goal special-map NOTWATER))
+	(unit-type-count-total BOAT-LASER-LINE < TL2-frigate-core)
+	(can-train BOAT-LASER-LINE)
+=>
+	(train BOAT-LASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+; TL3 SEA package.
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE < TL3-frigate-arm-p1)
+	(can-train BOAT-LASER-LINE)
+=>
+	(train BOAT-LASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p1)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL3-aa-destroyer-arm-p1)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p1)
+	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p1)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p1)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE < TL3-frigate-arm-p2)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p1)
+	(can-train BOAT-LASER-LINE)
+=>
+	(train BOAT-LASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p2)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL3-aa-destroyer-arm-p2)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p2)
+	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p2)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p2)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p2)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p2)
+	(unit-type-count-total BOAT-MONITOR-LINE < TL3-monitor-detect-p1)
+	(can-train BOAT-MONITOR-LINE)
+=>
+	(train BOAT-MONITOR-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE < TL3-frigate-arm-p3)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p2)
+	(can-train BOAT-LASER-LINE)
+=>
+	(train BOAT-LASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p3)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL3-aa-destroyer-arm-p3)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p3)
+	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p3)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p3)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE < TL3-frigate-arm-p4)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p3)
+	(can-train BOAT-LASER-LINE)
+=>
+	(train BOAT-LASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p4)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL3-aa-destroyer-arm-p4)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p4)
+	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p4)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p4)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+; TL3 extra AA response.
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL3-aa-destroyer-detect-air-alert-low)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL3-aa-destroyer-detect-air-alert-guard)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL3-aa-destroyer-detect-air-alert-danger)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+; TL4 SEA package.
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE < TL4-frigate-arm-p1)
+	(can-train BOAT-LASER-LINE)
+=>
+	(train BOAT-LASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p1)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL4-aa-destroyer-arm-p1)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p1)
+	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p1)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p1)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p1)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p1)
+	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p1)
+	(can-train BOAT-ARTILLERY-LINE)
+=>
+	(train BOAT-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE < TL4-frigate-arm-p2)
+	(unit-type-count-total BOAT-ARTILLERY-LINE >= TL4-cruiser-arm-p1)
+	(can-train BOAT-LASER-LINE)
+=>
+	(train BOAT-LASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p2)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL4-aa-destroyer-arm-p2)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p2)
+	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p2)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p2)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p2)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p2)
+	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p2)
+	(can-train BOAT-ARTILLERY-LINE)
+=>
+	(train BOAT-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE < TL4-frigate-arm-p3)
+	(unit-type-count-total BOAT-ARTILLERY-LINE >= TL4-cruiser-arm-p2)
+	(can-train BOAT-LASER-LINE)
+=>
+	(train BOAT-LASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL4-aa-destroyer-arm-p3)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3)
+	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p3)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p3)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p3)
+	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p3)
+	(can-train BOAT-ARTILLERY-LINE)
+=>
+	(train BOAT-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE < TL4-frigate-arm-p4)
+	(unit-type-count-total BOAT-ARTILLERY-LINE >= TL4-cruiser-arm-p3)
+	(can-train BOAT-LASER-LINE)
+=>
+	(train BOAT-LASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p4)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL4-aa-destroyer-arm-p4)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p4)
+	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p4)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p4)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p4)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p4)
+	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p4)
+	(can-train BOAT-ARTILLERY-LINE)
+=>
+	(train BOAT-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm SEA)
+	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p3)
+	(unit-type-count-total BOAT-ARTILLERY-LINE >= TL4-cruiser-arm-p2)
+	(unit-type-count-total BOAT-MONITOR-LINE < TL4-monitor-detect-p1)
+	(can-train BOAT-MONITOR-LINE)
+=>
+	(train BOAT-MONITOR-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+; TL4 extra AA response.
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL4-aa-destroyer-detect-air-alert-low)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL4-aa-destroyer-detect-air-alert-guard)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(unit-type-count-total BOAT-MISSILE-LINE < TL4-aa-destroyer-detect-air-alert-danger)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(can-train BOAT-MISSILE-LINE)
+=>
+	(train BOAT-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(unit-type-count-total UU-ATATSWIMMER-LINE < TL4-unique-unit-arm-water)
+	(can-train UU-ATATSWIMMER-LINE)
+=>
+	(train UU-ATATSWIMMER-LINE)
+)

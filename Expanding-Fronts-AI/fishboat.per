@@ -1,0 +1,335 @@
+; =====================================================
+; FILE: fishboat
+; PURPOSE:
+;   Auxiliary production and tech file retained under its legacy fishboat name.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: LOGIC
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(game-time < 5)
+	(not (goal advinfcen NO))
+=>
+	(set-goal advinfcen NO)
+)
+
+(defrule
+	(or
+		(cc-players-building-type-count any-human-enemy BLDG-ADVRANGE2 > 0)
+		(cc-players-building-type-count any-human-ally BLDG-ADVRANGE2 > 0)
+	)
+	(not (goal advinfcen YES))
+=>
+	(set-goal advinfcen YES)
+)
+
+(defrule
+	(cc-players-building-type-count every-human BLDG-ADVRANGE2 == 0)
+	(not (goal advinfcen NO))
+=>
+	(set-goal advinfcen NO)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research aic-advinfcen)
+=>
+	(research aic-advinfcen)
+	(disable-self)
+)
+
+; / --------------------- \
+; | ----- BUILDINGS ----- |
+; \ --------------------- /
+
+; one to get you started 
+(defrule
+	(goal advinfcen YES)
+	(building-type-count-total BLDG-MAIN > 0)
+	(can-build-with-escrow BLDG-ADVRANGE2)
+	(building-type-count-total BLDG-ADVRANGE2 == 0)
+=>
+	(release-escrow carbon)
+	(build BLDG-ADVRANGE2)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(or
+		(current-age == tech-level-3)
+		(current-age == tech-level-4)
+	)
+	(not
+		(or
+			(civ-selected GUNGANS)
+			(or
+				(civ-selected RESISTANCE)
+				(civ-selected NEWREPUBLIC) ; these civs have no adv inf centre units
+			)
+		)
+	)
+	(building-type-count-total BLDG-MAIN > 0)
+	(can-build-with-escrow BLDG-ADVRANGE2)
+	(building-type-count-total BLDG-ADVRANGE2 < 2) 
+=>
+	(release-escrow carbon)
+	(build BLDG-ADVRANGE2)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(current-age == tech-level-4)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-ADVRANGE2 < 5) 
+	(or
+		(civ-selected REPUBLIC)
+		(civ-selected EMPIRE)
+	)
+	(can-build-with-escrow BLDG-ADVRANGE2)
+=>
+	(release-escrow carbon)
+	(build BLDG-ADVRANGE2)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(current-age == tech-level-4)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-ADVRANGE2 < 4) 
+	(or
+		(civ-selected CONFEDERACY)
+		(or
+			(civ-selected FIRSTORDER)
+			(or
+				(civ-selected GEONOSIANS)
+				(civ-selected IMPERIALREMNANT)
+			)
+		)
+	)
+	(can-build-with-escrow BLDG-ADVRANGE2)
+=>
+	(release-escrow carbon)
+	(build BLDG-ADVRANGE2)
+)
+
+
+
+
+
+; / --------------------- \
+; | ------- UNITS ------- |
+; \ --------------------- /
+
+; TROOPER LINE REPLACEMENTS
+
+(defrule
+		(goal advinfcen YES)
+		(current-age == tech-level-1)
+        (unit-type-count ADV-TROOPER-LINE < TL1-trooper-core)
+        (can-train ADV-TROOPER-LINE)
+		(or
+			(civ-selected GEONOSIANS)
+			(civ-selected CONFEDERACY)
+		)
+        =>
+        (train ADV-TROOPER-LINE)
+)
+
+(defrule
+		(goal advinfcen YES)
+		(current-age == tech-level-2)
+        (unit-type-count ADV-TROOPER-LINE < TL2-trooper-core)
+        (can-train ADV-TROOPER-LINE)
+		(research-completed ut-laser-2) ; allow training more once these research are complete
+		(research-completed rt-macrobinoculars)
+		(or
+			(civ-selected GEONOSIANS)
+			(civ-selected CONFEDERACY)
+		)
+        =>
+        (train ADV-TROOPER-LINE)
+)
+
+; using water constants so as to not spam too many of them
+(defrule
+		(goal advinfcen YES)
+		(current-age == tech-level-3)
+        (unit-type-count ADV-TROOPER-LINE < TL3-trooper-core-water)
+        (can-train ADV-TROOPER-LINE)
+		(or
+			(civ-selected GEONOSIANS)
+			(civ-selected CONFEDERACY)
+		)
+        =>
+        (train ADV-TROOPER-LINE)
+)
+
+(defrule
+		(goal advinfcen YES)
+		(current-age == tech-level-4)
+        (unit-type-count ADV-TROOPER-LINE < TL4-trooper-arm-water)
+        (can-train ADV-TROOPER-LINE)
+		(or
+			(civ-selected GEONOSIANS)
+			(civ-selected CONFEDERACY)
+		)
+        =>
+        (train ADV-TROOPER-LINE)
+)
+
+; random junk-unit training removed from the Advanced Infantry Center
+
+
+
+
+
+
+
+
+; / --------------------- \
+; | ------ RESEARCH ----- |
+; \ --------------------- /
+
+
+
+; TROOPER LINE REPLACEMENTS
+
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-laser-1-2)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-laser-1-2)
+	(disable-self)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-laser-1-3)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-laser-1-3)
+	(disable-self)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-laser-1-4)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-laser-1-4)
+	(disable-self)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-laser-2-2)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-laser-2-2)
+	(disable-self)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-laser-2-3)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-laser-2-3)
+	(disable-self)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-laser-2-4)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-laser-2-4)
+	(disable-self)
+)
+
+; GEONOSIAN BRAINWORMS
+
+(defrule
+	(civ-selected GEONOSIANS)
+	(can-research-with-escrow rt-brainworms)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-brainworms)
+)
+
+; OTHER RANDOM TECHS
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-range-1)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-range-1)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-range-2)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-range-2)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-range-3)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-range-3)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-range-4)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-range-4)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-melee-1)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-melee-1)
+)
+
+(defrule
+	(goal advinfcen YES)
+	(can-research-with-escrow aic-adv-melee-2)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research aic-adv-melee-2)
+)
+
+
+
+

@@ -1,0 +1,278 @@
+; =====================================================
+; FILE: jedi-temple
+; PURPOSE:
+;   Builds Jedi Temple, trains Jedi units, and paces fair holocron collectors.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: BUILDINGS
+;	Chapter 2: CORE UNITS
+;	Chapter 3: MASTER UNITS
+;	Chapter 4: TEMPLE UNIQUE UNITS
+;	Chapter 5: UPGRADES
+;	Chapter 6: CIV TECH CATCHUP
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-maximum-jedi-support-group-size 0) ; Freezes units, do not use.
+	(disable-self)
+)
+
+; =====================================================
+; CHAPTER 1: BUILDINGS
+; =====================================================
+
+(defrule
+	(current-age >= tech-level-3)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-TRAINMECH > 0)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-MAIN > 2)
+	(or
+		(building-type-count BLDG-POWERCORE > 0) ; either have a powercore, or EXCESS carbon
+		(carbon-amount > 400)
+	)
+	(building-type-count-total BLDG-TRAINJEDI == 0) ; treat Temple as late support infrastructure
+	(can-build-with-escrow BLDG-TRAINJEDI)
+	(nova-amount > 25) ; so as to avoid releasing nova
+	=>
+	(release-escrow carbon)
+	(build BLDG-TRAINJEDI)
+)
+
+; --- Earlier Temple civ ---
+; Only Black Sun gets the TL2 Temple fast path.
+(defrule
+	(current-age >= tech-level-2)
+	(civ-selected BLACKSUN)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-TRAINJEDI == 0)
+	(can-build-with-escrow BLDG-TRAINJEDI)
+	(nova-amount > 25) 
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINJEDI)
+)
+
+; =====================================================
+; CHAPTER 2: UNIT-JEDI-LINE
+; =====================================================
+
+#load-if-not-defined BLACKSUN
+
+(defrule
+	(current-age >= tech-level-3)
+	(game-time < 3600)
+	(goal holocroncollectionservices 0)
+	(building-type-count-total BLDG-TRAINJEDI > 0)
+	(unit-type-count-total UNIT-JEDI-LINE == 0)
+	(unit-type-count-total UNIT-JEDIHOLO-LINE == 0)
+	(can-train-with-escrow UNIT-JEDI-LINE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(train UNIT-JEDI-LINE)
+	(set-goal holocroncollectionservices 1)
+)
+
+; The shared ten-minute timer walks holocroncollectionservices upward after a failed collector.
+(defrule
+	(current-age >= tech-level-3)
+	(game-time < 3600)
+	(or
+		(goal holocroncollectionservices 2)
+		(or
+			(goal holocroncollectionservices 3)
+			(goal holocroncollectionservices 4)
+		)
+	)
+	(building-type-count-total BLDG-TRAINJEDI > 0)
+	(unit-type-count-total UNIT-JEDI-LINE == 0)
+	(unit-type-count-total UNIT-JEDIHOLO-LINE == 0)
+	(can-train-with-escrow UNIT-JEDI-LINE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(train UNIT-JEDI-LINE)
+	(set-goal holocroncollectionservices 1)
+)
+#end-if
+
+; =====================================================
+; CHAPTER 3: UNIT-MASTER-LINE
+; =====================================================
+
+(defrule
+	
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(and
+			(not (goal special-map WATER))
+			(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3)	
+		)
+		(and
+			(goal special-map WATER)
+			(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3-water)
+		)
+	)
+
+	(military-population > 30)
+	(can-train UNIT-MASTER-LINE)
+	
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+; =====================================================
+; CHAPTER 4: TEMPLE UNIQUE UNITS
+; =====================================================
+
+; --- Black Sun Temple UU ---
+#load-if-defined BLACKSUN
+
+; --- First Nightsister Hunter ---
+; Black Sun uses Hunters for holocron collection instead of basic Jedi.
+(defrule
+	(current-age >= tech-level-2)
+	(game-time < 3600)
+	(goal holocroncollectionservices 0)
+	(unit-type-count-total UU-JEDIALT-LINE == 0)
+	(unit-type-count-total UNIT-JEDIHOLO-LINE == 0)
+	(can-train-with-escrow UU-JEDIALT-LINE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(train UU-JEDIALT-LINE)
+	(set-goal holocroncollectionservices 1)
+)
+
+; --- Replacement Nightsister Hunter ---
+(defrule
+	(current-age >= tech-level-2)
+	(game-time < 3600)
+	(or
+		(goal holocroncollectionservices 2)
+		(or
+			(goal holocroncollectionservices 3)
+			(goal holocroncollectionservices 4)
+		)
+	)
+	(unit-type-count-total UU-JEDIALT-LINE == 0)
+	(unit-type-count-total UNIT-JEDIHOLO-LINE == 0)
+	(can-train-with-escrow UU-JEDIALT-LINE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(train UU-JEDIALT-LINE)
+	(set-goal holocroncollectionservices 1)
+)
+
+; --- T3 Nightsister Hunter ---
+(defrule
+	(current-age == tech-level-3)
+	(goal support-uu YES)
+	(unit-type-count UU-JEDIALT-LINE < unique-hunter-supp)
+	(can-train UU-JEDIALT-LINE)
+=>
+	(train UU-JEDIALT-LINE)
+)
+
+; --- T4 Nightsister Hunter ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-uu YES)
+	(unit-type-count UU-JEDIALT-LINE < unique-hunter-supp-p2) ; keep Black Sun from flooding Hunters in lategame
+	(can-train UU-JEDIALT-LINE)
+=>
+	(train UU-JEDIALT-LINE)
+)
+
+#end-if
+
+; --- Zann Temple UU ---
+#load-if-defined ZANN
+
+; --- T4 Nightsister Beastmaster ---
+(defrule
+        (current-age == tech-level-4)
+        (unit-type-count UU-JEDIALT-LINE < unique-beastmaster-arm)
+        (can-train UU-JEDIALT-LINE)
+        =>
+        (train UU-JEDIALT-LINE)
+)
+
+#end-if
+
+; =====================================================
+; CHAPTER 5: UPGRADES
+; =====================================================
+
+(defrule
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-JEDI-LINE > 0)
+	(can-research-with-escrow ut-jedi-2)
+	(goal importantT3research DONE)
+=>
+	(release-escrow nova)
+	(release-escrow food)
+	(research ut-jedi-2)
+)
+
+(defrule
+	; RP Sight Beyond Sight
+	(can-research-with-escrow rt-sgtbysgt)
+	(goal importantT4research DONE)
+=>
+	(release-escrow nova)
+	(research rt-sgtbysgt)
+)
+
+(defrule
+	; GE Chain Lightning
+	(can-research-with-escrow rt-chain-lightning)
+	(goal importantT4research DONE)
+	(goal support-masters YES)
+=>
+	(release-escrow nova)
+	(research rt-chain-lightning)
+)
+
+(defrule
+	; IR Artusian Crystals
+	(can-research-with-escrow rt-artusiancrystals)
+	(goal importantT4research DONE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-artusiancrystals)
+)
+
+(defrule
+	; NR New Jedi Order
+	(can-research-with-escrow rt-newjediorder)
+	(goal importantT4research DONE)
+	(goal support-masters YES)
+=>
+	(release-escrow nova)
+	(research rt-newjediorder)
+)
+
+(defrule
+	; BS Spirit Ichor
+	(can-research-with-escrow ut-spiritichor)
+	(goal importantT4research DONE)
+	(goal support-masters YES)
+=>
+	(release-escrow nova)
+	(research ut-spiritichor)
+)
+

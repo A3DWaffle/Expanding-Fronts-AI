@@ -1,0 +1,121 @@
+; =====================================================
+; FILE: defensive
+; PURPOSE:
+;   Defensive personality overlay for safer pacing, fighter trick, and high attack thresholds.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: LOGIC
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(goal openingstyle UNDEFINED)
+=>
+	(set-goal openingstyle STYLE-DEFENSIVE)
+	(disable-self)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
+	(goal attacksonhold-auto YES)
+	(military-population >= 18)
+=>
+	(set-goal attacksonhold-auto NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(goal openingstyle STYLE-DEFENSIVE)
+	(current-age == tech-level-2)
+	(or
+		(goal attacksonhold-auto NO)
+		(not (goal rushsize RUSHHALT))
+	)
+=>
+	(set-goal attacksonhold-auto YES)
+	(set-goal rushsize RUSHHALT)
+)
+
+(defrule
+	(goal openingstyle STYLE-DEFENSIVE)
+	(current-age == tech-level-3)
+	(goal fightertrick NO)
+=>
+	(set-goal fightertrick FIGHTERTRICK-ACTIVE)
+	(set-goal attacksonhold-auto YES)
+)
+
+(defrule
+	(goal openingstyle STYLE-DEFENSIVE)
+	(current-age == tech-level-3)
+	(goal fightertrick FIGHTERTRICK-ACTIVE)
+	(goal attacksonhold-auto NO)
+=>
+	(set-goal attacksonhold-auto YES)
+)
+
+(defrule
+	(goal openingstyle STYLE-DEFENSIVE)
+	(current-age == tech-level-3)
+	(goal fightertrick FIGHTERTRICK-ACTIVE)
+	(building-type-count-total BLDG-TRAINAIR >= 2)
+	(or
+		(and
+			(not (goal special-map WATER))
+			(unit-type-count-total UNIT-FIGHTER-LINE >= fightertrick-fighters)
+		)
+		(and
+			(goal special-map WATER)
+			(unit-type-count-total UNIT-FIGHTER-LINE >= fightertrick-fighters-water)
+		)
+	)
+	(not (players-current-age any-enemy >= tech-level-3))
+=>
+	(set-strategic-number sn-percent-attack-soldiers 0)
+	(set-strategic-number sn-percent-attack-air 100)
+	(set-strategic-number sn-percent-attack-boats 0)
+	(attack-now)
+	(set-goal fightertrick FIGHTERTRICK-DONE)
+	(set-goal attacksonhold-auto NO)
+)
+
+(defrule
+	(goal openingstyle STYLE-DEFENSIVE)
+	(current-age == tech-level-3)
+	(goal fightertrick FIGHTERTRICK-DONE)
+	(research-available tech-level-4)
+	(not (goal agingup YES))
+=>
+	(set-goal attacksonhold-auto YES)
+)
+
+(defrule
+	(goal openingstyle STYLE-DEFENSIVE)
+	(current-age == tech-level-3)
+	(goal fightertrick FIGHTERTRICK-ACTIVE)
+	(building-type-count-total BLDG-TRAINAIR >= 2)
+	(or
+		(and
+			(not (goal special-map WATER))
+			(unit-type-count-total UNIT-FIGHTER-LINE >= fightertrick-fighters)
+		)
+		(and
+			(goal special-map WATER)
+			(unit-type-count-total UNIT-FIGHTER-LINE >= fightertrick-fighters-water)
+		)
+	)
+	(players-current-age any-enemy >= tech-level-3)
+=>
+	(set-goal fightertrick FIGHTERTRICK-DONE)
+	(set-goal attacksonhold-auto NO)
+)
+

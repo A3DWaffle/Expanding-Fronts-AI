@@ -1,0 +1,75 @@
+; =====================================================
+; FILE: building-count
+; PURPOSE:
+;   Sets builder behavior and tracks key building-count milestones.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: BUILDER TYPES
+;	Chapter 2: CIV BUILDING MILESTONES
+;	Chapter 3: CC TARGETS
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+    (true)
+=>
+    ;TL1: use one builder everywhere to avoid early overcommit and travel waste
+    (set-builders-type BLDG-DROPCHOW 1) ;Food Proc Ctr
+    (set-builders-type BLDG-DROPMETAL 1) ;Ore Proc Ctr
+    (set-builders-type BLDG-DROPCARBON 1) ;Carbon Proc Ctr
+    (set-builders-type BLDG-DROPNOVA 1) ;Nova Proc Ctr
+	(set-builders-type BLDG-POWERCORE 1) ;Power Core
+	(set-builders-type BLDG-DROPANIM 1) ;Animal Nursery
+	(set-builders-type BLDG-TRAINTROOPER 1) ;Troop Center
+	(set-builders-type BLDG-TRAINMECH 1) ;Mech Factory
+	(set-builders-type BLDG-TRAINHEAVY 1) ;Hvy Weapons Factory
+	(set-builders-type BLDG-TRAINAIR 1) ;Airbase
+	(set-builders-type BLDG-TRAINBOAT 1) ;Shipyard
+	(set-builders-type BLDG-SPACEPORT 1) ;Spaceport
+	(set-builders-type BLDG-WARCTR 1) ;War Center
+	(set-builders-type BLDG-TRAINJEDI 1) ;Jedi Temple
+	(set-builders-type BLDG-RESCTR 1) ;Research Center
+    (set-builders-type BLDG-MAIN2 1) ;Command Center
+	(set-builders-type BLDG-SHLDGEN2 1) ;Shield Gen
+	(set-builders-type BLDG-GOVTCTR2 1) ;Fortress
+	(disable-self)
+)
+
+(defrule
+	(current-age >= tech-level-2)
+=>
+    ;TL2+: restore normal builder counts
+    (set-builders-type BLDG-DROPCHOW 3) ;Food Proc Ctr
+    (set-builders-type BLDG-DROPMETAL 3) ;Ore Proc Ctr
+    (set-builders-type BLDG-DROPCARBON 3) ;Carbon Proc Ctr
+    (set-builders-type BLDG-DROPNOVA 3) ;Nova Proc Ctr
+	(set-builders-type BLDG-POWERCORE 3) ;Power Core
+	(set-builders-type BLDG-DROPANIM 3) ;Animal Nursery
+	(set-builders-type BLDG-TRAINTROOPER 3) ;Troop Center
+	(set-builders-type BLDG-TRAINMECH 3) ;Mech Factory
+	(set-builders-type BLDG-TRAINHEAVY 3) ;Hvy Weapons Factory
+	(set-builders-type BLDG-TRAINAIR 3) ;Airbase
+	(set-builders-type BLDG-TRAINBOAT 3) ;Shipyard
+	(set-builders-type BLDG-SPACEPORT 3) ;Spaceport
+	(set-builders-type BLDG-WARCTR 3) ;War Center
+	(set-builders-type BLDG-TRAINJEDI 3) ;Jedi Temple
+	(set-builders-type BLDG-RESCTR 3) ;Research Center
+    (set-builders-type BLDG-MAIN2 5) ;Command Center
+	(set-builders-type BLDG-SHLDGEN2 5) ;Shield Gen
+	(set-builders-type BLDG-GOVTCTR2 5) ;Fortress
+	(disable-self)
+)
+
+;    (set-builders-type BLDG-MAIN2 5) ;Command Center
+;	(set-builders-type BLDG-FORT-BUILD 5) ;Fortress
+
+; Difficulty should not change the AI's macro shell. Keep one CC plan for everyone
+; and let economy/cheat support differentiate the ladder instead.
+(defconst TL3-CCs 4)
+(defconst TL4-CCs 6)

@@ -1,0 +1,312 @@
+; =====================================================
+; FILE: dip-feeder
+; PURPOSE:
+;   Handles feeder diplomacy behavior and team resource support logic.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: LOGIC
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+#load-if-defined THISWILLNEVERBEDEFINED
+; zel: this, uh, just, doesn't need to exist anymore
+; since we rewrote the tribute rules
+
+;make sure we have allies
+(defrule
+        (difficulty < 3)
+        (game-time < 30)
+        (or
+                (player-computer any-ally)
+                (player-human any-ally)
+        )
+=>
+        (set-goal personality NOTICE)
+        (disable-self)
+)
+
+(defrule
+        (game-time > 30)
+        (not (player-in-game any-ally) )
+=>
+        (set-goal personality 0)
+        (disable-self)
+)
+
+(defrule
+        (taunt-detected any-ally 221)
+=>
+        (set-goal personality 0)
+        (acknowledge-taunt this-any-ally 221)
+        (disable-self)
+)
+
+(defrule
+        (goal personality NOTICE)
+=>
+        (set-goal personality 1)
+        (chat-to-player-using-id every-ally 22401)      ;221
+        (disable-self)
+)
+
+;don't rush if we're a feeder also no wonder
+
+(defrule
+        (goal personality 1)
+        (goal wonder-attempt POSSIBLE)
+=>
+        (set-goal wonder-attempt NO)
+)
+
+(defrule
+        (goal personality 1)
+        (or
+                (and
+                        (current-age == tech-level-2)
+                        (players-current-age any-ally >= tech-level-3)
+                )
+                (and
+                        (current-age == tech-level-3)
+                        (players-current-age any-ally == tech-level-4)
+                )
+        )
+=>
+        (set-goal upgrade-conflict NOTICE)
+)
+
+(defrule
+        (goal personality 1)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (players-population any-ally > 10)
+=>
+        (chat-to-player-using-id every-ally 22072)
+;       (chat-to-player-using-id every-ally 22073)
+                ;"39 I'll send you over as many resources as I can spare."
+;               ;"Go forth and thrash our opponents!"
+        (disable-self)
+)
+
+;stop being a feeder if your allies are weenies
+(defrule
+        (goal personality 1)
+        (game-time > 900)
+        (or
+                (players-population every-ally <= 10)
+                (not (player-in-game any-ally) )
+        )
+=>
+        (set-goal personality 20)
+        (chat-to-player-using-id every-ally 22074)
+                ;"41 My sensors show that you are too weak to send resources to.  You're on your own."
+        (disable-self)
+)
+
+        #load-if-not-defined TEAMS-LOCKED
+        (defrule
+                (goal personality 20)
+                (difficulty <= 1)
+                (players-stance any-human ally)
+        =>
+                (chat-to-player-using-id every-ally 22075)
+                        ;"40 In fact, I'm going to join the enemy.  May the Force be with you!"
+                (set-stance every-computer ally)
+                (set-stance this-any-human enemy)
+                (set-goal personality 10)
+                (disable-self)
+        )
+        #end-if
+
+;***********************
+;TRIBUTE
+(defrule
+        (true)
+=>
+        (set-goal 29 YES)
+        (disable-self)
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 NO)
+=>
+        (set-goal 29 YES)       ; ok to tribute!
+)
+
+(defrule
+        (goal personality 1)
+        (town-under-attack)
+=>
+        (set-goal 29 NO)        ; NOT ok to tribute!
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (taunt-detected any-ally 4)
+        (carbon-amount > 100)
+=>
+        (tribute-to-player this-any-ally carbon 100)
+        (acknowledge-taunt this-any-ally 4)
+        (chat-local-to-self "Tribute carbon")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (taunt-detected any-ally 3)
+        (food-amount > 100)
+=>
+        (tribute-to-player this-any-ally food 100)
+        (acknowledge-taunt this-any-ally 3)
+        (chat-local-to-self "Tribute food")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (taunt-detected any-ally 5)
+        (nova-amount > 100)
+=>
+        (tribute-to-player this-any-ally nova 100)
+        (acknowledge-taunt this-any-ally 5)
+        (chat-local-to-self "Tribute nova")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (taunt-detected any-ally 6)
+        (metal-amount > 100)
+=>
+        (tribute-to-player this-any-ally metal 100)
+        (acknowledge-taunt this-any-ally 6)
+        (chat-local-to-self "Tribute metal")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (current-age-time > 240)
+        (carbon-amount > 300)
+		(stance-toward any-human ally)
+=>
+        (tribute-to-player this-any-human carbon 100)
+        (set-goal 29 NO)
+        (chat-to-player this-any-human "Transferring carbon now.")
+                ;"39 Transferring carbon now."
+        (chat-local-to-self "Tribute carbon")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (current-age-time > 240)
+        (food-amount > 200)
+		(stance-toward any-human ally)
+=>
+        (tribute-to-player this-any-human food 100)
+        (set-goal 29 NO)
+        (chat-to-player this-any-human "Transferring food now.")
+                ;"39 Transferring food now."
+        (chat-local-to-self "Tribute food")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (current-age-time > 240)
+        (nova-amount > 200)
+		(stance-toward any-human ally)
+=>
+        (tribute-to-player this-any-human nova 100)
+        (set-goal 29 NO)
+        (chat-to-player this-any-human "Transferring nova crystals now.")
+                ;"39 Transferring nova crystals now."
+        (chat-local-to-self "Tribute nova")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (current-age-time > 240)
+        (metal-amount > 100)
+		(stance-toward any-human ally)
+=>
+        (tribute-to-player this-any-human metal 100)
+        (set-goal 29 NO)
+        (chat-to-player this-any-human "Transferring ore now.")
+                ;"39 Transferring ore now."
+        (chat-local-to-self "Tribute metal")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (player-in-game any-computer-ally)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (current-age-time > 240)
+        (carbon-amount > 300)
+=>
+        (tribute-to-player this-any-computer-ally carbon 100)
+        (set-goal 29 NO)
+        (chat-to-player-using-id this-any-computer-ally 22076)
+                ;"39 Transferring carbon now."
+        (chat-local-to-self "Tribute carbon")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (player-in-game any-computer-ally)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (current-age-time > 240)
+        (food-amount > 200)
+=>
+        (tribute-to-player this-any-computer-ally food 100)
+        (set-goal 29 NO)
+        (chat-to-player-using-id this-any-computer-ally 22077)
+                ;"39 Transferring food now."
+        (chat-local-to-self "Tribute food")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (player-in-game any-computer-ally)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (current-age-time > 240)
+        (nova-amount > 200)
+=>
+        (tribute-to-player this-any-computer-ally nova 100)
+        (set-goal 29 NO)
+        (chat-to-player-using-id this-any-computer-ally 22078)
+                ;"39 Transferring nova crystals now."
+        (chat-local-to-self "Tribute nova")
+)
+
+(defrule
+        (goal personality 1)
+        (goal 29 YES)
+        (player-in-game any-computer-ally)
+        (building-type-count BLDG-SPACEPORT > 0)
+        (current-age-time > 240)
+        (metal-amount > 100)
+=>
+        (tribute-to-player this-any-computer-ally metal 100)
+        (set-goal 29 NO)
+        (chat-to-player-using-id this-any-computer-ally 22079)
+                ;"39 Transferring ore now."
+        (chat-local-to-self "Tribute metal")
+)
+
+#end-if

@@ -1,0 +1,449 @@
+; =====================================================
+; FILE: sn-soldiers
+; PURPOSE:
+;   Controls soldier strategic numbers, scouting, stance, and combat micro settings.
+;
+; =====================================================
+; *** Table of Contents *** 
+; =====================================================
+;
+;	Chapter 0: SETUP
+;	Chapter 1: SCOUTING
+;	Chapter 2: STANCE
+;	Chapter 3: MICRO
+;	Chapter 4: DIFFICULTY
+;
+; =====================================================
+; *** Chapter 0: SETUP ***
+; =====================================================
+
+(defrule
+	(strategic-number sn-task-ungrouped-soldiers == 1)
+=>
+	(set-strategic-number sn-task-ungrouped-soldiers 0)
+)
+
+; stuff about moving to center has been moved elsewhere
+
+
+;********************************
+#load-if-defined DIFFICULTY-EASIEST
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-percent-enemy-sighted-response 10)
+	(set-strategic-number sn-easiest-reaction-percentage 20)
+	(set-difficulty-parameter ability-to-maintain-distance 100)
+	(set-difficulty-parameter ability-to-dodge-missiles 100)
+	(disable-self)
+)
+#end-if
+
+;********************************
+#load-if-defined DIFFICULTY-EASY
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-desired-number-transport-escorts 0)
+	(set-strategic-number sn-percent-enemy-sighted-response 25)
+	(set-strategic-number sn-easier-reaction-percentage 20)
+	(set-strategic-number sn-hits-before-alliance-change 50)
+	(set-difficulty-parameter ability-to-maintain-distance 75)
+	(set-difficulty-parameter ability-to-dodge-missiles 100)
+	(disable-self)
+)
+#end-if
+
+
+;********************************
+#load-if-defined DIFFICULTY-MODERATE
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-desired-number-transport-escorts 0)
+	(set-strategic-number sn-percent-enemy-sighted-response 75)
+	(set-strategic-number sn-hits-before-alliance-change 25)
+	(set-difficulty-parameter ability-to-maintain-distance 75) ; increased to 75. well, decreased. these numbers are weird (was 50)
+	(set-difficulty-parameter ability-to-dodge-missiles 100)
+	(disable-self)
+)
+#end-if
+
+
+;********************************
+#load-if-defined DIFFICULTY-HARD
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-desired-number-transport-escorts 0) ; does this change holocron escort by any chance? (it does not)
+	(set-strategic-number sn-attack-winning-player 0)
+	(set-strategic-number sn-attack-winning-player-factor 30)
+	(set-strategic-number sn-percent-enemy-sighted-response 99)
+	(set-strategic-number sn-hits-before-alliance-change 10)
+	(set-difficulty-parameter ability-to-maintain-distance 75) ; zel: lowered (well, increased) from 25 to 40 to 50 to 75
+	(set-difficulty-parameter ability-to-dodge-missiles 100)
+	(disable-self)
+)
+
+#end-if
+
+
+;********************************
+#load-if-defined DIFFICULTY-HARDEST
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-desired-number-transport-escorts 0)
+	(set-strategic-number sn-attack-winning-player 0)
+	(set-strategic-number sn-attack-winning-player-factor 20)
+	(set-strategic-number sn-percent-enemy-sighted-response 99)
+	(set-strategic-number sn-hits-before-alliance-change 10)
+	(set-difficulty-parameter ability-to-maintain-distance 75)
+	(set-difficulty-parameter ability-to-dodge-missiles 100)
+	(disable-self)
+)
+
+
+#end-if
+
+;======================== TL1 RULES
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-coop-share-information 1) ; TRYING THIS 
+	(set-strategic-number sn-coop-share-attacking 0) ; apparently this is a thing; documentation suggests to set to 0
+	(set-strategic-number sn-task-ungrouped-soldiers 0)
+
+	(set-strategic-number sn-attack-intelligence 1)
+;       (set-strategic-number sn-gather-defense-units 1)
+	(set-strategic-number sn-defense-distance 40)
+
+	(set-strategic-number sn-ignore-attack-group-under-attack 0)
+	(set-strategic-number sn-enemy-sighted-response-distance 10)
+	(set-strategic-number sn-group-form-distance 10)
+
+	(disable-self)
+)
+
+;======================= TL2 RULES
+(defrule
+	(current-age >= tech-level-2)
+=>
+	(set-strategic-number sn-group-form-distance 20)
+	(set-strategic-number sn-enemy-sighted-response-distance 20)
+	(set-strategic-number sn-ignore-attack-group-under-attack 0)
+
+	(disable-self)
+)
+
+
+;======================== TL3 RULES
+
+(defrule
+	(current-age >= tech-level-3)
+=>
+	(set-strategic-number sn-group-form-distance 20) ; 30 is maximum apparently
+	(set-strategic-number sn-enemy-sighted-response-distance 30) ; 50 is maximum apparently
+
+	(disable-self)
+)
+
+; so about enemy sighted response distance
+; if a unit is chillin' outside of town size
+; and it gets shot at
+; any units within that distance from that unit will run to its aid
+; needless to say 50, its maximum, is a LOT
+
+; what this means is that once TSA wears off
+; a lot of units are just hanging around
+; and the high value of 50 can pull them together which may or may not be unhelpful
+; but I think we could definitely get away with reducing it
+
+
+;============================= TL4 RULES
+
+(defrule
+	(current-age == tech-level-4)
+=>
+	(set-strategic-number sn-group-form-distance 25)
+	(set-strategic-number sn-enemy-sighted-response-distance 30)
+
+	(disable-self)
+)
+
+
+; increase and decrease the maintain distance sn accordingly
+; remember: value of 100 means no maintaining distance will be done
+(defrule
+	(current-age == tech-level-2)
+=>
+	(set-difficulty-parameter ability-to-maintain-distance 50) ; trooper trading and mounties
+	(disable-self)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+=>
+	(set-difficulty-parameter ability-to-maintain-distance 100)
+	(set-difficulty-parameter ability-to-dodge-missiles 100)
+	(disable-self)
+)
+
+
+; -------------------------------
+; ---------- SCOUTING -----------
+; -------------------------------
+
+; notes about AI scout logic:
+; it always scouts with air
+; and it always scouts with land
+; at the same time
+
+; for what unit to pick, it priorities scouts, but if these are not in play
+; it will just pick the most oldest valid scouting unit (eg: recruits will not scout, but regular troops will)
+; this means it can pick a slower/worse unit (eg: trooper) over a better scouting unit (eg: mountie)
+
+; reassignment does not occur: if scouting is ON and a mountie is scouting and you train a scout
+; the scout will not do anything because a scouting unit is already in play
+
+; furthermore, turning scouting OFF midscout doesn't do anything
+; that unit does not Stop scouting, it continues scouting as usual
+; but it will mean a new scout is not assigned till scouting goes back on 
+; this logic is the basis behind the pulse command 
+
+; scout logic:
+; T1: 1 scout (BEGIN)
+; T2: first mounted unit can serve as the scout while enemy CC is unseen
+; T2+: if CC is seen, return to normal scouting
+; T3: scout until you have an airbase going up AND have seen opposing CC 
+; T4: turn on again by existing logic with pulses
+
+; scn should override all of this and only ever scout if a scout is given in all cases, it will need its own separate logic
+
+; at start of game, scout until we see a CC
+(defrule
+	(true)
+=>
+	(set-goal scouting scoutCCnotseen) ; INITIAL VAL
+	(set-strategic-number sn-number-explore-groups 0) ; turn off as default behaviour at game start - should be re-enabled very quickly by rules below
+    (set-strategic-number sn-minimum-explore-group-size 0)
+	(set-strategic-number sn-maximum-explore-group-size 0)
+	(set-strategic-number sn-blot-exploration-map 1) ; allow rescouting of revealed areas by CC LOS tech
+	(set-strategic-number sn-blot-size 10)
+	(disable-self)
+)
+
+(defrule
+	(game-time > 180)
+=>
+	(set-strategic-number sn-blot-exploration-map 0)
+	(set-strategic-number sn-blot-size 15)
+	(disable-self)
+)
+
+
+(defrule
+	(game-time < 10)
+	(unit-type-count UNIT-FASTBIKE-LINE == 0)
+	(unit-type-count UNIT-MOUNTED-LINE == 0)
+	(unit-type-count UNIT-FIGHTER-LINE == 0)
+=>
+	(set-goal scouting NO) ; if no scout, do not scout
+	(disable-self)
+)
+
+(defrule
+	(goal scouting scoutCCnotseen)
+	(game-time > 1)
+	(players-building-type-count any-enemy BLDG-MAIN > 0) ; found enemy CC
+=>
+	(set-goal scouting YES) ; normal behaviour
+	(chat-to-all "WAFFLE: Spotted enemy CC")
+	(disable-self)
+)
+
+(defrule
+	(goal scouting scoutCCnotseen) ; initial
+	(goal scn-detected NO)
+=>
+	(set-strategic-number sn-number-explore-groups 1) ; initial scout  (after scenario detection goes off)
+    (set-strategic-number sn-minimum-explore-group-size 1)
+	(set-strategic-number sn-maximum-explore-group-size 1)
+	(disable-self)
+)
+
+(defrule
+	; Let the first mounted unit scout while the enemy CC is unseen.
+	(goal scouting scoutCCnotseen)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(current-age < tech-level-3)
+	(goal scn-detected NO)
+=>
+	(set-strategic-number sn-number-explore-groups 1)
+    (set-strategic-number sn-minimum-explore-group-size 1)
+	(set-strategic-number sn-maximum-explore-group-size 1)
+	(disable-self)
+)
+
+
+
+(defrule
+	(goal scn-detected NO)
+	(or
+		(or
+			(goal scouting YES)					; other general scouting behaviour
+			(false)								; nothing here for now
+		)
+		(or
+			(goal scouting PULSEYES)			; bodge to pulse scouting lategame
+			(goal scouting PULSEYESA)			; ditto
+		)
+	)
+	(not (strategic-number sn-number-explore-groups == 1))
+	(player-in-game any-ally)
+	
+=>
+    (set-strategic-number sn-number-explore-groups 1)
+    (set-strategic-number sn-minimum-explore-group-size 1)
+	(set-strategic-number sn-maximum-explore-group-size 1)
+)
+
+
+(defrule
+	(goal scn-detected NO)
+	(or
+		(or
+			(goal scouting YES)					; other general scouting behaviour
+			(false)								; 
+		)
+		(or
+			(goal scouting PULSEYES)			; bodge to pulse scouting lategame
+			(goal scouting PULSEYESA)			; ditto
+		)
+	)
+	(not (strategic-number sn-number-explore-groups == 1))
+	(not (player-in-game any-ally))
+	(current-age >= tech-level-3)
+=>
+    (set-strategic-number sn-number-explore-groups 2) ; allow more scouts
+    (set-strategic-number sn-minimum-explore-group-size 1)
+	(set-strategic-number sn-maximum-explore-group-size 1)
+)
+
+(defrule
+	(goal scouting NO) ; basically only ever fires T3 onwards
+	(not (strategic-number sn-number-explore-groups == 0))
+=>
+    (set-strategic-number sn-number-explore-groups 0)
+    (set-strategic-number sn-minimum-explore-group-size 0)
+	(set-strategic-number sn-maximum-explore-group-size 0)
+)
+
+
+
+; turn off scouting when air is ready
+(defrule
+	(current-age == tech-level-3)
+	(building-type-count-total BLDG-TRAINAIR > 0) ; and air is probably going to be on the way soon
+	(or
+		(goal scouting YES) ; if we have found the CC
+		(goal scouting scoutCCnotseen) ; or if the CC was never found
+	)
+	(goal scn-detected NO)
+=>
+	(set-goal scouting NO)
+	(disable-self)
+)
+
+; if in T4
+; the misc lategame timer as part of Warboat sets scouting to ALLOW
+; this should allow to train a scout
+; is what we wanted to do but there's no guarantee scout actually goes scouting
+; so instead we pulse scout to be on and then immediately turn it off again 
+; this ensures One scout unit goes off every 10min, and if it gets shot, the AI does not send a secound scout
+
+(defrule
+	(current-age == tech-level-4)
+	(goal scn-detected NO)
+=>
+	(set-goal scouting PULSEYES)
+	(set-strategic-number sn-blot-exploration-map 1) ; allow rescouting
+	(set-strategic-number sn-blot-size 25)
+	(disable-self)
+)
+
+(defrule
+	(goal scouting ALLOW)
+=>
+	(set-goal scouting PULSEYES)
+)
+
+(defrule
+	(goal scouting PULSEYESA)
+=>
+	(set-goal scouting NO)
+)
+
+(defrule
+	(goal scouting PULSEYES)
+=>
+	(set-goal scouting PULSEYESA)
+)
+
+
+
+; BONUS SCOUT RULES
+; ACTIVATED DURING LATEGAME TSA
+
+(defrule
+	(or
+		(goal attackTSAhold HOLDING-HIGH)
+		(goal attackTSAhold HOLDING-LOW)
+	)
+	(goal attackTSAlevel 11)
+	(not (strategic-number sn-number-explore-groups == 5))
+=>
+	(set-strategic-number sn-number-explore-groups 5)
+    (set-strategic-number sn-minimum-explore-group-size 2)
+	(set-strategic-number sn-maximum-explore-group-size 2)
+	(set-strategic-number sn-blot-exploration-map 1) ; allow rescouting
+	(set-strategic-number sn-blot-size 25)
+	(set-goal scouting 6) ; can't be bothered constanting something for this rn
+)
+
+; SCENARIO LOGIC
+
+(defrule
+	(goal scn-detected YES)
+=>
+	(set-goal scouting NO)
+	(set-strategic-number sn-number-explore-groups 0)
+    (set-strategic-number sn-minimum-explore-group-size 0)
+	(set-strategic-number sn-maximum-explore-group-size 0)
+	(disable-self) ; deliberately may be overriden by rule below
+)
+
+(defrule
+	;(goal scn-detected YES) ; if under ANY circumstances the AI has a scout, it will scout
+	(unit-type-count UNIT-FASTBIKE-LINE > 0) 
+=>
+	;(set-goal scouting YES)  ; actually, this can interfere with ccseen above
+	(set-strategic-number sn-number-explore-groups 1)
+    (set-strategic-number sn-minimum-explore-group-size 1)
+	(set-strategic-number sn-maximum-explore-group-size 1)
+	(disable-self)
+)
+
+
+
+
+
+
+
+
+
