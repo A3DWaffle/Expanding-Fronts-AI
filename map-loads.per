@@ -8,9 +8,10 @@
 ; =====================================================
 ;
 ;	Chapter 0: SETUP
-;	Chapter 1: MAP DETECTION
-;	Chapter 2: RESOURCE DETECTION
-;	Chapter 3: SPECIAL MAPS
+;	Chapter 1: RESOURCE DETECTION
+;	Chapter 2: MAP-SIZE RESOURCE THRESHOLDS
+;	Chapter 3: LEGACY MAP METADATA
+;	Chapter 4: GAIA MAP MARKER OVERRIDES
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
@@ -24,11 +25,14 @@
 	(set-goal nova-found NO)
 	(set-goal berries-present NO)
 	(set-goal hunt-present NO)
+	(set-goal special-map LAND)
 	(set-strategic-number snc-lure-amount 0)
 	(disable-self)
 )
 
-; #load-if-defined CUSTOM-MAP ; these rules now fire for all maps
+; =====================================================
+; *** Chapter 1: RESOURCE DETECTION ***
+; =====================================================
 
 (defrule
 	(cc-players-unit-type-count 0 GAIA-BERRY-LINE >= 10) ; if any berries do exist on map
@@ -55,13 +59,17 @@
 	(disable-self)
 )
 
+; =====================================================
+; *** Chapter 2: MAP-SIZE RESOURCE THRESHOLDS ***
+; =====================================================
+
 
 #load-if-defined TINY-MAP ; 2p sized map
 (defrule
 	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 20) ; 10 fish total on map
 =>
 	(set-goal fish-present YES)
-	(set-goal special-map WATER)
+	(do-nothing)
 	(disable-self)
 )
 
@@ -118,7 +126,7 @@
 	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 30) ; 15 fish total on map
 =>
 	(set-goal fish-present YES)
-	(set-goal special-map WATER)
+	(do-nothing)
 	(disable-self)
 )
 
@@ -168,7 +176,7 @@
 	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 40)
 =>
 	(set-goal fish-present YES)
-	(set-goal special-map WATER)
+	(do-nothing)
 	(disable-self)
 )
 
@@ -218,7 +226,7 @@
 	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 60)
 =>
 	(set-goal fish-present YES)
-	(set-goal special-map WATER)
+	(do-nothing)
 	(disable-self)
 )
 
@@ -270,7 +278,7 @@
 	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 70)
 =>
 	(set-goal fish-present YES)
-	(set-goal special-map WATER)
+	(do-nothing)
 	(disable-self)
 )
 
@@ -291,7 +299,7 @@
 	(cc-players-unit-type-count 0 GAIA-FISH-LINE >= 80)
 =>
 	(set-goal fish-present YES)
-	(set-goal special-map WATER)
+	(do-nothing)
 	(disable-self)
 )
 
@@ -338,12 +346,15 @@
 	(disable-self)
 )
 
-; check type of lure
+; Only verified food lures should enable the hunt economy path. Some animals
+; share lure-style classes but are not usable boar food starts.
 (defrule
 		(or
 	(cc-players-unit-type-count 0 4423 >= 4); Flit, 120f
 		(or
 	(cc-players-unit-type-count 0 7401 >= 4); Splox, 150f
+		(or
+	(cc-players-unit-type-count 0 7435 >= 4); Kath hound, 200f
 		(or
 	(cc-players-unit-type-count 0 7437 >= 4); Ksomethingslug, 200f
 		(or
@@ -355,9 +366,46 @@
 		(or
 	(cc-players-unit-type-count 0 7661 >= 4); Horranth, 220f
 	(cc-players-unit-type-count 0 7673 >= 4); BGlider, 210f
-	)))))))
+	))))))))
 =>
 	(set-goal allowgarbage LOWLUREFOOD) ; this goal does double duty
+	(set-goal hunt-present YES)
+	(disable-self)
+)
+
+(defrule
+	(strategic-number snc-lure-amount < 1)
+	(cc-players-unit-type-count 0 7435 >= 4)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 1)
+	(disable-self)
+)
+
+(defrule
+	(strategic-number snc-lure-amount < 2)
+	(cc-players-unit-type-count 0 7435 >= 8)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 2)
+	(disable-self)
+)
+
+(defrule
+	(strategic-number snc-lure-amount < 3)
+	(cc-players-unit-type-count 0 7435 >= 12)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 3)
+	(disable-self)
+)
+
+(defrule
+	(strategic-number snc-lure-amount < 4)
+	(cc-players-unit-type-count 0 7435 >= 16)
+	(game-time < 10)
+=>
+	(set-strategic-number snc-lure-amount 4)
 	(disable-self)
 )
 
@@ -375,18 +423,65 @@
 (defrule
 	(goal fish-present VENTSIGHTED)
 =>
-	(set-goal special-map WATER)
+	(do-nothing)
 	(disable-self)
 )
-; if there's a vent, no matter map sizes or fish count, go on the water
+; Vents alone no longer promote hybrid logic; fish mass handles visible water.
 
-; #end-if ; end of custom map
+(defrule
+	(or
+		(goal fish-present YES)
+		(goal fish-present PLENTY)
+	)
+	(not (goal special-map ASTEROID))
+=>
+	(set-goal special-map HYBRID)
+	(chat-local-to-self "WAFFLE: Fish water detected; hybrid mode enabled")
+	(disable-self)
+)
 
+; =====================================================
+; *** Chapter 3: LEGACY MAP METADATA ***
+; =====================================================
 
+; Legacy map defines remain only for non-map side effects. Map mode itself is
+; owned by the Gaia marker objects in Chapter 4.
 
+#load-if-defined WATERMAP
+(defrule
+	(not (goal special-map NOTWATER))
+=>
+	(set-goal special-map HYBRID)
+	(disable-self)
+)
+#end-if
 
-; boring map specifics here
-; mostly just sets a ton of "is water, is asteroid" stuff as well as a bunch of other useless leftovers (such as wall build on Defend the Monument, which it doesn't even do)
+#load-if-defined EF-WATERMAP
+(defrule
+	(not (goal special-map NOTWATER))
+=>
+	(set-goal special-map HYBRID)
+	(disable-self)
+)
+#end-if
+
+#load-if-defined EF_WATERMAP
+(defrule
+	(not (goal special-map NOTWATER))
+=>
+	(set-goal special-map HYBRID)
+	(disable-self)
+)
+#end-if
+
+#load-if-defined FULL_WATER
+(defrule
+	(not (goal special-map NOTWATER))
+=>
+	(set-goal special-map HYBRID)
+	(disable-self)
+)
+#end-if
 
 #load-if-defined GAME-SPEED-LOCKED
 (defrule
@@ -401,9 +496,9 @@
 #load-if-defined WATER-MASS-MAP
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (set-goal special-map WATER)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 
@@ -412,9 +507,9 @@
 #load-if-defined LAND-SATELLITES-MAP	;Islands
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (set-goal special-map WATER)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 
@@ -425,18 +520,18 @@
 (defrule
         (true)
 =>
-        (set-goal special-map ASTEROID)
+        (do-nothing)
         (disable-self)
 )
 
 #end-if
 ;*******************************
-#load-if-defined PLANETS-AND-MOONS-MAP		;Asteriods
+#load-if-defined PLANETS-AND-MOONS-MAP		;Asteroids
 
 (defrule
         (true)
 =>
-        (set-goal special-map ASTEROID)
+        (do-nothing)
         (disable-self)
 )
 
@@ -447,7 +542,7 @@
 (defrule
         (true)
 =>
-        (set-goal special-map WATER)
+        (do-nothing)
         (disable-self)
 )
 
@@ -456,9 +551,9 @@
 #load-if-defined TEAM-LAND-SATELLITES-MAP		;Team Islands
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (set-goal special-map WATER)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 #end-if
@@ -469,7 +564,7 @@
 (defrule
         (true)
 =>
-        (set-goal special-map ASTEROID)
+        (do-nothing)
         (disable-self)
 )
 
@@ -519,7 +614,7 @@
 (defrule
         (true)
 =>
-        (set-goal special-map ASTEROID)
+        (do-nothing)
         (disable-self)
 )
 
@@ -539,7 +634,7 @@
 (defrule
         (true)
 =>
-        (set-goal special-map ASTEROID)
+        (do-nothing)
         (disable-self)
 )
 
@@ -633,9 +728,9 @@
 #load-if-defined SEA-MAP
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (set-goal special-map WATER)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 #end-if
@@ -643,9 +738,9 @@
 #load-if-defined SHORELINE-MAP
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-		(set-goal special-map WATER) ; wasn't originally a water map
+		(set-goal special-map HYBRID)
         (disable-self)
 )
 #end-if
@@ -665,7 +760,7 @@
 (defrule
         (true)
 =>
-        (set-goal special-map ASTEROID)
+        (do-nothing)
         (disable-self)
 )
 
@@ -674,9 +769,9 @@
 #load-if-defined NOVA-LAKE-MAP
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (set-goal special-map WATER)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 #end-if
@@ -684,9 +779,9 @@
 #load-if-defined LARGE-SEA-MAP
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (set-goal special-map WATER)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 #end-if
@@ -798,7 +893,7 @@
 (defrule
         (true)
 =>
-        (set-goal special-map WATER)
+        (do-nothing)
         (disable-self)
 )
 
@@ -844,7 +939,7 @@
 (defrule
         (true)
 =>
-        (set-goal special-map WATER)
+        (do-nothing)
         (disable-self)
 )
 
@@ -960,9 +1055,9 @@
 #load-if-not-defined IMPERIALREMNANT
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (do-nothing)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 
@@ -979,9 +1074,9 @@
 #load-if-defined IMPERIALREMNANT
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (do-nothing)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 
@@ -1002,9 +1097,9 @@
 #load-if-not-defined IMPERIALREMNANT
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (do-nothing)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 
@@ -1021,9 +1116,9 @@
 #load-if-defined IMPERIALREMNANT
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (do-nothing)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 
@@ -1040,7 +1135,7 @@
 (defrule
         (not (goal special-map NOTWATER)) ; can't just be true as seems to be overwritten by fish logic 
 =>
-        (set-goal special-map NOTWATER)
+        (do-nothing)
 )
 
 #end-if
@@ -1089,9 +1184,9 @@
 #load-if-defined ICE-LAKE-MAP
 
 (defrule
-        (true)
+        (not (goal special-map NOTWATER))
 =>
-        (do-nothing)
+        (set-goal special-map HYBRID)
         (disable-self)
 )
 #end-if
@@ -1136,7 +1231,7 @@
 (defrule
 	(not (goal special-map NOTWATER))
 =>
-	(set-goal special-map NOTWATER)
+	(do-nothing)
 )
 
 #end-if
@@ -1146,8 +1241,96 @@
 (defrule
 	(not (goal special-map NOTWATER))
 =>
-	(set-goal special-map NOTWATER)
+	(do-nothing)
 )
 
 #end-if
 ;*************************************************************
+
+
+; =====================================================
+; *** Chapter 4: GAIA MAP MARKER OVERRIDES ***
+; =====================================================
+; Gaia marker objects are the only source of special-map classification.
+
+(defrule
+	(cc-players-unit-type-count 0 OBJ-LANDMAP > 0)
+=>
+	(chat-local-to-self "WAFFLE: Land map marker detected")
+	(set-goal special-map LAND)
+	(disable-self)
+)
+
+(defrule
+	(cc-players-unit-type-count 0 OBJ-HYBRIDMAP > 0)
+=>
+	(chat-local-to-self "WAFFLE: Hybrid map marker detected")
+	(set-goal special-map HYBRID)
+	(disable-self)
+)
+
+(defrule
+	(cc-players-unit-type-count 0 OBJ-WATERMAP > 0)
+=>
+	(chat-local-to-self "WAFFLE: Water map marker detected; hybrid mode enabled")
+	(set-goal special-map HYBRID)
+	(disable-self)
+)
+
+(defrule
+	(cc-players-unit-type-count 0 OBJ-ASTEROIDMAP > 0)
+=>
+	(chat-local-to-self "WAFFLE: Asteroid map marker detected")
+	(set-goal special-map ASTEROID)
+	(disable-self)
+)
+
+(defrule
+	(game-time > 8)
+	(goal special-map LAND)
+=>
+	(chat-local-to-self "WAFFLE: Final map mode LAND")
+	(disable-self)
+)
+
+(defrule
+	(game-time > 8)
+	(goal special-map WATER)
+=>
+	(chat-local-to-self "WAFFLE: Final map mode WATER")
+	(disable-self)
+)
+
+(defrule
+	(game-time > 8)
+	(goal special-map HYBRID)
+=>
+	(chat-local-to-self "WAFFLE: Final map mode HYBRID")
+	(disable-self)
+)
+
+(defrule
+	(game-time > 8)
+	(goal special-map ASTEROID)
+=>
+	(chat-local-to-self "WAFFLE: Final map mode ASTEROID")
+	(disable-self)
+)
+
+; Production files key off exact map modes. Treat legacy NOTWATER as land.
+(defrule
+	(game-time > 8)
+	(goal special-map NOTWATER)
+=>
+	(set-goal special-map LAND)
+	(chat-local-to-self "WAFFLE: Legacy NOTWATER normalized to LAND")
+	(disable-self)
+)
+
+(defrule
+	(game-time > 8)
+	(goal special-map NOTWATER)
+=>
+	(chat-local-to-self "WAFFLE: Final map mode NOTWATER")
+	(disable-self)
+)

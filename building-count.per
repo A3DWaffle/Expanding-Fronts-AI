@@ -1,19 +1,17 @@
 ; =====================================================
 ; FILE: building-count
 ; PURPOSE:
-;   Sets builder behavior and tracks key building-count milestones.
+;   Sets per-building builder counts and shared Command Center targets.
 ;
 ; =====================================================
 ; *** Table of Contents *** 
 ; =====================================================
 ;
-;	Chapter 0: SETUP
-;	Chapter 1: BUILDER TYPES
-;	Chapter 2: CIV BUILDING MILESTONES
-;	Chapter 3: CC TARGETS
+;	Chapter 1: BUILDER COUNTS
+;	Chapter 2: COMMAND CENTER TARGETS
 ;
 ; =====================================================
-; *** Chapter 0: SETUP ***
+; *** Chapter 1: BUILDER COUNTS ***
 ; =====================================================
 
 (defrule
@@ -35,16 +33,46 @@
 	(set-builders-type BLDG-WARCTR 1) ;War Center
 	(set-builders-type BLDG-TRAINJEDI 1) ;Jedi Temple
 	(set-builders-type BLDG-RESCTR 1) ;Research Center
-    (set-builders-type BLDG-MAIN2 1) ;Command Center
+	(set-builders-type BLDG-MAIN2 1) ;Command Center
+	(set-builders-type BLDG-SHLDGEN 1) ;Shield Gen
 	(set-builders-type BLDG-SHLDGEN2 1) ;Shield Gen
 	(set-builders-type BLDG-GOVTCTR2 1) ;Fortress
+	(set-builders-type BLDG-FARM 1) ;Farm
 	(disable-self)
 )
 
 (defrule
-	(current-age >= tech-level-2)
+	(current-age == tech-level-2)
 =>
-    ;TL2+: restore normal builder counts
+    ;TL2: keep workers gathering while the Mech Factory + Spaceport spine comes online
+    (set-builders-type BLDG-DROPCHOW 1) ;Food Proc Ctr
+    (set-builders-type BLDG-DROPMETAL 1) ;Ore Proc Ctr
+    (set-builders-type BLDG-DROPCARBON 1) ;Carbon Proc Ctr
+    (set-builders-type BLDG-DROPNOVA 1) ;Nova Proc Ctr
+	(set-builders-type BLDG-POWERCORE 2) ;Power Core
+	(set-builders-type BLDG-DROPANIM 1) ;Animal Nursery
+	(set-builders-type BLDG-TRAINTROOPER 1) ;Troop Center
+	(set-builders-type BLDG-TRAINMECH 2) ;Mech Factory
+	(set-builders-type BLDG-TRAINHEAVY 1) ;Hvy Weapons Factory
+	(set-builders-type BLDG-TRAINAIR 1) ;Airbase
+	(set-builders-type BLDG-TRAINBOAT 1) ;Shipyard
+	(set-builders-type BLDG-SPACEPORT 2) ;Spaceport
+	(set-builders-type BLDG-WARCTR 1) ;War Center
+	(set-builders-type BLDG-TRAINJEDI 1) ;Jedi Temple
+	(set-builders-type BLDG-RESCTR 1) ;Research Center
+    (set-builders-type BLDG-MAIN2 1) ;Command Center
+	(set-builders-type BLDG-SHLDGEN 1) ;Shield Gen
+	(set-builders-type BLDG-SHLDGEN2 1) ;Shield Gen
+	(set-builders-type BLDG-GOVTCTR2 1) ;Fortress
+	(set-builders-type BLDG-FARM 2) ;Farm
+	(set-builders-type BDEF-TURRET 1) ;Laser Turret
+	(disable-self)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+=>
+    ;TL3+: restore normal builder counts, capped at 3 to avoid worker overtasking
     (set-builders-type BLDG-DROPCHOW 3) ;Food Proc Ctr
     (set-builders-type BLDG-DROPMETAL 3) ;Ore Proc Ctr
     (set-builders-type BLDG-DROPCARBON 3) ;Carbon Proc Ctr
@@ -60,16 +88,47 @@
 	(set-builders-type BLDG-WARCTR 3) ;War Center
 	(set-builders-type BLDG-TRAINJEDI 3) ;Jedi Temple
 	(set-builders-type BLDG-RESCTR 3) ;Research Center
-    (set-builders-type BLDG-MAIN2 5) ;Command Center
-	(set-builders-type BLDG-SHLDGEN2 5) ;Shield Gen
-	(set-builders-type BLDG-GOVTCTR2 5) ;Fortress
+    (set-builders-type BLDG-MAIN2 3) ;Command Center
+	(set-builders-type BLDG-SHLDGEN 3) ;Shield Gen
+	(set-builders-type BLDG-SHLDGEN2 3) ;Shield Gen
+	(set-builders-type BLDG-GOVTCTR2 3) ;Fortress
+	(set-builders-type BLDG-FARM 3) ;Farm
+	(set-builders-type BDEF-TURRET 3) ;Laser Turret
 	(disable-self)
 )
 
-;    (set-builders-type BLDG-MAIN2 5) ;Command Center
-;	(set-builders-type BLDG-FORT-BUILD 5) ;Fortress
+(defrule
+	(current-age == tech-level-1)
+	(food-amount < 150)
+	(carbon-amount > 225)
+	(unit-type-count-total UNIT-WORKER > 10)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+=>
+	(set-builders-type BLDG-FARM 3) ; Food-crisis farms need to finish immediately
+)
+
+(defrule
+	(current-age >= tech-level-3)
+=>
+	(set-builders-type BLDG-FARM 3) ;Farm
+	(set-builders-type BDEF-TURRET 3) ;Laser Turret
+	(disable-self)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(game-time > 2400)
+	(food-amount < 300)
+	(carbon-amount > 70)
+=>
+	(set-builders-type BLDG-FARM 6) ; Late food-collapse farms need to complete quickly
+)
+
+; =====================================================
+; *** Chapter 2: COMMAND CENTER TARGETS ***
+; =====================================================
 
 ; Difficulty should not change the AI's macro shell. Keep one CC plan for everyone
 ; and let economy/cheat support differentiate the ladder instead.
-(defconst TL3-CCs 4)
-(defconst TL4-CCs 6)
+(defconst TL3-CCs 5)
+(defconst TL4-CCs 7)

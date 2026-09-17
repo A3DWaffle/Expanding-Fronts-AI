@@ -8,68 +8,162 @@
 ; =====================================================
 ;
 ;	Chapter 0: SETUP
-;	Chapter 1: FOOD CTR
+;	Chapter 1: FIRST FOOD PROCESSING CENTER
 ;	Chapter 2: HUNT PHASE
-;	Chapter 3: TL2+ FOOD CTR
-;	Chapter 4: DISTANCES
+;	Chapter 3: EXTRA FOOD PROCESSING CENTERS
+;	Chapter 4: FOOD ECONOMY TECHS
+;	Chapter 5: DROP-OFF DISTANCES
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
 ; =====================================================
 
+; =====================================================
+; *** Chapter 1: FIRST FOOD PROCESSING CENTER ***
+; =====================================================
+
 (defrule
-	(game-time > 60) ; give the AI a bit to scout its berries
+	(game-time > 60)
 	(or
-		(goal berries-present YES) ; this trigger uses cc so essentially fires before the AI finds its berries
+		(goal berries-present YES)
 		(goal berries-present PLENTY)
 	)
-	(not (dropsite-min-distance food == -1)) ; try and find them
+	(goal hunt-present NO)
+	(not (dropsite-min-distance food == -1))
+	(dropsite-min-distance food > 2)
 	(building-type-count-total BLDG-DROPCHOW == 0)
 	(not (goal savetheanimals YES))
 	(can-build BLDG-DROPCHOW)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
 )
 
-; rule for building if we don't have berries
+; Hunt starts use the early Carbon Proc as an eco anchor, then force the first
+; Food Proc while hunt is still present so the opener can continue.
 (defrule
-	(game-time > 90) ; timeout
+	(game-time > 120)
+	(current-age == tech-level-1)
+	(goal hunt-present YES)
+	(building-type-count-total BLDG-DROPCARBON > 0)
 	(building-type-count-total BLDG-DROPCHOW == 0)
+	(not (dropsite-min-distance food == -1))
+	(dropsite-min-distance food > 1)
+	(can-build-with-escrow BLDG-DROPCHOW)
+	(or
+		(not (goal savetheanimals YES))
+		(or
+			(goal allowgarbage LOWLUREFOOD)
+			(strategic-number snc-lure-amount > 0)
+		)
+	)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+(defrule
+	(game-time > 150)
+	(current-age == tech-level-1)
+	(goal hunt-present YES)
+	(strategic-number snc-lure-amount > 0)
+	(building-type-count-total BLDG-DROPCHOW == 0)
+	(can-build-with-escrow BLDG-DROPCHOW)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+(defrule
+	(game-time > 300)
+	(or
+		(goal berries-present YES)
+		(goal berries-present PLENTY)
+	)
+	(goal hunt-present YES)
+	(not (unit-type-count GAIA-ANIMAL-LURE-LINE > 0))
+	(not (dropsite-min-distance food == -1))
+	(dropsite-min-distance food > 2)
+	(building-type-count-total BLDG-DROPCHOW == 0)
+	(not (goal savetheanimals YES))
+	(can-build BLDG-DROPCHOW)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+; If no food can be detected at all, build one processor to unlock farms.
+; Extra processors still require actual food distance checks below.
+(defrule
+	(game-time > 180)
+	(current-age == tech-level-1)
+	(food-amount < 120)
+	(carbon-amount > 150)
+	(unit-type-count-total UNIT-WORKER > 10)
+	(building-type-count-total BLDG-DROPCHOW == 0)
+	(not (dropsite-min-distance food == -1))
+	(dropsite-min-distance food > 2)
+	(can-build BLDG-DROPCHOW)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+(defrule
+	(game-time > 120)
+	(building-type-count-total BLDG-DROPCHOW == 0)
+	(dropsite-min-distance food == -1)
+	(can-build BLDG-DROPCHOW)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+; If berries are missing, fall back to a timed first food processor.
+(defrule
+	(game-time > 90)
+	(building-type-count-total BLDG-DROPCHOW == 0)
+	(not (dropsite-min-distance food == -1))
+	(dropsite-min-distance food > 2)
 	(can-build BLDG-DROPCHOW)
 	(goal hunt-present NO)
 	(or
 		(not (goal savetheanimals YES))
-		(game-time > 240) ; abort timeout for animals
+		(game-time > 240)
 	)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
 )
 
-; if hunt exists, let workers live off the first kills for a bit before dropping a food proc
+; If hunt exists, let workers live off the first kills before dropping a food processor.
 (defrule
-	(game-time > 180)
+	(game-time > 360)
 	(building-type-count-total BLDG-DROPCHOW == 0)
+	(not (dropsite-min-distance food == -1))
+	(dropsite-min-distance food > 2)
 	(can-build BLDG-DROPCHOW)
 	(goal hunt-present YES)
+	(not (unit-type-count GAIA-ANIMAL-LURE-LINE > 0))
 	(not (goal savetheanimals YES))
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
 )
 
-(defrule
-	(game-time > 60)
-	(building-type-count-total BLDG-DROPCHOW == 0)
-	(can-build BLDG-DROPCHOW)
-	(goal hunt-present YES)
-	(unit-type-count GAIA-ANIMAL-HUNT-LINE < 4)
-	(not (goal savetheanimals YES))
-=>
-	(set-goal resourcerefund cfoodproc)
-	(build BLDG-DROPCHOW)
-)
+; =====================================================
+; *** Chapter 2: HUNT PHASE ***
+; =====================================================
 
 ; once the first food proc is online on a hunt map, give workers a short hunt window
 ; before deciding whether they need a second dropoff near the food.
@@ -93,11 +187,8 @@
 )
 
 
-; so it turns out (dropsite-min-distance food > 3) doesn't really... work, lategame
-; one way or another
-; probably due to one random farm by a food proc
-
-; so we probably should do the old-fashioned way of specifying counts per TL
+; Extra processors should only extend to genuinely distant food. Once farms exist,
+; broad count-only rules tend to place processors around the CC/farm core.
 
 (defrule
 	(current-age == tech-level-1)
@@ -107,10 +198,47 @@
 	(building-type-count-total BLDG-DROPCHOW > 0)
 	(building-type-count-total BLDG-TRAINTROOPER > 0)
 	(building-type-count-total BLDG-POWERCORE > 0)
-	(dropsite-min-distance food > 6)
-	(not (town-under-attack))
+	(dropsite-min-distance food > 5)
 	(can-build BLDG-DROPCHOW)
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+; =====================================================
+; *** Chapter 3: EXTRA FOOD PROCESSING CENTERS ***
+; =====================================================
+
+; Carbon-rich TL1 economies with poor food should extend to remaining food
+; instead of turning the first town food site into the whole food economy.
+(defrule
+	(current-age == tech-level-1)
+	(food-amount < 250)
+	(carbon-amount > 350)
+	(building-type-count-total BLDG-DROPCHOW < 2)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(dropsite-min-distance food > 4)
+	(can-build BLDG-DROPCHOW)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+; TL2 can still have enough hunt/berries left to justify more food coverage,
+; but stop before this turns into late-game proc spam.
+(defrule
+	(current-age == tech-level-2)
+	(goal hunt-present YES)
+	(food-amount < 350)
+	(carbon-amount > 300)
+	(building-type-count-total BLDG-DROPCHOW < 3)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(dropsite-min-distance food > 5)
+	(can-build BLDG-DROPCHOW)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
@@ -121,27 +249,44 @@
 		(current-age == tech-level-1)
 		(current-age == tech-level-2)
 	)
+	(goal openingstyle STYLE-DEFENSIVE)
 	(current-age-time > 300)
-	(building-type-count-total BLDG-DROPCHOW < 2) ; Build a second in T1, but only after all other buildings are done
+	(building-type-count-total BLDG-DROPCHOW < 2)
 	(building-type-count-total BLDG-TRAINTROOPER > 0)
 	(building-type-count-total BLDG-POWERCORE > 0)
-	(or
-		(and
-			(goal openingstyle STYLE-DEFENSIVE)
-			(building-type-count-total BLDG-DROPMETAL > 0)
-		)
-		(and
-			(not (goal openingstyle STYLE-DEFENSIVE))
-			(building-type-count-total BLDG-DROPNOVA > 0)
-		)
-	)
+	(building-type-count-total BLDG-DROPMETAL > 0)
 	(or
 		(goal berries-present YES)
-		(goal berries-present PLENTY) ; only build a second one if berries
+		(goal berries-present PLENTY)
 	)
-	(not (town-under-attack))
+	(dropsite-min-distance food > 8)
 	(can-build BLDG-DROPCHOW)
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+(defrule
+	(or
+		(current-age == tech-level-1)
+		(current-age == tech-level-2)
+	)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(current-age-time > 300)
+	(building-type-count-total BLDG-DROPCHOW < 2)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-DROPNOVA > 0)
+	(or
+		(goal berries-present YES)
+		(goal berries-present PLENTY)
+	)
+	(dropsite-min-distance food > 8)
+	(can-build BLDG-DROPCHOW)
+	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
@@ -157,20 +302,31 @@
 	(building-type-count-total BLDG-DROPCHOW > 0)
 	(building-type-count-total BLDG-TRAINTROOPER > 0)
 	(building-type-count-total BLDG-POWERCORE > 0)
-	(or
-		(and
-			(goal openingstyle STYLE-DEFENSIVE)
-			(building-type-count-total BLDG-DROPMETAL > 0)
-		)
-		(and
-			(not (goal openingstyle STYLE-DEFENSIVE))
-			(building-type-count-total BLDG-DROPNOVA > 0)
-		)
-	)
-	(dropsite-min-distance food > 6)
-	(not (town-under-attack))
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count-total BLDG-DROPMETAL > 0)
+	(dropsite-min-distance food > 5)
 	(can-build BLDG-DROPCHOW)
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(current-age-time > 120)
+	(goal hunt-present YES)
+	(building-type-count-total BLDG-DROPCHOW < 2)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(building-type-count-total BLDG-DROPNOVA > 0)
+	(dropsite-min-distance food > 5)
+	(can-build BLDG-DROPCHOW)
+	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
@@ -184,20 +340,29 @@
 	(goal hunt-present YES)
 	(building-type-count-total BLDG-DROPCHOW < 3)
 	(building-type-count-total BLDG-DROPCHOW >= 2)
-	(or
-		(and
-			(goal openingstyle STYLE-DEFENSIVE)
-			(building-type-count-total BLDG-DROPMETAL > 0)
-		)
-		(and
-			(not (goal openingstyle STYLE-DEFENSIVE))
-			(building-type-count-total BLDG-DROPNOVA > 0)
-		)
-	)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count-total BLDG-DROPMETAL > 0)
 	(dropsite-min-distance food > 8)
-	(not (town-under-attack))
 	(can-build BLDG-DROPCHOW)
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(current-age-time > 360)
+	(goal hunt-present YES)
+	(building-type-count-total BLDG-DROPCHOW < 3)
+	(building-type-count-total BLDG-DROPCHOW >= 2)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(building-type-count-total BLDG-DROPNOVA > 0)
+	(dropsite-min-distance food > 8)
+	(can-build BLDG-DROPCHOW)
+	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
@@ -206,10 +371,11 @@
 (defrule
 	(current-age == tech-level-3)
 	(current-age-time > 300)
-	(building-type-count-total BLDG-DROPCHOW < 3)
+	(building-type-count-total BLDG-DROPCHOW < 4)
+	(dropsite-min-distance food > 6)
 	(can-build BLDG-DROPCHOW)
-	(not (town-under-attack))
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
@@ -218,16 +384,17 @@
 (defrule
 	(current-age == tech-level-4)
 	(current-age-time > 600)
-	(building-type-count-total BLDG-DROPCHOW < 4)
+	(building-type-count-total BLDG-DROPCHOW < 5)
+	(dropsite-min-distance food > 8)
 	(can-build BLDG-DROPCHOW)
-	(not (town-under-attack))
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
 )
 
-; and if there are silly berries on the map
+; If there are abundant berries, allow extra processors without waiting on hunt distance.
 
 (defrule
 	(current-age == tech-level-1)
@@ -235,20 +402,31 @@
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(current-age-time > 300)
 	(building-type-count-total BLDG-DROPCHOW < 2)
-	(not (town-under-attack))
 	(goal berries-present PLENTY)
-	(or
-		(and
-			(goal openingstyle STYLE-DEFENSIVE)
-			(building-type-count-total BLDG-DROPMETAL > 0)
-		)
-		(and
-			(not (goal openingstyle STYLE-DEFENSIVE))
-			(building-type-count-total BLDG-DROPNOVA > 0)
-		)
-	)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count-total BLDG-DROPMETAL > 0)
 	(can-build BLDG-DROPCHOW)
+	(dropsite-min-distance food > 8)
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(current-age-time > 300)
+	(building-type-count-total BLDG-DROPCHOW < 2)
+	(goal berries-present PLENTY)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(building-type-count-total BLDG-DROPNOVA > 0)
+	(can-build BLDG-DROPCHOW)
+	(dropsite-min-distance food > 8)
+	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
@@ -256,36 +434,60 @@
 
 (defrule
 	(current-age == tech-level-2)
-	(building-type-count-total BLDG-DROPCHOW < 4)
+	(building-type-count-total BLDG-DROPCHOW < 3)
 	(or
 		(and
-			(building-type-count-total BLDG-TRAINTROOPER > 0) ; get these buildings up first (if you haven't already)
+			(building-type-count-total BLDG-TRAINTROOPER > 0)
 			(building-type-count-total BLDG-POWERCORE > 0 )
 		)
-		(carbon-amount > 400) ; override
+		(carbon-amount > 400)
 	)
-	(or
-		(and
-			(goal openingstyle STYLE-DEFENSIVE)
-			(building-type-count-total BLDG-DROPMETAL > 0)
-		)
-		(and
-			(not (goal openingstyle STYLE-DEFENSIVE))
-			(building-type-count-total BLDG-DROPNOVA > 0)
-		)
-	)
-	(not (town-under-attack))
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count-total BLDG-DROPMETAL > 0)
 	(goal berries-present PLENTY)
+	(dropsite-min-distance food > 9)
 	(can-build BLDG-DROPCHOW)
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cfoodproc)
 	(build BLDG-DROPCHOW)
 )
 
 (defrule
-	; Irrigation
-	(current-age >= tech-level-3)
+	(current-age == tech-level-2)
+	(building-type-count-total BLDG-DROPCHOW < 3)
+	(or
+		(and
+			(building-type-count-total BLDG-TRAINTROOPER > 0)
+			(building-type-count-total BLDG-POWERCORE > 0 )
+		)
+		(carbon-amount > 400)
+	)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(building-type-count-total BLDG-DROPNOVA > 0)
+	(goal berries-present PLENTY)
+	(dropsite-min-distance food > 9)
+	(can-build BLDG-DROPCHOW)
+	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
+)
+
+; =====================================================
+; *** Chapter 4: FOOD ECONOMY TECHS ***
+; =====================================================
+
+(defrule
+	(or
+		(current-age >= tech-level-3)
+		(and
+			(current-age == tech-level-2)
+			(goal agingup YES)
+		)
+	)
 	(can-research-with-escrow rt-irrigation)
 =>
 	(release-escrow food)
@@ -294,7 +496,6 @@
 )
 
 (defrule 
-	; Harvesting Program
 	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-harvesting)
 =>
@@ -304,7 +505,6 @@
 )
 
 (defrule
-	; Advanced Harvesting Program
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-adv-harvesting)
 =>
@@ -313,17 +513,19 @@
 	(research rt-adv-harvesting)
 )
 
-; DISTANCES
+; =====================================================
+; *** Chapter 5: DROP-OFF DISTANCES ***
+; =====================================================
 
 (defrule
 	(true)
 =>
-	(set-strategic-number sn-mill-max-distance 12) ; starting value
+	(set-strategic-number sn-mill-max-distance 12)
 	(disable-self)
 )
 
 (defrule
-	(building-type-count-total BLDG-DROPCHOW > 0) ; one is being built
+	(building-type-count-total BLDG-DROPCHOW > 0)
 =>
 	(set-strategic-number sn-mill-max-distance 16)
 	(disable-self)
@@ -333,7 +535,7 @@
 	(building-type-count-total BLDG-DROPCHOW > 0)
 	(goal hunt-present YES)
 =>
-	(set-strategic-number sn-mill-max-distance 24)
+	(set-strategic-number sn-mill-max-distance 32)
 	(disable-self)
 )
 
@@ -348,13 +550,13 @@
 	(building-type-count-total BLDG-DROPCHOW >= 2)
 	(goal hunt-present YES)
 =>
-	(set-strategic-number sn-mill-max-distance 28)
+	(set-strategic-number sn-mill-max-distance 36)
 	(disable-self)
 )
 
 (defrule
-	(building-type-count-total BLDG-DROPCHOW > 0) ; one is being built
-	(goal berries-present PLENTY) ; allow further
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(goal berries-present PLENTY)
 =>
 	(set-strategic-number sn-mill-max-distance 20)
 	(disable-self)
@@ -363,8 +565,32 @@
 
 (defrule
 	(building-type-count-total BLDG-DROPCHOW >= 2) 
-	(goal berries-present PLENTY) ; allow further
+	(goal berries-present PLENTY)
 =>
 	(set-strategic-number sn-mill-max-distance 30)
 	(disable-self)
+)
+
+; TL1 hunt maps need a tighter food search radius. The broad hunt values above
+; can make workers chase edge animals instead of clearing the local food patch.
+(defrule
+	(current-age == tech-level-1)
+	(goal hunt-present YES)
+	(building-type-count-total BLDG-DROPCHOW == 1)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+	(not (strategic-number sn-mill-max-distance == 20))
+=>
+	(set-strategic-number sn-mill-max-distance 20)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(goal hunt-present YES)
+	(building-type-count-total BLDG-DROPCHOW >= 2)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+	(not (strategic-number sn-mill-max-distance == 24))
+=>
+	(set-strategic-number sn-mill-max-distance 24)
 )

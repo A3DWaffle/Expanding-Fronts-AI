@@ -1,22 +1,21 @@
-; =====================================================
-; FILE: attack
-; PURPOSE:
-;   Controls attack readiness, attack waves, TSA, AIRWAVE, and personality attack pacing.
-;
-; =====================================================
-; *** Table of Contents *** 
-; =====================================================
-;
-;	Chapter 0: SETUP
-;	Chapter 1: PERSONALITY THRESHOLDS
-;	Chapter 2: MAIN ATTACK LOGIC
-;	Chapter 3: TSA
-;	Chapter 4: AIRWAVE
-;	Chapter 5: SPECIAL CASES
-;
-; =====================================================
-; *** Chapter 0: SETUP ***
-; =====================================================
+; Attack orchestration for regular games.
+
+; TABLE OF CONTENTS
+; Chapter 1: Setup and attack holds
+; Chapter 2: Difficulty attack timers
+; Chapter 3: Rush and regular attack readiness
+; Chapter 4: Max-pop pressure and TSA selection
+; Chapter 5: Attack execution and TSA control
+; Chapter 6: Ally/human attack commands
+; Chapter 7: Center/monument/scenario commands
+
+; t-attackgroup-alt is the regular attack/join-in timer.
+; t-attackgroup-hold is the TSA hold timer. They stay separate because a join-in
+; can arrive while TSA is already holding town size.
+
+; -----------------------------------------------------
+; --- CHAPTER 1A: INITIAL ATTACK GOALS
+; -----------------------------------------------------
 
 (defrule
 	(true)
@@ -32,20 +31,31 @@
 	(set-goal attackTSAhold EXHAUSTED)								; what TSA is up to
 	(set-goal attackTSAvar NULL)									; starting value so the logic doesn't break
 	(set-goal reasonforattack attack-is-me)							; helps organize chatting
+	(set-goal opening-attack-target TARGET-UNROLLED)
 	(disable-self)
 )
 
-; openingstyle is now selected by load-random in randomgame.per.
+; Scenario attack hold needs to run before any attack execution rules.
+(defrule
+	(event-detected trigger 2)
+	(goal attacksonhold-scn NO)
+=>
+	(set-goal attacksonhold-scn YES)
+	(set-goal attack-timer YES)
+	(disable-timer t-attackgroup-alt)
+	(disable-self)
+)
+
+; openingstyle is selected by load-random in randomgame.per.
 ; The selected personality file then sets openingstyle itself.
 
 (defrule
 	(goal opening-announced NO)
-	(goal openingstyle STYLE-AGRESSIVE)
+	(goal openingstyle STYLE-AGGRESSIVE)
 =>
-	(chat-to-all "WAFFLE: Personality AGRESSIVE")
+	(chat-to-all "WAFFLE: Personality AGGRESSIVE")
 	(set-goal rushsize NORM)
-	(set-strategic-number sn-special-attack-type2 UNIT-WORKER)
-	(set-strategic-number sn-special-attack-influence2 2147483647)
+	(generate-random-number 10)
 	(set-goal opening-announced YES)
 )
 
@@ -55,8 +65,7 @@
 =>
 	(chat-to-all "WAFFLE: Personality DEFENSIVE")
 	(set-goal rushsize SMOL)
-	(set-strategic-number sn-special-attack-type2 BLDG-DROPANIM)
-	(set-strategic-number sn-special-attack-influence2 2147483647)
+	(generate-random-number 10)
 	(set-goal opening-announced YES)
 )
 
@@ -66,8 +75,7 @@
 =>
 	(chat-to-all "WAFFLE: Personality RUSH")
 	(set-goal rushsize BIG)
-	(set-strategic-number sn-special-attack-type2 BLDG-DROPANIM)
-	(set-strategic-number sn-special-attack-influence2 2147483647)
+	(generate-random-number 10)
 	(set-goal opening-announced YES)
 )
 
@@ -76,20 +84,59 @@
 =>
 	(set-strategic-number sn-special-attack-type2 UNIT-WORKER)
 	(set-strategic-number sn-special-attack-influence2 2147483647)
+	(set-goal opening-attack-target TARGET-WORKERS)
+	(disable-self)
+)
+
+; TL1/TL2 opening attacks roll a building target, weighted toward carbon, then
+; swap back to workers after the first attack is launched.
+(defrule
+	(goal opening-announced YES)
+	(goal opening-attack-target TARGET-UNROLLED)
+	(current-age <= tech-level-2)
+	(random-number <= 7)
+=>
+	(set-strategic-number sn-special-attack-type2 BLDG-DROPCARBON)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
+	(set-goal opening-attack-target TARGET-ROLLED)
+)
+
+(defrule
+	(goal opening-announced YES)
+	(goal opening-attack-target TARGET-UNROLLED)
+	(current-age <= tech-level-2)
+	(random-number == 8)
+=>
+	(set-strategic-number sn-special-attack-type2 BLDG-POWERCORE)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
+	(set-goal opening-attack-target TARGET-ROLLED)
+)
+
+(defrule
+	(goal opening-announced YES)
+	(goal opening-attack-target TARGET-UNROLLED)
+	(current-age <= tech-level-2)
+	(random-number >= 9)
+=>
+	(set-strategic-number sn-special-attack-type2 BLDG-DROPANIM)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
+	(set-goal opening-attack-target TARGET-ROLLED)
+)
+
+; Restore worker targeting after the opening building-target attack launches.
+; Keeping this separate prevents the TL1/TL2 attack launchers from exceeding
+; the rule-size limit.
+(defrule
+	(current-age <= tech-level-2)
+	(goal opening-attack-target TARGET-WORKERS)
+=>
+	(set-strategic-number sn-special-attack-type2 UNIT-WORKER)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
 	(disable-self)
 )
 
 ; -----------------------------------------------------
-; --- CHAPTER 1: DIFFICULTY LOADS FOR ATTACK TIMERS --- 
-; -----------------------------------------------------
-
-; ACTUALLY CHAPTER 1A IS DOWN A BIT, HOLD ON
-
-; Sorry about the deorganization, the rule for disabling attacks needs to run before the rule that attacks !
-
-
-; -----------------------------------------------------
-; --- CHAPTER 1b: RE-ENABLING LOCKED ATTACKS --- 
+; --- CHAPTER 1B: RE-ENABLING AUTOMATIC ATTACK HOLDS
 ; -----------------------------------------------------
 
 ; Basically, if the AI is teching up, or hasn't got its super important techs yet, do not attack
@@ -97,22 +144,11 @@
 
 (defrule
 	(current-age == tech-level-2)
-	(goal importantT2research DONE)
-	(not (goal openingstyle STYLE-RUSH))
+	(research-completed rt-macrobinoculars)
+	(research-completed ut-laser-2)
 =>
 	(set-goal attacksonhold-auto NO)
 	(disable-self)
-)
-
-; Rush should not get stranded in a tech-up hold if it already has a real T2 army
-(defrule
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(not (goal rushsize RUSHHALT))
-	(military-population >= 10)
-	(goal attacksonhold-auto YES)
-=>
-	(set-goal attacksonhold-auto NO)
 )
 
 (defrule
@@ -122,12 +158,30 @@
 	(disable-self)
 )
 
+; Do not lock the AI behind importantT3research as that includes Tracking Computers which takes quite a while to get online especially if the AI fails to power its Research Center
 (defrule
 	(current-age == tech-level-3)
-	(goal importantT3research DONE)
+	(research-completed rt-portable-scanners)
+	(research-completed ut-laser-3)
+	(or
+		(research-completed rt-external-sensor-pod)
+		(research-completed rt-stimpacks)
+	)
 =>
 	(set-goal attacksonhold-auto NO)
 	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(not (goal openingstyle STYLE-RUSH))
+	(goal attacksonhold-auto YES)
+	(current-age-time > 480)
+	(military-population >= 18)
+=>
+	(set-goal attacksonhold-auto NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
 )
 
 (defrule
@@ -146,14 +200,20 @@
 	(disable-self)
 )
 
-
-; -----------------------------------------------------
-; --- CHAPTER 1A: MAIN ATTACK LOGIC
-; -----------------------------------------------------
+(defrule
+	(current-age == tech-level-4)
+	(goal attacksonhold-auto YES)
+	(current-age-time > 600)
+	(military-population >= 24)
+=>
+	(set-goal attacksonhold-auto NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
 
 
 ;********************************
-; DIFFICULTY LOADS: EASIEST & EASY SPECIFIC LOGIC
+; CHAPTER 2A: EASIEST/EASY ATTACK TIMERS
 
 #load-if-defined DIFFICULTY-EASIEST
 ;attack timer - almost never attack 
@@ -215,7 +275,8 @@
 )
 #end-if
 
-; EVERYTHING ELSE
+;********************************
+; CHAPTER 2B: MODERATE/HARD/HARDEST ATTACK TIMER START
 
 #load-if-not-defined DIFFICULTY-EASIEST
 #load-if-not-defined DIFFICULTY-EASY
@@ -258,12 +319,16 @@
 =>
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 5) ; Attack immediately
-	(chat-local-to-self "WAFFLE: No attack timer. Commencing attack")
+	; (chat-local-to-self "WAFFLE: No attack timer. Commencing attack")
 	(set-goal attack-timer YES)
 	(disable-self)
 )
 
-; T1 attack rules. Only ever called in
+; -----------------------------------------------------
+; --- CHAPTER 3A: TL1 ATTACK READINESS
+; -----------------------------------------------------
+
+; T1 attack rules.
 (defrule
 	(current-age == tech-level-1)
 	(goal openingstyle STYLE-RUSH)
@@ -333,6 +398,13 @@
 (defrule
 	(goal aready YES)
 	(current-age == tech-level-1)
+	(goal attacksonhold-auto NO)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(or
+		(shared-goal treatytimer 0) ; treaty timer was never turned on
+		(shared-goal treatytimer 1) ; treaty timer expired
+	)
 	(or
 		(goal openingstyle STYLE-RUSH)
 		(goal openingstyle STYLE-DEFENSIVE)
@@ -350,6 +422,7 @@
 	(set-strategic-number sn-percent-attack-air 100)
 	(set-strategic-number sn-percent-attack-boats 100)
 	(attack-now)
+	(set-goal opening-attack-target TARGET-WORKERS)
 	(set-goal aready NO)
 )
 
@@ -363,7 +436,7 @@
 	=>
 	(set-goal aready YES)
 	(disable-timer t-attackgroup-alt) ; do not start the timer for another attack in T1
-	(chat-local-to-self "WAFFLE: T1 attack. Does not start timer")
+	; (chat-local-to-self "WAFFLE: T1 attack. Does not start timer")
 	(set-goal attack-timer NO) ; and let it be restarted as needed
 )
 (defrule
@@ -391,8 +464,9 @@
 	(disable-self)
 )
 
-;
-; T2 RUSH LOGIC
+; -----------------------------------------------------
+; --- CHAPTER 3B: TL2 RUSH READINESS
+; -----------------------------------------------------
 
 ; some T2 logic that probably needs to be loaded before other logic
 
@@ -402,118 +476,10 @@
 	(goal rushsize RUSHHALT)
 =>
 	(set-goal rushsize NULL)
-	(chat-local-to-self "WAFFLE: T3 reached with HALT rushes. AT 120s, keep in mind onhold-auto")
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 120)
-	(disable-self)
-)
-
-; Aggressive uses lighter TL2 pressure than Rush. Keep this separate from the
-; generic pop kickoff so it cannot stockpile forever waiting for a larger wave.
-(defrule
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-AGRESSIVE)
-	(military-population >= 4)
-	(goal attack-timer NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-	(game-time > 20)
-=>
-	(set-goal attacksonhold-auto NO)
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 150)
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me)
-	(set-goal attack-timer YES)
-)
-
-; direct pop kickoffs so the AI attacks because it has units, not just because a timer happened to line up
-(defrule
-	(current-age == tech-level-2)
-	(not (goal openingstyle STYLE-RUSH))
-	(military-population >= 6)
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-=>
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 150)
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me)
-	(set-goal attack-timer YES)
-	(disable-self)
-)
-
-; Rush pileup relief: if the home army is sitting there and no attack group is really out, shove it
-(defrule
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(not (goal rushsize RUSHHALT))
-	(defend-soldier-count >= 10)
-	(attack-soldier-count <= 1)
-	(not (goal aready YES))
-	(goal attack-timer NO)
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-=>
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 150)
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me)
-	(set-goal attack-timer YES)
-)
-
-; Generic pileup relief for any T2 army that has clearly stalled at home
-(defrule
-	(current-age == tech-level-2)
-	(not (goal openingstyle STYLE-RUSH))
-	(defend-soldier-count >= 8)
-	(attack-soldier-count <= 1)
-	(not (goal aready YES))
-	(goal attack-timer NO)
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-=>
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 150)
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me)
-	(set-goal attack-timer YES)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(military-population >= 8)
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-=>
+	; (chat-local-to-self "WAFFLE: T3 reached with HALT rushes. AT 180s, keep in mind onhold-auto")
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 180)
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me)
-	(set-goal attack-timer YES)
 	(disable-self)
-)
-
-; Same idea in T3: if a real army is camped at home, send it
-(defrule
-	(current-age == tech-level-3)
-	(defend-soldier-count >= 10)
-	(attack-soldier-count <= 1)
-	(not (goal aready YES))
-	(goal attack-timer NO)
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-=>
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 180)
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me)
-	(set-goal attack-timer YES)
 )
 
 ; stop rushing if walled (eg: arena)
@@ -526,9 +492,9 @@
 	(cc-players-building-type-count every-enemy BLDG-BARRIER-LINE >= 10)
 =>
 	(set-goal rushsize RUSHHALT)
-	(chat-local-to-self "WAFFLE: Everyone has walls. No more T2 rushes. AT 480s")
+	; (chat-local-to-self "WAFFLE: Everyone has walls. No more T2 rushes. AT 900s")
 	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 480)
+	(enable-timer t-attackgroup-alt 900)
 	(disable-self)
 )
 
@@ -540,28 +506,28 @@
 	(set-goal rushsize RUSHCONTINUE)
 )
 
-; HARD AND HARDEST RUSH RULES
-; T2 attacks
-; begin a rush. setting of rushsize is above
-; we tried defend-soldier-count which worked better but mostly worked worse because this would never fire as the AI was continually being called by its ally to attack
+
+
+
+; MODERATE SPECIFIC LOGIC
+; become Sleepy and do not attack immediately
+#load-if-defined DIFFICULTY-MODERATE
+
 (defrule
 	(current-age == tech-level-2)
 	(and
 		(goal rushsize SMOL)
-		(military-population >= 10) 
+		(military-population >= 7) 
 	)
 	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	(game-time > 20) ; give time for scenario to set in 
-=>
+	=>
+	; (chat-local-to-self "WAFFLE: T2 RUSH SMOL. MOD, SLEEPING FOR 240s")
+	(set-goal rushsize RUSHSLEEPY)
 	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 150)
-	(chat-local-to-self "WAFFLE: T2 RUSH SMOL. AT 150s")
-	(set-goal rushsize RUSHDONE)
-	(set-goal attack-timer YES)
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me) ; ensures no silliness on message
+	(enable-timer t-attackgroup-alt 240)
 	(disable-self)
 )
 
@@ -575,10 +541,106 @@
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	(game-time > 20)
-=>
+	=>
+	; (chat-local-to-self "WAFFLE: T2 RUSH NORM. MOD, SLEEPING FOR 240s")
+	(set-goal rushsize RUSHSLEEPY)
 	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 150)
-	(chat-local-to-self "WAFFLE: T2 RUSH NORM. AT 150s")
+	(enable-timer t-attackgroup-alt 240)
+	(disable-self)
+)
+
+(defrule
+	(timer-triggered t-attackgroup-alt)
+	(or
+		(goal rushsize RUSHSLEEPY) ; sleepy or woke up
+		(goal rushsize RUSHWAKEUP)
+	)
+	(current-age == tech-level-2)
+	(goal attacksonhold-auto NO)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(game-time > 20)
+=>
+	(set-goal aready YES)
+	(set-goal reasonforattack attack-is-me) ; ensures no silliness on message
+	(set-goal rushsize RUSHHALT) ; stop rushing, go defensive, no more research etc
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 600)
+	(set-goal attack-timer YES)	
+	; (chat-local-to-self "WAFFLE: Mod, attacking.  AT 900s") ; in a regular game, this means rush once
+	(disable-self) ; once-off rule to start the rush
+)
+
+; n.b. I expect this rule to almost never fire
+; the only cases where it can do so are:
+; manual human order 
+; extremely long T2 fights
+; it won't trigger on an ally AI joinin because that requires rushcontinue which is not set here
+(defrule
+	(timer-triggered t-attackgroup-alt)
+	(current-age == tech-level-2)
+	(goal attacksonhold-auto NO)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(game-time > 20)
+=>
+	(set-goal aready YES)
+	(set-goal reasonforattack attack-is-me)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 600)
+	; (chat-local-to-self "WAFFLE: Mod, attacking.  AT 600s")
+)
+
+(defrule
+	(town-under-attack)
+	(goal rushsize RUSHSLEEPY)
+=>
+	(set-goal rushsize RUSHWAKEUP) ; allows training more military units again
+)
+
+#end-if
+
+; HARD AND HARDEST RUSH RULES
+#load-if-not-defined DIFFICULTY-MODERATE
+
+; T2 attacks
+; begin a rush. setting of rushsize is above
+; we tried defend-soldier-count which worked better but mostly worked worse because this would never fire as the AI was continually being called by its ally to attack
+(defrule
+	(current-age == tech-level-2)
+	(and
+		(goal rushsize SMOL)
+		(military-population >= 7) 
+	)
+	(goal attacksonhold-auto NO)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(game-time > 20) ; give time for scenario to set in 
+	=>
+	(disable-timer t-attackgroup-alt)
+    (enable-timer t-attackgroup-alt 150) ; short to try and get the AI to reinforce
+	; (chat-local-to-self "WAFFLE: T2 RUSH SMOL. AT 150s")
+	(set-goal rushsize RUSHDONE)
+	(set-goal attack-timer YES)
+	(set-goal aready YES)
+	(set-goal reasonforattack attack-is-me) ; ensures no silliness on message
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(and
+		(goal rushsize NORM)
+		(military-population >= 11)
+	)
+	(goal attacksonhold-auto NO)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(game-time > 20)
+	=>
+	(disable-timer t-attackgroup-alt)
+    (enable-timer t-attackgroup-alt 150) ; short to try and get the AI to reinforce
+	; (chat-local-to-self "WAFFLE: T2 RUSH NORM. AT 150s")
 	(set-goal rushsize RUSHDONE)
 	(set-goal aready YES)
 	(set-goal attack-timer YES)
@@ -590,16 +652,16 @@
 	(current-age == tech-level-2)
 	(and
 		(goal rushsize BIG)
-		(military-population >= 10)
+		(military-population >= 15)
 	)
 	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	(game-time > 20)
-=>
+	=>
 	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 150)
-	(chat-local-to-self "WAFFLE: T2 RUSH BIG. AT 150s")
+    (enable-timer t-attackgroup-alt 150) ; short to try and get the AI to reinforce
+	; (chat-local-to-self "WAFFLE: T2 RUSH BIG. AT 150s")
 	(set-goal rushsize RUSHDONE)
 	(set-goal aready YES)
 	(set-goal attack-timer YES)
@@ -608,13 +670,35 @@
 )
 
 ; what happens after a rush
-; hard now continues rushing like moderate/hardest so the midgame feel is more universal
+; hard: 67% chance to continue rush
 #load-if-defined DIFFICULTY-HARD
 (defrule
 	(current-age == tech-level-2)
 	(goal rushsize RUSHDONE)
 =>
+	(generate-random-number 3)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal rushsize RUSHDONE)
+	(random-number == 1)
+=>
+	(set-goal rushsize RUSHHALT)
+	; (chat-local-to-self "WAFFLE: Hard 33%: No more T2 rush attacks. Attack timer set to 900s")
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 900)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal rushsize RUSHDONE)
+	(not (random-number == 1))
+=>
 	(set-goal rushsize RUSHCONTINUE)
+	; (chat-local-to-self "WAFFLE: Hard 67%: Continue rushing as usual")
 	(disable-self)
 )
 #end-if
@@ -630,32 +714,20 @@
 )
 #end-if
 
-#load-if-defined DIFFICULTY-MODERATE
-(defrule
-	(current-age == tech-level-2)
-	(goal rushsize RUSHDONE)
-=>
-	(set-goal rushsize RUSHCONTINUE)
-	(disable-self)
-)
-#end-if
-
 ; so when the attack timer runs out, it will try to reinforce:
 
 (defrule
 	(current-age == tech-level-2)
 	(timer-triggered t-attackgroup-alt)
-	(not (goal aready YES))
 	(defend-soldier-count > 5) ; if we have reinforcements
 	(attack-soldier-count > 3) ; and the attack group is still alive
-	(not (goal rushsize RUSHHALT))
 	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	=>
 	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 150)
-	(chat-local-to-self "WAFFLE: T2 attack reinforce. AT 150s")
+    (enable-timer t-attackgroup-alt 150) ; short to try and get the AI to reinforce
+	; (chat-local-to-self "WAFFLE: T2 attack reinforce. AT 150s")
 	(set-goal aready YES) ; whichever message is used here can and should depend
 )
 
@@ -668,8 +740,6 @@
 (defrule
 	(current-age == tech-level-2)
 	(timer-triggered t-attackgroup-alt)
-	(not (goal aready YES))
-	(military-population >= 10)
 	(or
 		(defend-soldier-count >= 9)         ; if we have plenty of spare soldiers at home
 		(and
@@ -677,14 +747,13 @@
 			(defend-soldier-count >= 7) ; allow if fewer soldiers but an ally AI joinin
 		)
 	)
-	(not (goal rushsize RUSHHALT))
 	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	=>
 	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 150)
-	(chat-local-to-self "WAFFLE: T2 rush dead soldiers home . AT 150s")
+    (enable-timer t-attackgroup-alt 150) ; short to try and get the AI to reinforce
+	; (chat-local-to-self "WAFFLE: T2 rush dead soldiers home . AT 150s")
 	(set-goal aready YES)
 )
 
@@ -699,25 +768,23 @@
 (defrule
 	(current-age == tech-level-2)
 	(timer-triggered t-attackgroup-alt)
-	(not (goal aready YES))
 	(military-population >= 3)
 	(goal reasonforattack attack-is-human)
 	=>
 	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 90)
+	(enable-timer t-attackgroup-alt 150)
 	(set-goal aready YES)
 )
 
 (defrule
 	(current-age == tech-level-2) 
 	(timer-triggered t-attackgroup-alt)
-	(not (goal aready YES))
 	(military-population <= 3)
 	(goal reasonforattack attack-is-human)
 	=>
 	(set-goal messagestatus msg-NOMILITARY)
 	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 210) ; go on cooldown
+    (enable-timer t-attackgroup-alt 270) ; go on cooldown
 	(set-goal aready NO)
 	(set-goal reasonforattack attack-is-me) ; clear
 )
@@ -725,85 +792,27 @@
 (defrule
 	(current-age == tech-level-2)
 	(timer-triggered t-attackgroup-alt)
-	(not (goal aready YES))
-	(goal openingstyle STYLE-AGRESSIVE)
-	(military-population >= 4)
 	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	=>
 	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 150)
-	(chat-local-to-self "WAFFLE: T2 aggressive attack. AT 150s")
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me)
-)
-
-(defrule
-	(current-age == tech-level-2)
-	(timer-triggered t-attackgroup-alt)
-	(not (goal aready YES))
-	(building-type-count-total BLDG-TRAINBOAT > 0)
-	(not (goal openingstyle STYLE-RUSH))
-	(or
-		(unit-type-count-total BOAT-LASER-LINE >= 2)
-		(or
-			(unit-type-count-total BOAT-CUTLASER-LINE >= 2)
-			(or
-				(unit-type-count-total BOAT-MISSILE-LINE >= 2)
-				(and
-					(unit-type-count-total BOAT-LASER-LINE >= 1)
-					(unit-type-count-total BOAT-MISSILE-LINE >= 1)
-				)
-			)
-		)
-	)
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-	=>
-	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 150)
-	(chat-local-to-self "WAFFLE: T2 fleet ready. AT 150s")
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me)
-)
-
-(defrule
-	(current-age == tech-level-2)
-	(timer-triggered t-attackgroup-alt)
-	(not (goal aready YES))
-	(military-population >= 6)
-	(not (goal openingstyle STYLE-RUSH))
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-	=>
-	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 150)
-	(chat-local-to-self "WAFFLE: T2 army ready. AT 150s")
-	(set-goal aready YES)
-	(set-goal reasonforattack attack-is-me) ; clear
-)
-
-(defrule
-	(current-age == tech-level-2)
-	(timer-triggered t-attackgroup-alt)
-	(not (goal aready YES))
-	(military-population < 6)
-	(not (goal openingstyle STYLE-RUSH))
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-	=>
-	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 120) ; recheck soon instead of sleeping
-	(chat-local-to-self "WAFFLE: T2 army light. Recheck in 120s.")
+    (enable-timer t-attackgroup-alt 270) ; go on cooldown
+	; (chat-local-to-self "WAFFLE: T2 Army is probably dead. NOTATTACK. 270s cooldown.")
 	(set-goal aready NO)
 	(set-goal reasonforattack attack-is-me) ; clear
 )
 
 
+
+#end-if ; of if moderate
+
+
+
+
+; -----------------------------------------------------
+; --- CHAPTER 3C: TL3/TL4 ATTACK READINESS
+; -----------------------------------------------------
 
 ; higher tech levels are much simpler to get your head around
 ; moderate uses this logic too 
@@ -811,41 +820,13 @@
 (defrule
 	(current-age == tech-level-3)
 	(timer-triggered t-attackgroup-alt)
-	(building-type-count-total BLDG-TRAINBOAT > 0)
-	(or
-		(unit-type-count-total BOAT-LASER-LINE >= 3)
-		(or
-			(unit-type-count-total BOAT-CUTLASER-LINE >= 2)
-			(or
-				(unit-type-count-total BOAT-ARTILLERY-LINE >= 1)
-				(and
-					(unit-type-count-total BOAT-LASER-LINE >= 2)
-					(unit-type-count-total BOAT-MISSILE-LINE >= 1)
-				)
-			)
-		)
-	)
 	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	=>
 	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 120)
-	(chat-local-to-self "WAFFLE: T3 fleet ready. AT 180s")
-	(set-goal aready YES)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(timer-triggered t-attackgroup-alt)
-	(military-population >= 8)
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-	=>
-	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 180) ; stronger cadence once a real army exists
-	(chat-local-to-self "WAFFLE: T3 army ready. AT 240s")
+    (enable-timer t-attackgroup-alt 540) ; wait just a bit
+	; (chat-local-to-self "WAFFLE: T3 Attack. AT 540s")
 	(set-goal aready YES)
 )
 
@@ -857,23 +838,9 @@
 	(goal attacksonhold-scn NO)
 	=>
 	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 480) ; still leave room for TSA, but do not sleep forever
-	(chat-local-to-self "WAFFLE: T4 Attack. AT 480s")
+    (enable-timer t-attackgroup-alt 720) ; was 540 which behaves better, HOWEVER TSA logic usually kicks which has its own timers so this is essentially a lower-force attack
+	; (chat-local-to-self "WAFFLE: T4 Attack. AT 720s")
 	(set-goal aready YES)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(timer-triggered t-attackgroup-alt)
-	(military-population < 8)
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-	=>
-	(disable-timer t-attackgroup-alt)
-    (enable-timer t-attackgroup-alt 90) ; army not ready yet, check again soon
-	(chat-local-to-self "WAFFLE: T3 army light. Recheck in 120s")
-	(set-goal aready NO)
 )
 
 
@@ -888,9 +855,6 @@
 ; keep in mind maximium population does not neccessarily occur on Moderate as lategame comp is disabled 
 ; on Moderate, therefore we should stick to the 10min timer attack but for TSA - essentially, its own logic
 
-; SO
-; therefore
-
 #load-if-not-defined DIFFICULTY-MODERATE ; give players a break
 
 (defrule
@@ -902,7 +866,7 @@
 =>
 	(set-goal aready YES) ; is what sends an attack off
 	(set-goal attackTSAhold HOLDING-HIGH)
-	(chat-local-to-self "WAFFLE: Pop cap reached. TSA ON")
+	; (chat-local-to-self "WAFFLE: Pop cap reached. TSA ON")
 )
 ; for max pop attacks that are NOT under TSA
 
@@ -917,9 +881,44 @@
 	(set-goal maxpopattack SENTOFF) ; stop this from firing again
 	(disable-timer t-attackgroup-alt)
     (enable-timer t-attackgroup-alt 120)
-	(chat-local-to-self "WAFFLE: Maxpop. AT 120s")
+	; (chat-local-to-self "WAFFLE: Maxpop. AT 120s")
 )
 #end-if
+
+; If idle military is piling up, launch an attack even before popcap.
+; This relieves base clutter without using sn-task-ungrouped-soldiers.
+; This currently bypasses attacksonhold-auto, so tech-switch holds can be broken
+; by a large idle army. Add attacksonhold-auto NO here if that proves harmful.
+(defrule
+	(current-age >= tech-level-3)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(military-population >= 18)
+	(goal attacksonhold-auto NO)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(not (goal maxpopattack SENTOFF))
+=>
+	(set-goal aready YES)
+	(set-goal reasonforattack attack-is-me)
+	(set-goal maxpopattack SENTOFF)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 180)
+	; (chat-local-to-self "WAFFLE: Defensive military pop >= 18. Pressure attack. AT 180s")
+)
+
+(defrule
+	(military-population >= 12)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(not (goal maxpopattack SENTOFF))
+=>
+	(set-goal aready YES)
+	(set-goal reasonforattack attack-is-me)
+	(set-goal maxpopattack SENTOFF)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 240)
+	; (chat-local-to-self "WAFFLE: Military pop >= 12. Pressure attack. AT 240s")
+)
 
 ; chat to humans to say we should attack if on hold
 (defrule
@@ -934,23 +933,33 @@
 
 
 
+#load-if-not-defined DIFFICULTY-MODERATE
+
+; gremlin mountie on Hard/Hardest
+
+(defrule
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(current-age == tech-level-1)
+	(game-time > 20) ; give time for scenario effects to trigger if needed
+=>
+	(set-goal aready YES)
+	(disable-self)
+)
+
+
+#end-if
+#end-if
+#end-if
+
 ; -----------------------------------------------------
-; --- CHAPTER 1C: SWITCHING BETWEEN NORMAL ATTACK AND TSA
+; --- CHAPTER 4B: SWITCHING BETWEEN NORMAL ATTACK AND TSA
 ; -----------------------------------------------------
 
 (defrule
 	(population >= 120)
-	(not (goal openingstyle STYLE-RUSH))
-	(military-population >= 30)
-	(not (goal attacktype TSA))
-=>
-	(set-goal attacktype TSA)
-)
-
-(defrule
-	(population >= 100)
-	(goal openingstyle STYLE-RUSH)
-	(military-population >= 16)
+	(military-population >= 40)
 	(not (goal attacktype TSA))
 =>
 	(set-goal attacktype TSA)
@@ -968,19 +977,18 @@
 
 
 ; -----------------------------------------------------
-; --- CHAPTER 2A: REGULAR ATTACK LOGIC --- 
+; --- CHAPTER 5A: REGULAR ATTACK EXECUTION
 ; -----------------------------------------------------
 
 ; THE CORE OF IT ALL
-; when Aready, then, ATTAAAAAACK
-
-; with different rules for each TL because of different town size setting
+; When aready is YES, execute the attack. Different TLs keep separate rules
+; because each age used to tune town size differently.
 
 ; 22410 was 
 ; 	(chat-to-player-using-id any-computer-ally 22410)      ;sends taunt 200 to summon them in
 ; but we can just do this without ID and also pick a better taunt; 234 "Get in there you big furry oaf! I don't care what you smell!"
 
-; DISABLE IF NOT UNDER TREATY TIME YET
+; Clear queued attacks during treaty before any regular attack execution.
 
 (defrule
 	(not 
@@ -992,62 +1000,6 @@
 	(goal aready YES)
 =>
 	(set-goal aready NO)
-)
-
-; If TL2 Rush has already spent its allowed wave(s), kill any stale ready state
-; before the chitchat rule can keep broadcasting attack taunts.
-(defrule
-	(goal aready YES)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(goal rushsize RUSHHALT)
-=>
-	(set-goal aready NO)
-	(set-goal attack-timer YES)
-	(disable-timer t-attackgroup-alt)
-)
-
-; TL2 Rush only has attack consumers at 10+ military pop. If another branch arms
-; an attack below that, clear it here so the attack taunt cannot loop forever.
-(defrule
-	(goal aready YES)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(military-population < 10)
-=>
-	(set-goal aready NO)
-	(set-goal reasonforattack attack-is-me)
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 120)
-)
-
-; Stop spent TL2 Rush waves before the global attack chitchat can announce them.
-(defrule
-	(goal aready YES)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(goal rushwavecap 1)
-	(goal rushwaves 1)
-=>
-	(set-goal aready NO)
-	(set-goal attacksonhold-auto YES)
-	(set-goal rushsize RUSHHALT)
-	(set-goal attack-timer YES)
-	(disable-timer t-attackgroup-alt)
-)
-
-(defrule
-	(goal aready YES)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(goal rushwavecap 2)
-	(goal rushwaves 2)
-=>
-	(set-goal aready NO)
-	(set-goal attacksonhold-auto YES)
-	(set-goal rushsize RUSHHALT)
-	(set-goal attack-timer YES)
-	(disable-timer t-attackgroup-alt)
 )
 
 ; CHITCHAT
@@ -1093,121 +1045,6 @@
 
 (defrule
 	(goal aready YES)
-	(goal openingstyle STYLE-AGRESSIVE)
-	(not (current-age == tech-level-2))
-=>
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
-	(attack-now)
-	(set-goal aready NO)
-	(set-goal attacksonhold-auto NO)
-	(set-goal attackTSAhold EXHAUSTED)
-	(set-goal attackTSAlevel 0)
-)
-
-(defrule
-	(goal aready YES)
-	(goal openingstyle STYLE-RUSH)
-	(current-age == tech-level-2)
-	(military-population >= 10)
-	(goal rushwaves 0)
-=>
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
-	(attack-now)
-	(set-goal aready NO)
-	(set-goal attacksonhold-auto NO)
-	(set-goal attackTSAhold EXHAUSTED)
-	(set-goal attackTSAlevel 0)
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 150)
-	(set-goal attack-timer YES)
-	(set-goal rushwaves 1)
-)
-
-(defrule
-	(goal aready YES)
-	(goal openingstyle STYLE-RUSH)
-	(current-age == tech-level-2)
-	(military-population >= 10)
-	(goal rushwaves 1)
-=>
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
-	(attack-now)
-	(set-goal aready NO)
-	(set-goal attacksonhold-auto NO)
-	(set-goal attackTSAhold EXHAUSTED)
-	(set-goal attackTSAlevel 0)
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 150)
-	(set-goal attack-timer YES)
-	(set-goal rushwaves 2)
-)
-
-(defrule
-	(goal openingstyle STYLE-RUSH)
-	(current-age == tech-level-2)
-	(goal rushwavecap 1)
-	(goal rushwaves 1)
-=>
-	(set-goal aready NO)
-	(set-goal attacksonhold-auto YES)
-	(set-goal rushsize RUSHHALT)
-	(set-goal attack-timer YES)
-	(disable-timer t-attackgroup-alt)
-)
-
-(defrule
-	(goal openingstyle STYLE-RUSH)
-	(current-age == tech-level-2)
-	(goal rushwavecap 2)
-	(goal rushwaves 2)
-=>
-	(set-goal aready NO)
-	(set-goal attacksonhold-auto YES)
-	(set-goal rushsize RUSHHALT)
-	(set-goal attack-timer YES)
-	(disable-timer t-attackgroup-alt)
-)
-
-(defrule
-	(goal aready YES)
-	(goal openingstyle STYLE-RUSH)
-	(not (current-age == tech-level-2))
-=>
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
-	(attack-now)
-	(set-goal aready NO)
-	(set-goal attacksonhold-auto NO)
-	(set-goal attackTSAhold EXHAUSTED)
-	(set-goal attackTSAlevel 0)
-)
-
-(defrule
-	(goal aready YES)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(not (current-age == tech-level-2))
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-=>
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
-	(attack-now)
-	(set-goal aready NO)
-	(set-goal attacksonhold-auto NO)
-	(set-goal attackTSAhold EXHAUSTED)
-	(set-goal attackTSAlevel 0)
-)
-
-
-(defrule
-	(goal aready YES)
 	(goal attacktype NORM)
 	(current-age == tech-level-1)
 =>
@@ -1216,13 +1053,13 @@
 	(set-strategic-number sn-percent-attack-air 100)
 	(set-strategic-number sn-percent-attack-boats 100)
 	(attack-now)
-	(set-goal aready NO)
+	(set-goal opening-attack-target TARGET-WORKERS)
+	(set-goal aready NO) 						
 )
 
 (defrule
 	(goal aready YES)
 	(current-age == tech-level-2)
-	(not (goal openingstyle STYLE-RUSH))
 	(goal attacktype NORM)
 =>
 	;(set-strategic-number sn-maximum-town-size 43) ; gets reset by homebase ; seems to be causing weird worker dogpile issues
@@ -1230,10 +1067,8 @@
 	(set-strategic-number sn-percent-attack-air 100)
 	(set-strategic-number sn-percent-attack-boats 100)
 	(attack-now)
+	(set-goal opening-attack-target TARGET-WORKERS)
 	(set-goal aready NO)
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 150)
-	(set-goal attack-timer YES)
 )
 
 (defrule
@@ -1264,29 +1099,10 @@
 
 
 ; -----------------------------------------------------
-; --- CHAPTER 2B: TOWN SIZE ATTACK LOGIC --- 
+; --- CHAPTER 5B: TOWN SIZE ATTACK CONTROL
 ; -----------------------------------------------------
 
 ; remember, an additional rule sets it to HOLDING-HIGH if EXHAUSTED and at pop cap
-
-; Aggressive needs to keep launching pressure instead of letting TSA swallow
-; a ready attack into a hold state when it has already piled up.
-(defrule
-	(goal aready YES)
-	(goal openingstyle STYLE-AGRESSIVE)
-	(goal attacktype TSA)
-=>
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
-	(attack-now)
-	(set-goal aready NO)
-	(set-goal attackTSAhold EXHAUSTED)
-	(set-goal attackTSAlevel 0)
-	(disable-timer t-attackgroup-alt)
-	(enable-timer t-attackgroup-alt 240)
-	(chat-local-to-self "WAFFLE: Aggressive TSA bypass attack. AT 240s")
-)
 
 ; occurs in any age
 ; we could have separate rules for "start TSA" and "continue TSA" and will probably do that later but not right now
@@ -1294,7 +1110,7 @@
 	(goal aready YES)
 	(goal attacktype TSA)
 =>
-	(chat-local-to-self "WAFFLE: TSA. Attack. Set to HIGH")
+	; (chat-local-to-self "WAFFLE: TSA. Attack. Set to HIGH")
 	(set-goal attackTSAhold HOLDING-HIGH)
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt) ; we don't want it to interrupt our TSA
@@ -1308,7 +1124,7 @@
 	(set-goal attackTSAhold HOLDING-LOW) ; start the timer to call off TSA in however many min
 	(disable-timer t-attackgroup-hold)
 	(enable-timer t-attackgroup-hold 360)
-	(chat-local-to-self "WAFFLE: TSA hit lower pop threshold. Holding for 360s more")
+	; (chat-local-to-self "WAFFLE: TSA hit lower pop threshold. Holding for 360s more")
 )
 
 (defrule
@@ -1318,7 +1134,7 @@
 	(set-goal attackTSAhold HOLDING-LOW) ; start the timer to call off TSA
 	(disable-timer t-attackgroup-hold)
 	(enable-timer t-attackgroup-hold 420)
-	(chat-local-to-self "WAFFLE: TSA hit low pop threshold. Holding for 420s more")
+	; (chat-local-to-self "WAFFLE: TSA hit low pop threshold. Holding for 420s more")
 )
 ; thanks to a bit of lucky script we can have it so that if the pop is lower, TSA goes on for shorter, without breaking it
 ; (as in, if it was low, then went to lower, we don't want the timer to restart)
@@ -1333,19 +1149,17 @@
 =>
 	(set-goal attackTSAhold HOLDING-HIGH) ; reset and wait for pop to fall back down again
 	(disable-timer t-attackgroup-hold)
-	(chat-local-to-self "WAFFLE: TSA re-reached popcap, holding indefinitely")
+	; (chat-local-to-self "WAFFLE: TSA re-reached popcap, holding indefinitely")
 )
 #end-if
 #end-if
-#end-if ; closes #load-if-not-defined DIFFICULTY-EASY
-#end-if ; closes #load-if-not-defined DIFFICULTY-EASIEST
 #end-if
 
 ; force abort conditions
 (defrule
 	(or
 		(military-population <= 20)
-		(building-type-count BCORE-MAIN == 0) ; no CC
+		(building-type-count BLDG-MAIN == 0) ; no CC
 	)
 	(or
 		(goal attackTSAhold HOLDING-HIGH)
@@ -1357,7 +1171,7 @@
 	(disable-timer t-attackgroup-hold)
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 900)
-	(chat-local-to-self "WAFFLE: Force cancelling TSA. 900s cooldown")
+	; (chat-local-to-self "WAFFLE: Force cancelling TSA. 900s cooldown")
 )
 
 ; when the timer triggers...
@@ -1379,7 +1193,7 @@
 	(set-goal attackTSAlevel 0) ; this belongs here 
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 300)
-	(chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop high: 300s cooldown.")
+	; (chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop high: 300s cooldown.")
 )
 
 (defrule
@@ -1395,7 +1209,7 @@
 	(set-goal attackTSAlevel 0) ; this belongs here 
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 600)
-	(chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop lower: 600s cooldown.")
+	; (chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop lower: 600s cooldown.")
 )
 
 (defrule
@@ -1411,7 +1225,7 @@
 	(set-goal attackTSAlevel 0) ; this belongs here 
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 480)
-	(chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop low: 480s cooldown.")
+	; (chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop low: 480s cooldown.")
 )
 
 #end-if
@@ -1467,13 +1281,13 @@
 	(set-goal attackTSAlevel 0) 
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 750)
-	(chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Moderate: 750s cooldown.")
+	; (chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Moderate: 750s cooldown.")
 )
 #end-if
 
 
 ; -----------------------------------------------------
-; --- CHAPTER 2B-II: INCREMENTING TOWN SIZE LOGIC --- 
+; --- CHAPTER 5C: INCREMENTING TSA TOWN SIZE
 ; -----------------------------------------------------
 ; this is the bit that makes town size attack actually attack
 ; ordering of sections is important due to shenanigans
@@ -1578,7 +1392,7 @@
 	(not (strategic-number sn-maximum-town-size == 40))
 =>
 	(set-strategic-number sn-maximum-town-size 40)
-	(chat-local-to-self "WAFFLE: Level 0, TS 40")
+	; (chat-local-to-self "WAFFLE: Level 0, TS 40")
 )
 (defrule
 	(or
@@ -1589,7 +1403,7 @@
 	(not (strategic-number sn-maximum-town-size == 60))
 =>
 	(set-strategic-number sn-maximum-town-size 60)
-	(chat-local-to-self "WAFFLE: Level 1, TS 60")
+	; (chat-local-to-self "WAFFLE: Level 1, TS 60")
 )
 (defrule
 	(or
@@ -1600,7 +1414,7 @@
 	(not (strategic-number sn-maximum-town-size == 80))
 =>
 	(set-strategic-number sn-maximum-town-size 80)
-	(chat-local-to-self "WAFFLE: Level 2, TS 80")
+	; (chat-local-to-self "WAFFLE: Level 2, TS 80")
 )
 (defrule
 	(or
@@ -1611,7 +1425,7 @@
 	(not (strategic-number sn-maximum-town-size == 100))
 =>
 	(set-strategic-number sn-maximum-town-size 100)
-	(chat-local-to-self "WAFFLE: Level 3, TS 100")
+	; (chat-local-to-self "WAFFLE: Level 3, TS 100")
 )
 (defrule
 	(or
@@ -1622,7 +1436,7 @@
 	(not (strategic-number sn-maximum-town-size == 120))
 =>
 	(set-strategic-number sn-maximum-town-size 120)
-	(chat-local-to-self "WAFFLE: Level 4, TS 120")
+	; (chat-local-to-self "WAFFLE: Level 4, TS 120")
 )
 (defrule
 	(or
@@ -1633,7 +1447,7 @@
 	(not (strategic-number sn-maximum-town-size == 140))
 =>
 	(set-strategic-number sn-maximum-town-size 140)
-	(chat-local-to-self "WAFFLE: Level 5, TS 140")
+	; (chat-local-to-self "WAFFLE: Level 5, TS 140")
 )
 (defrule
 	(or
@@ -1644,7 +1458,7 @@
 	(not (strategic-number sn-maximum-town-size == 160))
 =>
 	(set-strategic-number sn-maximum-town-size 160)
-	(chat-local-to-self "WAFFLE: Level 6, TS 160")
+	; (chat-local-to-self "WAFFLE: Level 6, TS 160")
 )
 (defrule
 	(or
@@ -1655,7 +1469,7 @@
 	(not (strategic-number sn-maximum-town-size == 180))
 =>
 	(set-strategic-number sn-maximum-town-size 180)
-	(chat-local-to-self "WAFFLE: Level 7, TS 180")
+	; (chat-local-to-self "WAFFLE: Level 7, TS 180")
 )
 (defrule
 	(or
@@ -1666,7 +1480,7 @@
 	(not (strategic-number sn-maximum-town-size == 200))
 =>
 	(set-strategic-number sn-maximum-town-size 200)
-	(chat-local-to-self "WAFFLE: Level 8, TS 200")
+	; (chat-local-to-self "WAFFLE: Level 8, TS 200")
 )
 (defrule
 	(or
@@ -1677,7 +1491,7 @@
 	(not (strategic-number sn-maximum-town-size == 220))
 =>
 	(set-strategic-number sn-maximum-town-size 220)
-	(chat-local-to-self "WAFFLE: Level 9, TS 220")
+	; (chat-local-to-self "WAFFLE: Level 9, TS 220")
 )
 (defrule
 	(or
@@ -1688,7 +1502,7 @@
 	(not (strategic-number sn-maximum-town-size == 255))
 =>
 	(set-strategic-number sn-maximum-town-size 255)
-	(chat-local-to-self "WAFFLE: Level 10, TS 255")
+	; (chat-local-to-self "WAFFLE: Level 10, TS 255")
 )
 (defrule
 	(or
@@ -1699,7 +1513,7 @@
 	(not (strategic-number sn-maximum-town-size == 255))
 =>
 	(set-strategic-number sn-maximum-town-size 255)
-	(chat-local-to-self "WAFFLE: Level 11, TS 255")
+	; (chat-local-to-self "WAFFLE: Level 11, TS 255")
 )
 
 
@@ -1713,27 +1527,19 @@
 	(goal attackTSAvar NULL2)
 =>
 	(set-goal attackTSAvar INCREMENT)
-	(chat-local-to-self "WAFFLE: TSA is HOLDING but no enemy buildings. INCREMENT")
+	; (chat-local-to-self "WAFFLE: TSA is HOLDING but no enemy buildings. INCREMENT")
 )
 
 
 
 
 ; -----------------------------------------------------
-; --- CHAPTER 3: JOINING IN ATTACKS --- 
+; --- CHAPTER 6A: COMPUTER ALLY JOIN-IN
 ; -----------------------------------------------------
 
 
-; so here's a funny story for you
-; there were rules in the original Computer like
-; "oh, if I get attacked, I should ask my ally AI for help and they should come bail me out!"
-; I was like "Y'know, IDK if these rules are even good, but I guess I'll try and make them work anyway"
-; Turns out
-; This doesn't cause the AI to help out
-; It just causes the AI to go on the attack with a few of its forces and run across the map to bother someone's ore processing center or wtv
-; Then, THAT AI then goes "Help, I'm under attack" and its ally sends some of ITS forces to bother somebody else's ore processing center or wtv
-; Which then starts the loop all over again...
-; I was WONDERING why the AI was struggling to get a large army together! 
+; Original ally-aid behavior created circular call-ins and scattered armies.
+; This version only responds to explicit attack calls.
 
 ; note to self: called ID 22406 which sent taunt 201, this can be repurposed, clobbered, or generally depreciated
 ; note to self #2: used timer t-calltoaid, this can be removed
@@ -1748,13 +1554,17 @@
 	(military-population > 7) ; 1 scout and over 6 troops worth
 	(goal attacksonhold-auto NO)
 	(not (current-age == tech-level-1)) ; ignore in T1
-	(not (current-age == tech-level-2))
+	(or
+		(not (current-age == tech-level-2))
+		;(not (goal rushsize RUSHHALT)) ; had issues whereby before this was rolled the AI would continually attack and never get forces enough to the point where it could roll
+		(goal rushsize RUSHCONTINUE)
+	)
 => 
 	(acknowledge-taunt every-ally 234) ; can recieve multiple in the same tick so needs to call every
 	(set-goal reasonforattack attack-is-AI)
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 5) ; so it fires immediately; give it a bit
-	(chat-local-to-self "WAFFLE: Asked by ally AI to join in. Joining in 5s")
+	; (chat-local-to-self "WAFFLE: Asked by ally AI to join in. Joining in 5s")
 )
 
 (defrule
@@ -1762,12 +1572,14 @@
 => 
 	(acknowledge-taunt this-any-ally 234)
 	(set-goal reasonforattack attack-is-me) ; reset 
-	(chat-local-to-self "WAFFLE: Asked by ally AI to join in. Request denied.")
+	; (chat-local-to-self "WAFFLE: Asked by ally AI to join in. Request denied.")
 )
 
 
 
-; TALKING TO HUMANS
+; -----------------------------------------------------
+; --- CHAPTER 6B: HUMAN ATTACK COMMANDS
+; -----------------------------------------------------
 
 ; Incoming taunts
 
@@ -1813,7 +1625,7 @@
 
 
 ; -----------------------------------------------------
-; --- CHAPTER 4A: ODD LEFTOVERS
+; --- CHAPTER 7A: CENTER COMMANDS
 ; -----------------------------------------------------
 
 ; reset town size when done; edit: automatically done by sn homebase now
@@ -1852,20 +1664,8 @@
 
 
 ; -----------------------------------------------------
-; --- CHAPTER 4B: SCENARIO LOGIC
+; --- CHAPTER 7B: SCENARIO ATTACK COMMANDS
 ; -----------------------------------------------------
-
-(defrule
-	(event-detected trigger 2)
-	(goal attacksonhold-scn NO)
-=>
-	(set-goal attacksonhold-scn YES)	; should bypass all attack logic if I got them all 
-	(set-goal attack-timer YES) 		; causes other thingymajigies to not fire
-	(disable-timer t-attackgroup-alt)
-	(disable-self)
-)
-
-
 
 (defrule
 	(event-detected trigger 11)
@@ -1927,7 +1727,7 @@
 
 
 ; -----------------------------------------------------
-; --- CHAPTER 4C: WHATEVER THIS IS LOL (ORIGINAL CODE)
+; --- CHAPTER 7C: MONUMENT AND HOLOCRON TARGETS
 ; -----------------------------------------------------
 
 ; one of the few pieces of the original attack script that made sense

@@ -7,40 +7,28 @@
 ; *** Table of Contents *** 
 ; =====================================================
 ;
-;	Chapter 0: SETUP
 ;	Chapter 1: BUILDINGS
 ;	Chapter 2: UPGRADES
 ;	Chapter 3: TL3 PACKAGES
 ;	Chapter 4: TL4 PACKAGES
-;	Chapter 5: DETECT PACKAGES
+;	Chapter 5: AIR TRANSPORT
 ;
 ; =====================================================
-; *** Chapter 0: SETUP ***
+; *** Chapter 1: BUILDINGS ***
 ; =====================================================
 
 (defrule
 	(current-age == tech-level-3)
-	(goal openingstyle STYLE-DEFENSIVE)
+	(or
+		(goal openingstyle STYLE-DEFENSIVE)
+		(goal openingstyle STYLE-AGGRESSIVE)
+	)
 	(building-type-count-total BLDG-TRAINAIR < 2)
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-TRAINAIR)
 	(metal-amount > 25)
 	(not (goal tryingtobuild AIRBASE))
-	(not (too-many-unpowered-buildings))
-=>
-	(set-goal tryingtobuild AIRBASE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(building-type-count-total BLDG-MAIN > 2)
-	(building-type-count-total BLDG-TRAINAIR < 4)
-	(building-type-count-total BLDG-RESCTR >= 1)
-	(building-type-count-total BLDG-POWERCORE > 0)
-	(can-build-with-escrow BLDG-TRAINAIR)
-	(metal-amount > 25)
-	(not (goal tryingtobuild AIRBASE))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild AIRBASE)
@@ -55,6 +43,26 @@
 	(can-build-with-escrow BLDG-TRAINAIR)
 	(metal-amount > 25)
 	(not (goal tryingtobuild AIRBASE))
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+=>
+	(set-goal tryingtobuild AIRBASE)
+)
+
+; TL3 post-spine Airbase scaling.
+(defrule
+	(current-age == tech-level-3)
+	(building-type-count-total BLDG-TRAINAIR < 3)
+	(building-type-count-total BLDG-TRAINAIR >= 2)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-WARCTR > 0)
+	(building-type-count-total BLDG-MAIN >= 2)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-TRAINAIR)
+	(carbon-amount > 600)
+	(metal-amount > 50)
+	(not (goal tryingtobuild AIRBASE))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild AIRBASE)
@@ -62,24 +70,37 @@
 
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
 	(building-type-count-total BLDG-TRAINAIR < 4)
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-TRAINAIR)
 	(metal-amount > 25)
 	(not (goal tryingtobuild AIRBASE))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild AIRBASE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(building-type-count-total BLDG-TRAINAIR >= 4)
+	(building-type-count-total BLDG-TRAINAIR < 6)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(carbon-amount > 2000)
+	(food-amount > 1000)
+	(nova-amount > 500)
+	(metal-amount > 200)
+	(military-population >= MIL_POP_B)
+	(can-build-with-escrow BLDG-TRAINAIR)
+	(not (goal tryingtobuild AIRBASE))
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+=>
+	(release-escrow carbon)
+	(build-forward BLDG-TRAINAIR)
 )
 
 ; =====================================================
@@ -89,10 +110,9 @@
 ; --- Basic fighter upgrade ---
 (defrule
 	(current-age >= tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
+	(goal support-aircraft YES)
+	(unit-type-count-total UNIT-FIGHTER-LINE > 0)
+	(military-population >= MIL_POP_A)
 	(can-research-with-escrow ut-fighter-2)
 =>
 	(release-escrow carbon)
@@ -100,14 +120,12 @@
 	(research ut-fighter-2)
 )
 
-; --- Advanced fighter upgrade: standard timing ---
+; --- Advanced fighter upgrade ---
 (defrule
 	(current-age >= tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
-	(research-completed rt-shield-mods)
+	(goal support-aircraft YES)
+	(unit-type-count-total UNIT-FIGHTER-LINE > 0)
+	(military-population >= MIL_POP_B)
 	(can-research-with-escrow ut-fighter-3)
 =>
 	(release-escrow carbon)
@@ -115,20 +133,19 @@
 	(research ut-fighter-3)
 )
 
-; --- Enhanced bomber upgrade: standard timing ---
+; --- Enhanced bomber upgrade ---
 (defrule
 	(current-age >= tech-level-4)
+	(goal support-aircraft YES)
+	(research-completed rt-shield-mods)
+	(unit-type-count-total UNIT-BOMBER-LINE > 0)
 	(or
-		(goal combat-arm AIR)
+		(goal enemymechsighted MECH-ALERT-P2)
 		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
+			(goal enemymechsighted MECH-ALERT-P3)
+			(goal enemymechsighted MECH-ALERT-P4)
 		)
 	)
-	(research-completed rt-shield-mods)
 	(can-research-with-escrow ut-bomber-2)
 	(goal importantT4research DONE)
 =>
@@ -137,41 +154,11 @@
 	(research ut-bomber-2)
 )
 
-; --- Advanced bomber upgrade ---
-(defrule
-	(current-age >= tech-level-4)
-	(can-research-with-escrow ut-bomber-3)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
-	(research-completed rt-shield-mods)
-	(goal importantT4research DONE)
-=>
-	(release-escrow carbon)
-	(release-escrow nova)
-	(research ut-bomber-3)
-)
-
 (defrule
 	; Efficient Manufacturing
+	(current-age >= tech-level-4)
+	(goal support-aircraft YES)
 	(can-research-with-escrow rt-drafted-labor)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -180,17 +167,9 @@
 
 (defrule
 	; Armored Platework
+	(current-age >= tech-level-4)
+	(goal support-aircraft YES)
 	(can-research-with-escrow rt-armor-plating)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -199,17 +178,10 @@
 
 (defrule
 	; Gunship Armaments
+	(current-age >= tech-level-4)
+	(goal support-aircraft YES)
 	(can-research-with-escrow rt-gunship-lasers)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
+	(military-population >= MIL_POP_A)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -218,41 +190,10 @@
 
 (defrule
 	; Enlarged Bomb Hold
-	(current-age == tech-level-3)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-enlarged-bomb-hold)
-	(or
-		(goal openingstyle STYLE-DEFENSIVE)
-		(or
-			(goal combat-arm AIR)
-			(or
-				(goal support-aircraft YES)
-				(or
-					(goal support-aircraft YES)
-					(goal support-bombers YES)
-				)
-			)
-		)
-	)
-=>
-	(release-escrow food)
-	(release-escrow carbon)
-	(research rt-enlarged-bomb-hold)
-)
-
-(defrule
-	; Enlarged Bomb Hold
-	(current-age == tech-level-4)
-	(can-research-with-escrow rt-enlarged-bomb-hold)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
+	(military-population >= MIL_POP_A)
+	(unit-type-count-total UNIT-BOMBER-LINE > 0)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -262,18 +203,10 @@
 (defrule
 	; RA A-wing Upgrades
 	(current-age >= tech-level-4)
+	(goal support-aircraft YES)
 	(can-research-with-escrow rt-avail-awing)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
 	(goal importantT4research DONE)
+	(military-population >= MIL_POP_A)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -283,18 +216,10 @@
 (defrule
 	; RA Astromech Repairs
 	(current-age >= tech-level-4)
+	(goal support-aircraft YES)
 	(can-research-with-escrow rt-astromechs)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
 	(research-completed rt-shield-mods)
+	(military-population >= MIL_POP_A)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -302,19 +227,22 @@
 )
 
 (defrule
+	; RN Advanced Engines
+	(can-research-with-escrow rt-lighter-material)
+	(research-completed rt-shield-mods)
+	(military-population >= MIL_POP_A)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-lighter-material)
+)
+
+(defrule
 	; RS Bunkerbusters
 	(current-age >= tech-level-4)
+	(goal support-aircraft YES)
 	(can-research-with-escrow rt-bunkerbusters)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
+	(military-population >= MIL_POP_A)
 	(research-completed rt-shield-mods)
 	(goal importantT4research DONE)
 =>
@@ -326,19 +254,10 @@
 (defrule
 	; NR New Class Modernization
 	(current-age >= tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(or
-			(goal support-aircraft YES)
-			(or
-				(goal support-aircraft YES)
-				(goal support-bombers YES)
-			)
-		)
-	)
-	(research-completed rt-shield-mods)
+	(goal support-aircraft YES)
 	(can-research-with-escrow ut-newclassmod)
-	(goal importantT4research DONE)
+	(research-completed rt-shield-mods)
+	(military-population >= MIL_POP_A)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -353,52 +272,49 @@
 ; FIGHTERS
 ; -----------------------
 
-; --- TL3 fighter trick reset ---
-(defrule
-	(current-age >= tech-level-4)
-	(goal fightertrick FIGHTERTRICK-ACTIVE)
-=>
-	(set-goal fightertrick FIGHTERTRICK-DONE)
-)
-
-; --- TL3 fighter trick p1 ---
-; Defensive/agressive openings may use the two-Airbase fighter trick even if air is not their long-term arm.
+; --- TL3 fighter core p1 ---
 (defrule
 	(current-age == tech-level-3)
-	(goal fightertrick FIGHTERTRICK-ACTIVE)
-	(building-type-count-total BLDG-TRAINAIR >= 2)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-FIGHTER-LINE < fightertrick-fighters)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-FIGHTER-LINE < fightertrick-fighters-water)
-		)
-	)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1)
 	(can-train UNIT-FIGHTER-LINE)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
 
-; --- TL3 fighter core p1 ---
 (defrule
 	(current-age == tech-level-3)
-	(or
-		(goal combat-arm AIR)
-		(goal openingstyle STYLE-DEFENSIVE)
-	)
-	(or
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1-water)
-		)
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1)
-		)
-	)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1-water)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(train UNIT-FIGHTER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1-asteroid)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(train UNIT-FIGHTER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1-hybrid)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(train UNIT-FIGHTER-LINE)
+)
+
+; --- TL3 fighter cover floor ---
+(defrule
+	(current-age == tech-level-3)
+	(current-age-time > 240)
+	(building-type-count-total BLDG-TRAINAIR > 0)
+	(unit-type-count-total UNIT-FIGHTER-LINE < 4)
 	(can-train UNIT-FIGHTER-LINE)
 =>
 	(train UNIT-FIGHTER-LINE)
@@ -407,26 +323,43 @@
 ; --- TL3 fighter core p2 ---
 (defrule
 	(current-age == tech-level-3)
-	(or
-		(goal combat-arm AIR)
-		(goal openingstyle STYLE-DEFENSIVE)
-	)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-BOMBER-LINE >= TL3-bomber-arm-p1)
-				(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2)
-			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-BOMBER-LINE >= TL3-bomber-arm-p1-water)
-				(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2-water)
-			)
-		)
-	)
+	(goal special-map LAND)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(train UNIT-FIGHTER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1-water)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2-water)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(train UNIT-FIGHTER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1-asteroid)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2-asteroid)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(train UNIT-FIGHTER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1-hybrid)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2-hybrid)
 	(can-train UNIT-FIGHTER-LINE)
 =>
 	(train UNIT-FIGHTER-LINE)
@@ -436,22 +369,14 @@
 ; BOMBERS
 ; -----------------------
 
+; --- TL3 defensive bomber mech-counter p1 ---
 (defrule
 	(current-age == tech-level-3)
-	(or
-		(goal combat-arm AIR)
-		(goal openingstyle STYLE-DEFENSIVE)
-	)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-water)
-		)
-	)
+	(goal special-map LAND)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1)
 	(can-train UNIT-BOMBER-LINE)
 =>
 	(train UNIT-BOMBER-LINE)
@@ -459,34 +384,91 @@
 
 (defrule
 	(current-age == tech-level-3)
-	(or
-		(goal combat-arm AIR)
-		(goal openingstyle STYLE-DEFENSIVE)
-	)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2)
-				(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2)
-			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2-water)
-				(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-water)
-			)
-		)
-	
-	)
+	(goal special-map WATER)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1-water)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-water)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1-asteroid)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-asteroid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1-hybrid)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-hybrid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+; --- TL3 defensive bomber mech-counter p2 ---
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map LAND)
+	(goal enemymechsighted MECH-ALERT-P2)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(goal enemymechsighted MECH-ALERT-P2)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2-water)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-water)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(goal enemymechsighted MECH-ALERT-P2)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2-asteroid)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-asteroid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(goal enemymechsighted MECH-ALERT-P2)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2-hybrid)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-hybrid)
 	(can-train UNIT-BOMBER-LINE)
 =>
 	(train UNIT-BOMBER-LINE)
 )
 
 ; =====================================================
-; CHAPTER 4: 
+; CHAPTER 4: TL4 AIR PACKAGES
 ; =====================================================
 
 ; -----------------------
@@ -496,10 +478,8 @@
 ; --- Interceptor air-alert low ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
 	(goal enemyairsighted AIR-ALERT-LOW)
 	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
 	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-detect-air-alert-low-p1)
@@ -511,10 +491,8 @@
 ; --- Interceptor air-alert guard ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
 	(goal enemyairsighted AIR-ALERT-GUARD)
 	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
 	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-detect-air-alert-guard-p2)
@@ -526,12 +504,10 @@
 ; --- Interceptor air-alert danger ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
 	(goal enemyairsighted AIR-ALERT-DANGER)
-	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
+	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p2)
 	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-detect-air-alert-danger-p3)
 	(can-train UNIT-INTERCEPTOR-LINE)
 =>
@@ -542,112 +518,998 @@
 ; ATTACKERS
 ; -----------------------
 
-; --- Aircraft support attackers p1 ---
+; --- AIR core attackers p1 ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
+	(goal combat-arm AIR)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
 	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
 	(can-train UNIT-ATTACKER-LINE)
 =>
 	(train UNIT-ATTACKER-LINE)
 )
 
-; --- Aircraft support attackers p2 ---
+; --- AIR core attackers p2 ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
+	(goal combat-arm AIR)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_B)
 	(goal importantT4research DONE)
-	(or
-		(goal enemyairsighted AIR-ALERT-NONE)
-		(or
-			(and
-				(goal enemyairsighted AIR-ALERT-LOW)
-				(unit-type-count-total UNIT-INTERCEPTOR-LINE >= TL4-interceptor-detect-air-alert-low-p1)
-			)
-			(or
-				(and
-					(goal enemyairsighted AIR-ALERT-GUARD)
-					(unit-type-count-total UNIT-INTERCEPTOR-LINE >= TL4-interceptor-detect-air-alert-guard-p2)
-				)
-				(and
-					(goal enemyairsighted AIR-ALERT-DANGER)
-					(unit-type-count-total UNIT-INTERCEPTOR-LINE >= TL4-interceptor-detect-air-alert-danger-p3)
-				)
-			)
-		)
-	)
+	(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-arm-p2)
 	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
 	(can-train UNIT-ATTACKER-LINE)
 =>
 	(train UNIT-ATTACKER-LINE)
 )
 
-; --- Aircraft support attackers p3 ---
+; --- AIR core attackers p3 ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
+	(goal combat-arm AIR)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_B)
 	(goal importantT4research DONE)
-		(or
-		(goal enemyairsighted AIR-ALERT-NONE)
-		(or
-			(and
-				(goal enemyairsighted AIR-ALERT-LOW)
-				(unit-type-count-total UNIT-INTERCEPTOR-LINE >= TL4-interceptor-detect-air-alert-low-p1)
-			)
-			(or
-				(and
-					(goal enemyairsighted AIR-ALERT-GUARD)
-					(unit-type-count-total UNIT-INTERCEPTOR-LINE >= TL4-interceptor-detect-air-alert-guard-p2)
-				)
-				(and
-					(goal enemyairsighted AIR-ALERT-DANGER)
-					(unit-type-count-total UNIT-INTERCEPTOR-LINE >= TL4-interceptor-detect-air-alert-danger-p3)
-				)
-			)
-		)
-	)
+	(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-arm-p2)
 	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
 	(can-train UNIT-ATTACKER-LINE)
 =>
 	(train UNIT-ATTACKER-LINE)
 )
 
-; --- Aircraft support attackers p4 ---
+; --- AIR core attackers p4 ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
+	(goal combat-arm AIR)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_B)
 	(goal importantT4research DONE)
-		(or
-		(goal enemyairsighted AIR-ALERT-NONE)
-		(or
-			(and
-				(goal enemyairsighted AIR-ALERT-LOW)
-				(unit-type-count-total UNIT-INTERCEPTOR-LINE >= TL4-interceptor-detect-air-alert-low-p1)
-			)
-			(or
-				(and
-					(goal enemyairsighted AIR-ALERT-GUARD)
-					(unit-type-count-total UNIT-INTERCEPTOR-LINE >= TL4-interceptor-detect-air-alert-guard-p2)
-				)
-				(and
-					(goal enemyairsighted AIR-ALERT-DANGER)
-					(unit-type-count-total UNIT-INTERCEPTOR-LINE >= TL4-interceptor-detect-air-alert-danger-p3)
-				)
-			)
-		)
-	)
+	(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 TROOP land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm TROOP)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 TROOP water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm TROOP)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 TROOP asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm TROOP)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 TROOP hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm TROOP)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 TROOP/HW land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm TROOP/HW)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 TROOP/HW water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm TROOP/HW)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 TROOP/HW asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm TROOP/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 TROOP/HW hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm TROOP/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 MECH land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm MECH)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 MECH water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm MECH)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 MECH asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm MECH)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 MECH hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm MECH)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 MECH/HW land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm MECH/HW)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 MECH/HW water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 MECH/HW asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p1 MECH/HW hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p1)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 TROOP land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 TROOP water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 TROOP asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 TROOP hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 TROOP/HW land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 TROOP/HW water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 TROOP/HW asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 TROOP/HW hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 MECH land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 MECH water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 MECH asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 MECH hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 MECH/HW land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 MECH/HW water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 MECH/HW asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p2 MECH/HW hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p2)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 TROOP land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 TROOP water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 TROOP asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 TROOP hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 TROOP/HW land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 TROOP/HW water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 TROOP/HW asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 TROOP/HW hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 MECH land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 MECH water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 MECH asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 MECH hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 MECH/HW land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 MECH/HW water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 MECH/HW asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p3 MECH/HW hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 TROOP land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 TROOP water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 TROOP asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 TROOP hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 TROOP/HW land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 TROOP/HW water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 TROOP/HW asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 TROOP/HW hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm TROOP/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 MECH land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 MECH water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 MECH asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 MECH hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 MECH/HW land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 MECH/HW water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 MECH/HW asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-asteroid)
+	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
+	(can-train UNIT-ATTACKER-LINE)
+=>
+	(train UNIT-ATTACKER-LINE)
+)
+
+; --- Aircraft support attackers p4 MECH/HW hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-hybrid)
 	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
 	(can-train UNIT-ATTACKER-LINE)
 =>
@@ -655,67 +1517,49 @@
 )
 
 ; -----------------------
-; BOMBER SUPPORT
+;  BOMBERS
 ; -----------------------
 
-; --- Bomber support p1 ---
+; --- Anti-mech bomber p1 ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-bombers YES)
-	)
-	(goal enemymechsighted MECH-ALERT-P1)
-	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
+	(goal support-aircraft YES)
+	 
+	(military-population >= MIL_POP_A)
+	(goal importantT4research DONE)
+	(goal enemymechsighted MECH-ALERT-P2)
+	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p2)
 	(unit-type-count-total UNIT-BOMBER-LINE < TL4-bomber-supp-p1)
 	(can-train UNIT-BOMBER-LINE)
 =>
 	(train UNIT-BOMBER-LINE)
 )
 
-; --- Bomber support p2 ---
+; --- Anti-mech bomber p2 ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-bombers YES)
-	)
+	(goal support-aircraft YES)
+	 
+	(military-population >= MIL_POP_A)
 	(goal importantT4research DONE)
-	(goal enemymechsighted MECH-ALERT-P2)
-	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
+	(goal enemymechsighted MECH-ALERT-P3)
+	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p3)
 	(unit-type-count-total UNIT-BOMBER-LINE < TL4-bomber-supp-p2)
 	(can-train UNIT-BOMBER-LINE)
 =>
 	(train UNIT-BOMBER-LINE)
 )
 
-; --- Bomber support p3 ---
+; --- Anti-mech bomber p3 ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-bombers YES)
-	)
-	(goal importantT4research DONE)
-	(goal enemymechsighted MECH-ALERT-P3)
-	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL4-bomber-supp-p3)
-	(can-train UNIT-BOMBER-LINE)
-=>
-	(train UNIT-BOMBER-LINE)
-)
-
-; --- Bomber support p4 ---
-(defrule
-	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-bombers YES)
-	)
+	(goal support-aircraft YES)
+	 
+	(military-population >= MIL_POP_A)
 	(goal importantT4research DONE)
 	(goal enemymechsighted MECH-ALERT-P4)
-	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL4-bomber-supp-p4)
+	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p4)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL4-bomber-supp-p3)
 	(can-train UNIT-BOMBER-LINE)
 =>
 	(train UNIT-BOMBER-LINE)
@@ -725,45 +1569,57 @@
 ; FIGHTER SUPPORT
 ; -----------------------
 
-; --- Aircraft support fighters p1 ---
+; --- TL4 water-map fighter p1 ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
-	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
+	(goal support-aircraft YES)
+	 
+	(military-population >= MIL_POP_A)
+	(goal special-map WATER)
 	(unit-type-count-total UNIT-FIGHTER-LINE < TL4-fighter-arm-p1)
 	(can-train UNIT-FIGHTER-LINE)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
 
-; --- Aircraft support fighters p2 ---
+; --- TL4 water-map fighter cover floor ---
 (defrule
 	(current-age == tech-level-4)
-	(or
-		(goal combat-arm AIR)
-		(goal support-aircraft YES)
-	)
-	(goal importantT4research DONE)
-	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
-	(unit-type-count-total UNIT-FIGHTER-LINE < TL4-fighter-arm-p2)
+	(goal support-aircraft YES)
+	 
+	(military-population >= MIL_POP_A)
+	(goal special-map WATER)
+	(building-type-count-total BLDG-TRAINAIR > 0)
+	(unit-type-count-total UNIT-FIGHTER-LINE < 8)
 	(can-train UNIT-FIGHTER-LINE)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
 
+; --- TL4 water-map fighter p2 ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	 
+	(military-population >= MIL_POP_A)
+	(goal special-map WATER)
+	(goal importantT4research DONE)
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL4-fighter-arm-p1)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL4-fighter-arm-p2)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(train UNIT-FIGHTER-LINE)
+)
 ; =====================================================
-; CHAPTER 6: AIR TRANSPORT
+; CHAPTER 5: AIR TRANSPORT
 ; =====================================================
 
 ; --- Maintain map-start Air Transport ---
 (defrule
 	(game-time < 10)
-	(unit-type-count-total UNIT-AIRTRANS-LINE > 0)
+	(unit-type-count-total UNIT-AIRLIFT-LINE > 0)
 =>
-	(set-goal allow-air-trans YES)
+	(set-goal support-airlift YES)
 	(disable-self)
 )
 
@@ -771,13 +1627,13 @@
 (defrule
 	(goal special-map ASTEROID)
 =>
-	(set-goal allow-air-trans YES)
+	(set-goal support-airlift YES)
 	(disable-self)
 )
 
-; --- Build Air Transport once basic fighter cover exists ---
+; --- Build Air Transports once basic fighter cover exists ---
 (defrule
-	(goal allow-air-trans YES)
+	(goal support-airlift YES)
 	(or
 		(and
 			(current-age == tech-level-3)
@@ -788,24 +1644,16 @@
 			(unit-type-count-total UNIT-FIGHTER-LINE >= TL4-fighter-arm-p1)
 		)
 	)
-	(unit-type-count-total UNIT-AIRTRANS-LINE == 0)
-	(can-train UNIT-AIRTRANS-LINE)
+	(unit-type-count-total UNIT-AIRLIFT-LINE < TL3-air-transport-asteroid)
+	(can-train UNIT-AIRLIFT-LINE)
 =>
-	(train UNIT-AIRTRANS-LINE)
+	(train UNIT-AIRLIFT-LINE)
 )
 
-; =====================================================
-; CHAPTER X: CIV AIRBASE TECH CATCHUP
-; =====================================================
 
-(defrule
-	; RN Advanced Engines
-	(can-research-with-escrow rt-lighter-material)
-=>
-	(release-escrow food)
-	(release-escrow carbon)
-	(release-escrow metal)
-	(release-escrow nova)
-	(research rt-lighter-material)
-)
+
+
+
+
+
 

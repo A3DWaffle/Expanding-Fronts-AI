@@ -8,7 +8,7 @@
 ; =====================================================
 ;
 ;	Chapter 0: SETUP
-;	Chapter 1: LOGIC
+;	Chapter 1: STRATEGIC NUMBERS
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
@@ -19,19 +19,26 @@
 =>
 	(set-goal tryingtobuild NULL)
 	(set-goal get-mad NO)
+	(set-goal buildpause NO)
+	(set-goal t4-laser-ready NO)
+	(set-goal t4-heavy-armor-ready NO)
+	(set-goal t4-homing-ready NO)
+	(set-goal t4-heavy-plating-ready NO)
+	(set-goal t4-targeting-ready NO)
+	(set-goal t4-artillery-ready NO)
 
 	(disable-self)
 )
 
 
-; initial sn's that probably shouldn't be touched later
+; =====================================================
+; *** Chapter 1: STRATEGIC NUMBERS ***
+; =====================================================
 
 (defrule
 	(true)
 =>
-	(set-strategic-number sn-do-not-scale-for-difficulty-level 1) ; disable difficulty adjusting sn automatically
-	(set-strategic-number sn-scale-minimum-attack-group-size 0) ; attack group scaling issues
+	(set-strategic-number sn-do-not-scale-for-difficulty-level 1)
+	(set-strategic-number sn-scale-minimum-attack-group-size 0)
 	(disable-self)
 )
-
-

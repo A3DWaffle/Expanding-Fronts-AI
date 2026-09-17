@@ -27,7 +27,7 @@
 )
 
 ; =====================================================
-; CHAPTER 1: BUILDINGS
+; *** Chapter 1: BUILDINGS ***
 ; =====================================================
 
 (defrule
@@ -36,40 +36,70 @@
 	(building-type-count-total BLDG-TRAINMECH > 0)
 	(building-type-count-total BLDG-SPACEPORT > 0)
 	(building-type-count-total BLDG-MAIN > 2)
+	(goal importantT3research DONE)
 	(or
-		(building-type-count BLDG-POWERCORE > 0) ; either have a powercore, or EXCESS carbon
+		(building-type-count BLDG-POWERCORE > 0)
 		(carbon-amount > 400)
 	)
-	(building-type-count-total BLDG-TRAINJEDI == 0) ; treat Temple as late support infrastructure
+	(building-type-count-total BLDG-TRAINJEDI == 0)
 	(can-build-with-escrow BLDG-TRAINJEDI)
-	(nova-amount > 25) ; so as to avoid releasing nova
-	=>
+	(nova-amount > 25)
+	(not (goal buildpause YES))
+=>
 	(release-escrow carbon)
 	(build BLDG-TRAINJEDI)
 )
 
-; --- Earlier Temple civ ---
-; Only Black Sun gets the TL2 Temple fast path.
+; TL4 fallback: do not strand the Temple behind unfinished TL3 research.
 (defrule
-	(current-age >= tech-level-2)
-	(civ-selected BLACKSUN)
+	(current-age == tech-level-4)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-TRAINMECH > 0)
 	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-MAIN >= 1)
+	(goal importantT4research DONE)
+	(or
+		(building-type-count BLDG-POWERCORE > 0)
+		(carbon-amount > 400)
+	)
 	(building-type-count-total BLDG-TRAINJEDI == 0)
 	(can-build-with-escrow BLDG-TRAINJEDI)
-	(nova-amount > 25) 
+	(nova-amount > 25)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINJEDI)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(current-age-time > 360)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-TRAINMECH > 0)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-MAIN >= 1)
+	(or
+		(building-type-count BLDG-POWERCORE > 0)
+		(carbon-amount > 400)
+	)
+	(building-type-count-total BLDG-TRAINJEDI == 0)
+	(can-build-with-escrow BLDG-TRAINJEDI)
+	(nova-amount > 25)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINJEDI)
 )
 
 ; =====================================================
-; CHAPTER 2: UNIT-JEDI-LINE
+; *** Chapter 2: CORE UNITS ***
 ; =====================================================
 
 #load-if-not-defined BLACKSUN
 
 (defrule
 	(current-age >= tech-level-3)
+	(game-time > 1500)
 	(game-time < 3600)
 	(goal holocroncollectionservices 0)
 	(building-type-count-total BLDG-TRAINJEDI > 0)
@@ -86,6 +116,7 @@
 ; The shared ten-minute timer walks holocroncollectionservices upward after a failed collector.
 (defrule
 	(current-age >= tech-level-3)
+	(game-time > 1500)
 	(game-time < 3600)
 	(or
 		(goal holocroncollectionservices 2)
@@ -107,33 +138,55 @@
 #end-if
 
 ; =====================================================
-; CHAPTER 3: UNIT-MASTER-LINE
+; *** Chapter 3: MASTER UNITS ***
 ; =====================================================
 
 (defrule
-	
 	(current-age == tech-level-4)
 	(goal support-masters YES)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3)	
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3-water)
-		)
-	)
-
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3)
 	(military-population > 30)
 	(can-train UNIT-MASTER-LINE)
-	
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3-water)
+	(military-population > 30)
+	(can-train UNIT-MASTER-LINE)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3-asteroid)
+	(military-population > 30)
+	(can-train UNIT-MASTER-LINE)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3-hybrid)
+	(military-population > 30)
+	(can-train UNIT-MASTER-LINE)
 =>
 	(train UNIT-MASTER-LINE)
 )
 
 ; =====================================================
-; CHAPTER 4: TEMPLE UNIQUE UNITS
+; *** Chapter 4: TEMPLE UNIQUE UNITS ***
 ; =====================================================
 
 ; --- Black Sun Temple UU ---
@@ -142,7 +195,8 @@
 ; --- First Nightsister Hunter ---
 ; Black Sun uses Hunters for holocron collection instead of basic Jedi.
 (defrule
-	(current-age >= tech-level-2)
+	(current-age >= tech-level-3)
+	(game-time > 1500)
 	(game-time < 3600)
 	(goal holocroncollectionservices 0)
 	(unit-type-count-total UU-JEDIALT-LINE == 0)
@@ -158,6 +212,7 @@
 ; --- Replacement Nightsister Hunter ---
 (defrule
 	(current-age >= tech-level-2)
+	(game-time > 1500)
 	(game-time < 3600)
 	(or
 		(goal holocroncollectionservices 2)
@@ -180,6 +235,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal support-uu YES)
+	(not (goal passiveage YES))
 	(unit-type-count UU-JEDIALT-LINE < unique-hunter-supp)
 	(can-train UU-JEDIALT-LINE)
 =>
@@ -190,7 +246,7 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal support-uu YES)
-	(unit-type-count UU-JEDIALT-LINE < unique-hunter-supp-p2) ; keep Black Sun from flooding Hunters in lategame
+	(unit-type-count UU-JEDIALT-LINE < unique-hunter-supp-p2)
 	(can-train UU-JEDIALT-LINE)
 =>
 	(train UU-JEDIALT-LINE)
@@ -203,17 +259,17 @@
 
 ; --- T4 Nightsister Beastmaster ---
 (defrule
-        (current-age == tech-level-4)
-        (unit-type-count UU-JEDIALT-LINE < unique-beastmaster-arm)
-        (can-train UU-JEDIALT-LINE)
-        =>
-        (train UU-JEDIALT-LINE)
+	(current-age == tech-level-4)
+	(unit-type-count UU-JEDIALT-LINE < unique-beastmaster-arm)
+	(can-train UU-JEDIALT-LINE)
+=>
+	(train UU-JEDIALT-LINE)
 )
 
 #end-if
 
 ; =====================================================
-; CHAPTER 5: UPGRADES
+; *** Chapter 5: UPGRADES ***
 ; =====================================================
 
 (defrule
@@ -226,6 +282,124 @@
 	(release-escrow food)
 	(research ut-jedi-2)
 )
+
+(defrule
+	; Force Stamina
+	(current-age == tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	(can-research-with-escrow rt-jedi-stamina)
+	(goal importantT4research DONE)
+=>
+	(release-escrow nova)
+	(research rt-jedi-stamina)
+)
+
+(defrule
+	; Force Agility
+	(current-age == tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	(can-research-with-escrow rt-jedi-agility)
+	(goal importantT4research DONE)
+=>
+	(release-escrow nova)
+	(research rt-jedi-agility)
+)
+
+(defrule
+	; Force Concentration
+	(current-age == tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	(can-research-with-escrow rt-jedi-concentration)
+	(goal importantT4research DONE)
+=>
+	(release-escrow nova)
+	(research rt-jedi-concentration)
+)
+
+(defrule
+	; Force Purge
+	(current-age >= tech-level-3)
+	(military-population >= MIL_POP_B)
+	(nova-amount >= 2000)
+	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	(can-research-with-escrow rt-jedi-strength)
+=>
+	(release-escrow nova)
+	(research rt-jedi-strength)
+)
+
+(defrule
+	; Stronger Force
+	(current-age == tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	(can-research-with-escrow rt-force-strong)
+	(goal importantT4research DONE)
+=>
+	(release-escrow nova)
+	(research rt-force-strong)
+)
+
+(defrule
+	; Faith in the Force
+	(current-age == tech-level-4)
+	(can-research-with-escrow rt-faith-in-the-force)
+	(military-population >= MIL_POP_B)
+	(nova-amount >= 2000)
+	(goal importantT4research DONE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-faith-in-the-force)
+)
+
+(defrule
+	; Force Influence
+	(current-age == tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	(can-research-with-escrow rt-force-influence)
+	(goal importantT4research DONE)
+=>
+	(release-escrow nova)
+	(research rt-force-influence)
+)
+
+(defrule
+	; Force Meditation
+	(current-age == tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	(can-research-with-escrow rt-jedi-meditation)
+	(goal importantT4research DONE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-jedi-meditation)
+)
+
+(defrule
+	; Force Perception
+	(current-age == tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	(can-research-with-escrow rt-jedi-perception)
+	(goal importantT4research DONE)
+=>
+	(release-escrow nova)
+	(research rt-jedi-perception)
+)
+
+(defrule
+	; Jedi Mind Trick
+	(current-age == tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	(can-research-with-escrow rt-jedi-mind-trick)
+	(goal importantT4research DONE)
+=>
+	(release-escrow nova)
+	(research rt-jedi-mind-trick)
+)
+
+; =====================================================
+; *** Chapter 6: CIV TECH CATCHUP ***
+; =====================================================
 
 (defrule
 	; RP Sight Beyond Sight
@@ -275,4 +449,3 @@
 	(release-escrow nova)
 	(research ut-spiritichor)
 )
-

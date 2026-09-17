@@ -8,10 +8,10 @@
 ; =====================================================
 ;
 ;	Chapter 0: SETUP
-;	Chapter 1: EARLY RESIGN
-;	Chapter 2: FAILURE REASONS
-;	Chapter 3: HOLOCRONS
-;	Chapter 4: SPECIAL MODES
+;	Chapter 1: RESIGN
+;	Chapter 2: RESIGN GOALS
+;	Chapter 3: BEHAVIOR
+;	Chapter 4: RESIGN DIALOGUE
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
@@ -263,7 +263,7 @@
 ; -------------------
 
 (defrule
-	(goal 1 19)
+	(goal resign-goal 19)
 	(stance-toward any-human ally)
 =>
 	(release-escrow carbon)
@@ -278,7 +278,7 @@
 )
 
 (defrule
-	(goal 1 19)
+	(goal resign-goal 19)
 	(players-population any-ally > 10)
 =>
 	(release-escrow carbon)
@@ -298,8 +298,8 @@
 
 (defrule
     (or
-		(goal 1 19)
-		(goal 1 9)
+		(goal resign-goal 19)
+		(goal resign-goal 9)
 	)
 =>
 	(delete-building BLDG-TRAINBOAT)
@@ -321,8 +321,8 @@
 		(research-completed rt-jedi-strength) ; or if we have purge
 	)
 	(or
-		(goal 1 19)
-		(goal 1 9)
+		(goal resign-goal 19)
+		(goal resign-goal 9)
 	)
     (not (stance-toward any-human ally) )
 =>
@@ -337,7 +337,7 @@
 
 ; one of the following must be true: all defensive structures deleted OR human enemy has Masters EDIT ORRRR we have a human ally (rule below)
 (defrule
-	(goal 1 19)
+	(goal resign-goal 19)
 	(or
 		(and
 			(cc-players-unit-type-count any-human-enemy UNIT-MASTER-LINE > 0)
@@ -352,19 +352,19 @@
 		)
 	)
 =>
-	(set-goal 1 9) ; this clears defensive buildings
+	(set-goal resign-goal 9) ; this clears defensive buildings
 )
 
 (defrule
 	(stance-toward any-human ally)
-	(goal 1 19)
+	(goal resign-goal 19)
 =>
-	(set-goal 1 9) ; defensive building bypass
+	(set-goal resign-goal 9) ; defensive building bypass
 
 )
 
 (defrule
-    (goal 1 9)
+    (goal resign-goal 9)
     (building-type-count BLDG-TRAINTROOPER == 0)
     (building-type-count BLDG-TRAINAIR == 0)
     (building-type-count BLDG-TRAINMECH == 0)
@@ -373,7 +373,7 @@
 	(building-type-count BLDG-TRAINBOAT == 0)
 	; (building-type-count BLDG-GOVTCTR == 0) ; possible issues with annex ? 
 =>
-    (set-goal 1 8)
+    (set-goal resign-goal 8)
     (disable-self)
 )
 
@@ -385,55 +385,55 @@
 ; Update: Keeping them as mementos currently. :)
 
 (defrule
-	(goal 1 8)
+	(goal resign-goal 8)
 =>
-	(set-goal 1 7)
+	(set-goal resign-goal 7)
 	(generate-random-number 9)
 	(disable-self)
 )
 
 (defrule
-	(goal 1 7)
+	(goal resign-goal 7)
 	(random-number == 1)
 =>
 	;(chat-to-all "63: You must be very proud.")
-	(set-goal 1 6)
+	(set-goal resign-goal 6)
 )
 
 (defrule
-	(goal 1 7)
+	(goal resign-goal 7)
 	(random-number == 2)
 =>
 	;(chat-to-all "76: You will be sorry.")
-	(set-goal 1 6)
+	(set-goal resign-goal 6)
 )
 
 (defrule
-	(goal 1 7)
+	(goal resign-goal 7)
 	(random-number == 3)
 =>
 	;(chat-to-all "128: I hate you!")
-	(set-goal 1 6)
+	(set-goal resign-goal 6)
 )
 
 (defrule
-	(goal 1 7)
+	(goal resign-goal 7)
 	(random-number == 4)
 =>
 	;(chat-to-all "211: It's not fair.")
-	(set-goal 1 6)
+	(set-goal resign-goal 6)
 )
 
 (defrule
-	(goal 1 7)
+	(goal resign-goal 7)
 	(random-number >= 5)
 =>
 	;(chat-to-all "81: Ah well, it's my programming.")
-	(set-goal 1 6)
+	(set-goal resign-goal 6)
 )
 
 (defrule
-    (goal 1 6)
+    (goal resign-goal 6)
 =>
         ;(chat-to-all-using-range 22300  22)
         ;(chat-to-all-using-id 22322) ; resign messages moved all over the place

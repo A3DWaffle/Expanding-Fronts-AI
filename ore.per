@@ -34,6 +34,7 @@
 	(building-type-count-total BLDG-DROPMETAL < 1)
 	(building-type-count-total BLDG-TRAINTROOPER > 0)
 	(can-build-with-escrow BLDG-DROPMETAL)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(set-goal resourcerefund cmetalproc)
@@ -56,6 +57,7 @@
 	)
 	;(dropsite-min-distance metal > 4)
 	(can-build BLDG-DROPMETAL)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cmetalproc)
 	(build BLDG-DROPMETAL)
@@ -64,32 +66,55 @@
 ; T3+ rule
 (defrule
 	(current-age >= tech-level-3)
-	(or
-		(or
-			(and
-				(goal camplevel 2)
-				(building-type-count-total BLDG-DROPMETAL < 3)
-			)
-			(and
-				(goal camplevel 3)
-				(building-type-count-total BLDG-DROPMETAL < 4)
-			)
-		)
-		(or
-			(and
-				(goal camplevel 4)
-				(building-type-count-total BLDG-DROPMETAL < 6)
-			)
-			(and
-				(goal camplevel 5)
-				(building-type-count-total BLDG-DROPMETAL < 7)
-			)
-		)
-	)
+	(goal camplevel 2)
+	(building-type-count-total BLDG-DROPMETAL < 3)
 	(goal ore-found YES) ; checks several things
 	(building-type-count-total BLDG-MAIN > 0)
 	(dropsite-min-distance metal > 7)
 	(can-build BLDG-DROPMETAL)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cmetalproc)
+	(build BLDG-DROPMETAL)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal camplevel 3)
+	(building-type-count-total BLDG-DROPMETAL < 5)
+	(goal ore-found YES)
+	(building-type-count-total BLDG-MAIN > 0)
+	(dropsite-min-distance metal > 7)
+	(can-build BLDG-DROPMETAL)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cmetalproc)
+	(build BLDG-DROPMETAL)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal camplevel 4)
+	(building-type-count-total BLDG-DROPMETAL < 7)
+	(goal ore-found YES)
+	(building-type-count-total BLDG-MAIN > 0)
+	(dropsite-min-distance metal > 7)
+	(can-build BLDG-DROPMETAL)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cmetalproc)
+	(build BLDG-DROPMETAL)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal camplevel 5)
+	(building-type-count-total BLDG-DROPMETAL < 9)
+	(goal ore-found YES)
+	(building-type-count-total BLDG-MAIN > 0)
+	(dropsite-min-distance metal > 7)
+	(can-build BLDG-DROPMETAL)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cmetalproc)
 	(build BLDG-DROPMETAL)
@@ -99,12 +124,13 @@
 	(current-age >= tech-level-3)
 	(and
 		(goal camplevel 6)
-		(building-type-count-total BLDG-DROPMETAL < 10)  
+		(building-type-count-total BLDG-DROPMETAL < 12)  
 	)
 	(goal ore-found YES)
 	(building-type-count-total BLDG-MAIN > 0)
 	(dropsite-min-distance metal > 7)
 	(can-build BLDG-DROPMETAL)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cmetalproc)
 	(build BLDG-DROPMETAL)
@@ -112,22 +138,33 @@
 
 
 (defrule
-    ; Beamdrill Mining Ore, TL2
-	(current-age >= tech-level-2)
+    ; Beamdrill Mining Ore
+	(or
+		(current-age >= tech-level-3)
+		(and
+			(current-age == tech-level-2)
+			(goal agingup YES)
+		)
+	)
 	(can-research rt-beamdrill-metal)
 	(or
 		(goal agingup YES)
-		(food-amount > 1000)
+		(food-amount > 800)
 	)
 =>
 	(research rt-beamdrill-metal) ; allow researching without escrow if affordable
 )
 
 (defrule
-    ; Beamdrill Mining Ore, TL2 ALT
-    (current-age >= tech-level-3)
+    ; Beamdrill Mining Ore ALT
+	(or
+		(current-age >= tech-level-3)
+		(and
+			(current-age == tech-level-2)
+			(goal agingup YES)
+		)
+	)
     (can-research-with-escrow rt-beamdrill-metal)
-	(goal importantT3research DONE)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -138,7 +175,6 @@
     ; Beamdrill Mining Ore, TL3
     (current-age >= tech-level-3)
     (can-research-with-escrow rt-heavy-beamdrill-metal)
-	(goal importantT4research DONE)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -209,7 +245,7 @@
     (goal resource-search SEARCH) ; essentially the timer going off
 =>
     (set-goal ore-found NO)
-    (chat-local-to-self "WAFFLE: No ore.")
+    ; (chat-local-to-self "WAFFLE: No ore.")
 )
 
 ; rule 2: if timer triggered and we have no ore miners, maybe there's no ore left on the map.
@@ -223,7 +259,7 @@
     (goal resource-search SEARCH) ; essentially the timer going off
 =>
     (set-goal ore-found MAYBENOT)
-    (chat-local-to-self "WAFFLE: maybe no ore?")
+    ; (chat-local-to-self "WAFFLE: maybe no ore?")
 )
 
 ; =====================================================
@@ -232,7 +268,9 @@
 
 (defrule
 	; TF Fusion Extractor (Ore)
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-fusion-extractor)
+	(goal importantT4research DONE)
 =>
 	(release-escrow food)
 	(release-escrow carbon)

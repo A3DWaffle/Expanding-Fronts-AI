@@ -22,14 +22,15 @@
 		(goal openingstyle STYLE-RUSH) ; Rush
 	)
 	(or
-		(building-type-count-total BLDG-TRAINAIR == 2); Defensive
-		(building-type-count BLDG-MAIN > 2) ; Aggressive
+		(building-type-count-total BLDG-TRAINAIR >= 2); Defensive
+		(building-type-count BLDG-MAIN >= 2) ; Aggressive
 	)
 	(building-type-count-total BLDG-WARCTR < 2)
 	(building-type-count-total BLDG-TRAINMECH > 0)
 	(building-type-count-total BLDG-SPACEPORT > 0)
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-WARCTR)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-WARCTR)
@@ -72,8 +73,39 @@
 	(can-research-with-escrow rt-targetting-sensors)
 	(or
 		(unit-type-count-total UNIT-MECH1-LINE > 0)
-		(unit-type-count-total UNIT-MECH2-LINE > 0)
+		(or
+			(unit-type-count-total UNIT-MECH2-LINE > 0)
+			(or
+				(unit-type-count-total UNIT-MECH3-LINE > 0)
+				(unit-type-count-total UNIT-MECH4-LINE > 0)
+			)
+		)
 	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-targetting-sensors)
+)
+
+(defrule
+    ; Targeting Sensor rich/late fallback for mech or heavy-mech games
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-targetting-sensors)
+	(or
+		(current-age-time > 480)
+		(and
+			(food-amount > 500)
+			(nova-amount > 350)
+		)
+	)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
+	(building-type-count-total BLDG-TRAINMECH > 0)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -336,7 +368,10 @@
 				(goal support-grenadiers YES)
 				(or
 					(goal support-grenadiers YES)
-					(unit-type-count-total UNIT-GRENADE-LINE > 0)
+					(or
+						(civ-selected ZANN)
+						(unit-type-count-total UNIT-GRENADE-LINE > 0)
+					)
 				)
 			)
 		)
@@ -351,6 +386,14 @@
     ; ZC Black Market Components
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-black-market-components)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -360,6 +403,7 @@
 (defrule
     ; GN Potent Plasma
 	(can-research-with-escrow rt-potent-plasma)
+	(goal importantT4research DONE)
 =>
 	(release-escrow metal)
 	(release-escrow carbon)
@@ -417,6 +461,16 @@
     (current-age >= tech-level-4)
     (can-research-with-escrow rt-battlefield-scanners)
 	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal combat-arm MECH)
+				(goal combat-arm MECH/HW)
+			)
+		)
+	)
 =>
 	(release-escrow carbon)
 	(release-escrow food)
@@ -428,6 +482,7 @@
 	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-sensorcloak)
 	(goal importantT4research DONE)
+	(goal support-airlift YES)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -438,6 +493,14 @@
     ; GN Faster Growth Chambers
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-fast-growth-chambers)
+	(goal importantT4research DONE)
+	(or
+		(goal support-sea YES)
+		(or
+			(goal special-map WATER)
+			(goal special-map HYBRID)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow carbon)

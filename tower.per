@@ -8,9 +8,10 @@
 ; =====================================================
 ;
 ;	Chapter 0: SETUP
-;	Chapter 1: WALLS
-;	Chapter 2: TOWERS
-;	Chapter 3: CLEANUP
+;	Chapter 1: WALL STATE AND PLACEMENT
+;	Chapter 2: STATIC DEFENSE BUILDINGS
+;	Chapter 3: AA BATTERIES
+;	Chapter 4: WALL CONSTRUCTION
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
@@ -84,10 +85,12 @@
 )
 
 
-; mostly original GB code follows, which is why it's incomprehensible
+; =====================================================
+; *** Chapter 1: WALL STATE AND PLACEMENT ***
+; =====================================================
 
-
-;start the pass
+; Mostly original GB code follows, which is why it is hard to read.
+; Start the pass.
 (defrule
         (nor
 				(map-type star-wars-world-kashyyyk)
@@ -198,7 +201,535 @@
         (set-goal wall-build YES)
 )
 
-;build walls
+; =====================================================
+; *** Chapter 2: STATIC DEFENSE BUILDINGS ***
+; =====================================================
+
+; Fortress owns static defenses so metal/ore spending is kept in one place.
+; Escrow is used for research, not defensive construction.
+
+; --- TL2 laser turret shell ---
+
+; Give Defensive extra builders on laser turrets before the first turret rule
+; can even fire. If this sits below the build rule, the first turret starts
+; with the old/default builder count and the whole shell comes in late.
+(defrule
+	(current-age == tech-level-2)
+=>
+	(set-builders-type BDEF-TURRET 3)
+	(disable-self)
+)
+
+(defrule
+	(building-type-count-total BLDG-TURRET-LINE < 4)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+(defrule
+	(building-type-count-total BLDG-TURRET-LINE < 2)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+; Defensive should lean on laser turrets as its primary TL2 protection instead
+; of waiting for the broader home-defense plan to come online later.
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count-total BLDG-TURRET-LINE < 6)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count-total BLDG-TURRET-LINE < 4)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+; --- TL3 fortress and static AA shell ---
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR < 1)
+	(or
+		(and
+			(not (goal openingstyle STYLE-DEFENSIVE))
+			(building-type-count-total BLDG-TURRET-LINE >= 4)
+		)
+		(or
+			(building-type-count-total BLDG-TURRET-LINE >= 6)
+			(current-age-time > 420)
+		)
+	)
+	(can-build BLDG-GOVTCTR)
+	(goal buildpause NO)
+=>
+	(build BLDG-GOVTCTR)
+)
+
+(defrule
+	(building-type-count-total BLDG-MISSILE-LINE < 2)
+	(or
+		(and
+			(not (goal openingstyle STYLE-DEFENSIVE))
+			(building-type-count-total BLDG-TURRET-LINE >= 4)
+		)
+		(or
+			(building-type-count-total BLDG-TURRET-LINE >= 6)
+			(current-age-time > 420)
+		)
+	)
+	(can-build BLDG-MISSILE-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-MISSILE-LINE)
+)
+
+#load-if-not-defined DIFFICULTY-EASIEST
+#load-if-not-defined DIFFICULTY-EASY
+#load-if-not-defined DIFFICULTY-MODERATE
+
+; Higher difficulties maintain a stronger starting AA shell.
+(defrule
+	(building-type-count-total BLDG-MISSILE-LINE < 6)
+	(or
+		(and
+			(not (goal openingstyle STYLE-DEFENSIVE))
+			(building-type-count-total BLDG-TURRET-LINE >= 4)
+		)
+		(or
+			(building-type-count-total BLDG-TURRET-LINE >= 6)
+			(current-age-time > 420)
+		)
+	)
+	(can-build BLDG-MISSILE-LINE)
+	(metal-amount >= 350)
+	(goal buildpause NO)
+=>
+	(build BLDG-MISSILE-LINE)
+)
+
+; If metal is short, give a small nudge before starting the AA turret.
+(defrule
+	(building-type-count-total BLDG-MISSILE-LINE < 6)
+	(or
+		(and
+			(not (goal openingstyle STYLE-DEFENSIVE))
+			(building-type-count-total BLDG-TURRET-LINE >= 4)
+		)
+		(or
+			(building-type-count-total BLDG-TURRET-LINE >= 6)
+			(current-age-time > 420)
+		)
+	)
+	(can-build BLDG-MISSILE-LINE)
+	(metal-amount < 350)
+	(goal buildpause NO)
+=>
+	(cc-add-resource metal 30)
+	(build BLDG-MISSILE-LINE)
+)
+#end-if
+#end-if
+#end-if
+
+
+; Once a fortress exists, allow the broader static defense package.
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 0)
+	(building-type-count-total BLDG-MISSILE-LINE < 4) 
+	(building-type-count-total BLDG-MAIN > 1)
+	(can-build BLDG-MISSILE-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-MISSILE-LINE)
+)
+
+; Shield generator.
+(defrule
+    (building-type-count-total BLDG-GOVTCTR > 0)
+    (building-type-count-total BLDG-SHLDGEN == 0)
+	(building-type-count-total BLDG-MAIN > 1)
+    (can-build BLDG-SHLDGEN)
+	(goal buildpause NO)
+        =>
+    (build BLDG-SHLDGEN)
+)
+
+; Once AA turrets are mostly done, allow the second fortress.
+
+(defrule
+	(building-type-count-total BLDG-MISSILE-LINE > 2)
+	(building-type-count-total BLDG-GOVTCTR < 2)
+	(building-type-count-total BLDG-MAIN > 1)
+	(can-build BLDG-GOVTCTR)
+	(goal buildpause NO)
+=>
+	(build BLDG-GOVTCTR)
+)
+
+#load-if-not-defined DIFFICULTY-EASIEST
+
+; When the second fortress is up, allow more static defenses.
+(defrule
+	(building-type-count-total BLDG-MISSILE-LINE < 5)
+	(building-type-count-total BLDG-GOVTCTR > 1)
+	(can-build BLDG-MISSILE-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-MISSILE-LINE)
+)
+
+(defrule
+	(building-type-count-total BLDG-TURRET-LINE < 4)
+	(building-type-count-total BLDG-GOVTCTR > 1)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+(defrule
+	(building-type-count-total BLDG-TURRET-LINE < 2)
+	(building-type-count-total BLDG-GOVTCTR > 1)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+
+; Keep the standard defensive shell capped at two fortresses.
+(defrule
+	(building-type-count-total BLDG-MISSILE-LINE > 4)
+	(building-type-count-total BLDG-TURRET-LINE > 2)
+	(building-type-count-total BLDG-GOVTCTR < 2)
+	(can-build BLDG-GOVTCTR)
+	(goal buildpause NO)
+=>
+	(build BLDG-GOVTCTR)
+)
+
+; Build more defenses as the fortress count rises.
+
+; Shields.
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 2)
+	(building-type-count-total BLDG-SHLDGEN < 2)
+	(can-build BLDG-SHLDGEN)
+	(goal buildpause NO)
+	=>
+	(build BLDG-SHLDGEN)
+)
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 3)
+	(building-type-count-total BLDG-SHLDGEN < 4)
+	(can-build BLDG-SHLDGEN)
+	(goal buildpause NO)
+	=>
+	(build BLDG-SHLDGEN)
+)
+
+; Rich TL4 forward Shield Generator starter. Do not wait for three home shields
+; before protecting a successful forward base.
+(defrule
+	(current-age == tech-level-4)
+	(current-age-time > 600)
+	(military-population >= MIL_POP_B)
+	(carbon-amount > 1500)
+	(nova-amount > 400)
+	(can-build-with-escrow BLDG-SHLDGEN)
+	(goal buildpause NO)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(build-forward BLDG-SHLDGEN)
+)
+
+; Rich TL4 forward Shield Generator support. The first shields still protect
+; the home shell; surplus economies can push shield coverage toward the front.
+(defrule
+	(current-age == tech-level-4)
+	(current-age-time > 600)
+	(military-population >= MIL_POP_B)
+	(carbon-amount > 2500)
+	(nova-amount > 600)
+	(can-build-with-escrow BLDG-SHLDGEN)
+	(goal buildpause NO)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(build-forward BLDG-SHLDGEN)
+)
+
+; Additional AA turrets.
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 4)
+	(building-type-count-total BLDG-MISSILE-LINE < 8)
+	(can-build BLDG-MISSILE-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-MISSILE-LINE)
+)
+
+
+#load-if-not-defined DIFFICULTY-EASIEST
+#load-if-not-defined DIFFICULTY-EASY
+#load-if-not-defined DIFFICULTY-MODERATE
+
+; Hard and Hardest expand the static shell further while TSA is active.
+
+(defrule 
+	(building-type-count-total BLDG-GOVTCTR < 2)
+	(can-build BLDG-GOVTCTR)
+	(not (goal attackTSAhold EXHAUSTED))
+	(goal buildpause NO)
+=>
+	(build BLDG-GOVTCTR)
+)
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 4)
+	(building-type-count-total BLDG-MISSILE-LINE < 10) 
+	(building-type-count-total BLDG-SHLDGEN > 1)
+	(not (goal attackTSAhold EXHAUSTED))
+	(can-build BLDG-MISSILE-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-MISSILE-LINE)
+)
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 5)
+	(building-type-count-total BLDG-MISSILE-LINE < 15) 
+	(not (goal attackTSAhold EXHAUSTED))
+	(can-build BLDG-MISSILE-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-MISSILE-LINE)
+)
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 4)
+	(building-type-count-total BLDG-TURRET-LINE < 8)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(not (goal attackTSAhold EXHAUSTED))
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 4)
+	(building-type-count-total BLDG-TURRET-LINE < 6)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(not (goal attackTSAhold EXHAUSTED))
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 5)
+	(building-type-count-total BLDG-TURRET-LINE < 10)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(not (goal attackTSAhold EXHAUSTED))
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 5)
+	(building-type-count-total BLDG-TURRET-LINE < 8)
+	(not (goal openingstyle STYLE-DEFENSIVE))
+	(not (goal attackTSAhold EXHAUSTED))
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+; Outside TSA, keep a smaller home shell.
+(defrule
+	(building-type-count-total BLDG-GOVTCTR < 2)
+	(goal attackTSAhold EXHAUSTED)
+	(can-build BLDG-GOVTCTR)
+	(goal buildpause NO)
+=>
+	(build BLDG-GOVTCTR)
+)
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 4)
+	(building-type-count-total BLDG-MISSILE-LINE < 8)
+	(building-type-count-total BLDG-SHLDGEN > 1)
+	(goal attackTSAhold EXHAUSTED)
+	(can-build BLDG-MISSILE-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-MISSILE-LINE)
+)
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 4)
+	(building-type-count-total BLDG-TURRET-LINE < 6)
+	(building-type-count-total BLDG-SHLDGEN > 1)
+	(goal attackTSAhold EXHAUSTED)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+(defrule
+	(building-type-count-total BLDG-GOVTCTR > 4)
+	(building-type-count-total BLDG-TURRET-LINE < 4)
+	(building-type-count-total BLDG-SHLDGEN > 1)
+	(goal attackTSAhold EXHAUSTED)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+; Defensive fortification plan should top out at six laser turrets instead of
+; drifting into the larger TSA/home-defense caps meant for the other openings.
+(defrule
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count-total BLDG-TURRET-LINE < 6)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+(defrule
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count-total BLDG-TURRET-LINE < 4)
+	(can-build BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(build BLDG-TURRET-LINE)
+)
+
+; Rich TL4 forward laser turret support for established forward bases.
+(defrule
+	(current-age == tech-level-4)
+	(current-age-time > 600)
+	(building-type-count-total BLDG-POWERCORE >= 5)
+	(building-type-count-total BLDG-TURRET-LINE < 14)
+	(military-population >= MIL_POP_B)
+	(carbon-amount > 1800)
+	(can-build-with-escrow BLDG-TURRET-LINE)
+	(goal buildpause NO)
+=>
+	(release-escrow carbon)
+	(build-forward BLDG-TURRET-LINE)
+)
+
+#end-if
+#end-if
+#end-if
+
+; End non-Easiest static defense block.
+#end-if
+
+; =====================================================
+; *** Chapter 3: AA BATTERIES ***
+; =====================================================
+
+; Unlike other defensive structures, AA Batteries are carbon intensive and
+; locked behind research. All difficulties maintain a small battery shell.
+
+(defrule
+	(can-build BLDG-AABATTERY)
+	(building-type-count-total BLDG-AABATTERY < 2)
+	(or
+		(not (town-under-attack))
+		(goal openingstyle STYLE-DEFENSIVE)
+	)
+	(goal buildpause NO)
+=>
+	(build BLDG-AABATTERY)
+)
+
+#load-if-not-defined DIFFICULTY-EASIEST
+
+; Higher difficulties maintain three in TL3 and four in TL4.
+(defrule
+	(can-build BLDG-AABATTERY)
+	(or
+		(and
+			(current-age == tech-level-3)
+			(building-type-count-total BLDG-AABATTERY < 3)
+		)
+		(and
+			(current-age == tech-level-4)
+			(building-type-count-total BLDG-AABATTERY < 4)
+		)
+	)
+	(or
+		(not (town-under-attack))
+		(goal openingstyle STYLE-DEFENSIVE)
+	)
+	(goal buildpause NO)
+=>
+	(build BLDG-AABATTERY)
+)
+
+#load-if-not-defined DIFFICULTY-EASY
+#load-if-not-defined DIFFICULTY-MODERATE
+
+; Hard and Hardest build more while TSA is active.
+(defrule
+	(can-build BLDG-AABATTERY)
+	(not (goal attackTSAhold EXHAUSTED))
+	(building-type-count-total BLDG-AABATTERY < 6)
+	(goal buildpause NO)
+=>
+	(build BLDG-AABATTERY)
+)
+
+; Rich TL4 forward AA Battery support. Use this only after the normal battery
+; shell exists so it extends a forward base instead of replacing home defense.
+(defrule
+	(current-age == tech-level-4)
+	(current-age-time > 600)
+	(building-type-count-total BLDG-POWERCORE >= 5)
+	(building-type-count-total BLDG-AABATTERY >= 3)
+	(building-type-count-total BLDG-AABATTERY < 8)
+	(military-population >= MIL_POP_B)
+	(carbon-amount > 2000)
+	(can-build-with-escrow BLDG-AABATTERY)
+	(goal buildpause NO)
+=>
+	(release-escrow carbon)
+	(build-forward BLDG-AABATTERY)
+)
+
+#end-if
+#end-if
+#end-if
+
+; =====================================================
+; *** Chapter 4: WALL CONSTRUCTION ***
+; =====================================================
 
 (defrule
         (current-age == tech-level-2)
@@ -209,6 +740,7 @@
                 (can-afford-complete-wall 2 BLDG-BARRIER-LINE)
                 (metal-amount > 125)
         )
+	(goal buildpause NO)
 =>
         (release-escrow metal)
         (build-wall 2 BLDG-BARRIER-LINE)
@@ -223,6 +755,7 @@
                 (can-afford-complete-wall 1 BLDG-BARRIER-LINE)
                 (metal-amount > 125)
         )
+	(goal buildpause NO)
 =>
         (release-escrow metal)
         (build-wall 1 BLDG-BARRIER-LINE)
@@ -236,6 +769,7 @@
                 (can-afford-complete-wall 2 BLDG-BARRIER-LINE)
                 (metal-amount > 300)
         )
+	(goal buildpause NO)
 =>
         (release-escrow metal)
         (build-wall 2 BLDG-BARRIER-LINE)
@@ -249,6 +783,7 @@
                 (can-afford-complete-wall 1 BLDG-BARRIER-LINE)
                 (metal-amount > 300)
         )
+	(goal buildpause NO)
 =>
         (release-escrow metal)
         (build-wall 1 BLDG-BARRIER-LINE)
@@ -261,6 +796,7 @@
         (wall-completed-percentage 2 >= 75)
         (wall-completed-percentage 2 < 100)
         (can-build-wall-with-escrow 2 BLDG-BARRIER-LINE)
+	(goal buildpause NO)
 =>
         (release-escrow metal)
         (build-wall 2 BLDG-BARRIER-LINE)
@@ -273,6 +809,7 @@
         (wall-completed-percentage 1 >= 75)
         (wall-completed-percentage 1 < 100)
         (can-build-wall-with-escrow 1 BLDG-BARRIER-LINE)
+	(goal buildpause NO)
 =>
         (release-escrow metal)
         (build-wall 1 BLDG-BARRIER-LINE)
@@ -283,6 +820,7 @@
         (not (goal openingstyle STYLE-DEFENSIVE))
         (building-type-count-total BLDG-GATE < 10)
         (can-build-gate-with-escrow 2)
+	(goal buildpause NO)
 =>
         (release-escrow metal)
         (build-gate 2)
@@ -293,6 +831,7 @@
         (goal wall-build YES)
         (building-type-count-total BLDG-GATE < 10)
         (can-build-gate-with-escrow 1)
+	(goal buildpause NO)
 =>
         (release-escrow metal)
         (build-gate 1)
@@ -336,6 +875,3 @@
 
 ; wall-completed-percentage goes up to exactly 50% it seems, no higher
 ; it also counts foundations, so if all the foundations are laid, wall-completed-percentage reports 100
-
-
-

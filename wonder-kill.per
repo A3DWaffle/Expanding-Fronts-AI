@@ -39,6 +39,7 @@
 (defrule
 	(can-build BLDG-SPACEPORT)
 	(building-type-count-total BLDG-SPACEPORT == 0)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SPACEPORT)
 )
@@ -46,6 +47,7 @@
 (defrule
 	(building-type-count-total BLDG-GOVTCTR == 0)
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -109,6 +111,183 @@
 	(disable-self)
 )
 
+; Special-mode construction support.  Defend Monument starts in an unusual
+; state, so make sure attackers/defenders get the production buildings that
+; the modern army packages expect before the direct UU/AC rules dominate.
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-3)
+	(can-build-with-escrow BLDG-TRAINTROOPER)
+	(building-type-count-total BLDG-TRAINTROOPER < 4)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINTROOPER)
+)
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-3)
+	(can-build-with-escrow BLDG-TRAINMECH)
+	(building-type-count-total BLDG-TRAINMECH < 4)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINMECH)
+)
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-3)
+	(can-build-with-escrow BLDG-TRAINHEAVY)
+	(building-type-count-total BLDG-TRAINHEAVY < 4)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINHEAVY)
+)
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-3)
+	(can-build-with-escrow BLDG-TRAINAIR)
+	(building-type-count-total BLDG-TRAINAIR < 4)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINAIR)
+)
+
+; Special-mode army fallback.  The normal production files still provide the
+; detailed package logic; these rules keep Defend Monument from going silent
+; when scenario pacing prevents those packages from getting started.
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(unit-type-count-total UNIT-LASER-LINE < 12)
+	(can-train UNIT-LASER-LINE)
+=>
+	(train UNIT-LASER-LINE)
+)
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(unit-type-count-total UNIT-MISSILE-LINE < 6)
+	(can-train UNIT-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(train UNIT-MISSILE-LINE)
+)
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-3)
+	(goal support-grenadiers YES)
+	(unit-type-count-total UNIT-GRENADE-LINE < 6)
+	(can-train UNIT-GRENADE-LINE)
+=>
+	(train UNIT-GRENADE-LINE)
+)
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
+	(unit-type-count-total UNIT-MECH2-LINE < 8)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(unit-type-count-total UNIT-MECH1-LINE < 6)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-4)
+	(or
+		(goal combat-arm TROOP/HW)
+		(goal combat-arm MECH/HW)
+	)
+	(unit-type-count-total SIEGE-RAM-LINE < 4)
+	(can-train SIEGE-RAM-LINE)
+=>
+	(train SIEGE-RAM-LINE)
+)
+
+(defrule
+	(or
+		(goal wonder-attempt ATTACK)
+		(goal wonder-attempt DEFEND)
+	)
+	(current-age >= tech-level-4)
+	(or
+		(goal support-aircraft YES)
+		(goal support-aircraft YES)
+	)
+	(unit-type-count-total UNIT-FIGHTER-LINE < 8)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(train UNIT-FIGHTER-LINE)
+)
+
 
 ; Little bit of scout logic
 (defrule
@@ -157,6 +336,10 @@
 (defrule
         (goal wonder-attempt ATTACK)
         (timer-triggered t-attackgroup-alt)
+		(or
+			(shared-goal treatytimer 0)
+			(shared-goal treatytimer 1)
+		)
 =>
         (disable-timer t-attackgroup-alt)
         (enable-timer t-attackgroup-alt 180) ; Attack waves every 3 minutes.
@@ -171,6 +354,10 @@
 (defrule
         (goal wonder-attempt DEFEND)
         (timer-triggered t-attackgroup-alt)
+		(or
+			(shared-goal treatytimer 0)
+			(shared-goal treatytimer 1)
+		)
 =>
         (disable-timer t-attackgroup-alt)
         (enable-timer t-attackgroup-alt 360) ; A 6min wait means again at the 15min mark
@@ -232,7 +419,7 @@
 	(set-goal amisummoned YES)
 	(set-goal aready YES)
 	;(chat-to-player every-ally "I'm joining in!") ; message handled elsewhere now
-	(chat-local-to-self "WAFFLE: Joinin attack")
+	; (chat-local-to-self "WAFFLE: Joinin attack")
 )
 
 (defrule
@@ -275,8 +462,12 @@
 	(goal attacktype TSA)
 	(not (goal amisummoned YES))
 =>
-	(chat-local-to-self "WAFFLE: TSA. Attack. Set to HIGH")
+	; (chat-local-to-self "WAFFLE: TSA. Attack. Set to HIGH")
 	(set-goal attackTSAhold HOLDING-HIGH)
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 100)
+	(set-strategic-number sn-percent-attack-boats 100)
+	(attack-now)
 	(chat-to-player every-computer "234")      ; sends taunt 234 to other Computer to summon them in
 	(set-goal messagestatus msg-ATTACKING)		; sends message to player
 	(set-goal aready NO)
@@ -290,8 +481,12 @@
 	(goal amisummoned YES) ; joinin
 	(goal attacktype TSA)
 =>
-	(chat-local-to-self "WAFFLE: TSA. Joinin. Set to HIGH")
+	; (chat-local-to-self "WAFFLE: TSA. Joinin. Set to HIGH")
 	(set-goal attackTSAhold HOLDING-HIGH)
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 100)
+	(set-strategic-number sn-percent-attack-boats 100)
+	(attack-now)
 	(set-goal messagestatus msg-JOININ)
 	(set-goal aready NO)
 	(set-goal amisummoned DISABLE-1)
@@ -307,7 +502,7 @@
 	(set-goal attackTSAhold HOLDING-LOW) ; start the timer to call off TSA 
 	(disable-timer t-attackgroup-hold)
 	(enable-timer t-attackgroup-hold 240)
-	(chat-local-to-self "WAFFLE: TSA hit low pop threshold. Holding for 240s more")
+	; (chat-local-to-self "WAFFLE: TSA hit low pop threshold. Holding for 240s more")
 )
 (defrule
 	(population >= popcap) ; if population then reaches pop cap during this time
@@ -315,7 +510,7 @@
 =>
 	(set-goal attackTSAhold HOLDING-HIGH) ; reset and wait for pop to fall back down again
 	(disable-timer t-attackgroup-hold)
-	(chat-local-to-self "WAFFLE: TSA re-reached popcap, holding indefinitely")
+	; (chat-local-to-self "WAFFLE: TSA re-reached popcap, holding indefinitely")
 )
 ; force abort if army dead
 (defrule
@@ -330,7 +525,7 @@
 	(disable-timer t-attackgroup-hold)
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 180)
-	(chat-local-to-self "WAFFLE: Army dead, force cancelling TSA. 180s cooldown")
+	; (chat-local-to-self "WAFFLE: Army dead, force cancelling TSA. 180s cooldown")
 )
 
 ; when the timer triggers...
@@ -349,7 +544,7 @@
 	(set-goal attackTSAlevel 0) ; this belongs here 
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 60)
-	(chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop high: 60s cooldown.")
+	; (chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop high: 60s cooldown.")
 )
 
 (defrule
@@ -366,7 +561,7 @@
 	(set-goal attackTSAlevel 0) ; this belongs here 
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 150)
-	(chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop low: 150s cooldown.")
+	; (chat-local-to-self "WAFFLE: TSA timer ran out, turning off. Pop low: 150s cooldown.")
 )
 
 
@@ -383,7 +578,7 @@
 	(not (strategic-number sn-maximum-town-size == 40))
 =>
 	(set-strategic-number sn-maximum-town-size 40)
-	(chat-local-to-self "WAFFLE: Level 0, TS 40")
+	; (chat-local-to-self "WAFFLE: Level 0, TS 40")
 )
 (defrule
 	(or
@@ -394,7 +589,7 @@
 	(not (strategic-number sn-maximum-town-size == 60))
 =>
 	(set-strategic-number sn-maximum-town-size 60)
-	(chat-local-to-self "WAFFLE: Level 1, TS 60")
+	; (chat-local-to-self "WAFFLE: Level 1, TS 60")
 )
 (defrule
 	(or
@@ -405,7 +600,7 @@
 	(not (strategic-number sn-maximum-town-size == 80))
 =>
 	(set-strategic-number sn-maximum-town-size 80)
-	(chat-local-to-self "WAFFLE: Level 2, TS 80")
+	; (chat-local-to-self "WAFFLE: Level 2, TS 80")
 )
 (defrule
 	(or
@@ -416,7 +611,7 @@
 	(not (strategic-number sn-maximum-town-size == 100))
 =>
 	(set-strategic-number sn-maximum-town-size 100)
-	(chat-local-to-self "WAFFLE: Level 3, TS 100")
+	; (chat-local-to-self "WAFFLE: Level 3, TS 100")
 )
 (defrule
 	(or
@@ -427,7 +622,7 @@
 	(not (strategic-number sn-maximum-town-size == 120))
 =>
 	(set-strategic-number sn-maximum-town-size 120)
-	(chat-local-to-self "WAFFLE: Level 4, TS 120")
+	; (chat-local-to-self "WAFFLE: Level 4, TS 120")
 )
 (defrule
 	(or
@@ -438,7 +633,7 @@
 	(not (strategic-number sn-maximum-town-size == 140))
 =>
 	(set-strategic-number sn-maximum-town-size 140)
-	(chat-local-to-self "WAFFLE: Level 5, TS 140")
+	; (chat-local-to-self "WAFFLE: Level 5, TS 140")
 )
 (defrule
 	(or
@@ -449,7 +644,7 @@
 	(not (strategic-number sn-maximum-town-size == 160))
 =>
 	(set-strategic-number sn-maximum-town-size 160)
-	(chat-local-to-self "WAFFLE: Level 6, TS 160")
+	; (chat-local-to-self "WAFFLE: Level 6, TS 160")
 )
 (defrule
 	(or
@@ -460,7 +655,7 @@
 	(not (strategic-number sn-maximum-town-size == 180))
 =>
 	(set-strategic-number sn-maximum-town-size 180)
-	(chat-local-to-self "WAFFLE: Level 7, TS 180")
+	; (chat-local-to-self "WAFFLE: Level 7, TS 180")
 )
 (defrule
 	(or
@@ -471,7 +666,7 @@
 	(not (strategic-number sn-maximum-town-size == 200))
 =>
 	(set-strategic-number sn-maximum-town-size 200)
-	(chat-local-to-self "WAFFLE: Level 8, TS 200")
+	; (chat-local-to-self "WAFFLE: Level 8, TS 200")
 )
 (defrule
 	(or
@@ -482,7 +677,7 @@
 	(not (strategic-number sn-maximum-town-size == 220))
 =>
 	(set-strategic-number sn-maximum-town-size 220)
-	(chat-local-to-self "WAFFLE: Level 9, TS 220")
+	; (chat-local-to-self "WAFFLE: Level 9, TS 220")
 )
 (defrule
 	(or
@@ -493,7 +688,7 @@
 	(not (strategic-number sn-maximum-town-size == 255))
 =>
 	(set-strategic-number sn-maximum-town-size 255)
-	(chat-local-to-self "WAFFLE: Level 10, TS 255")
+	; (chat-local-to-self "WAFFLE: Level 10, TS 255")
 )
 (defrule
 	(or
@@ -504,7 +699,29 @@
 	(not (strategic-number sn-maximum-town-size == 255))
 =>
 	(set-strategic-number sn-maximum-town-size 255)
-	(chat-local-to-self "WAFFLE: Level 11, TS 255")
+	; (chat-local-to-self "WAFFLE: Level 11, TS 255")
+)
+
+(defrule
+	(goal special-map WATER)
+	(or
+		(goal attackTSAhold HOLDING-HIGH)
+		(goal attackTSAhold HOLDING-LOW)
+	)
+	(not (strategic-number sn-maximum-town-size == 80))
+=>
+	(set-strategic-number sn-maximum-town-size 80)
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+)
+
+(defrule
+	(goal special-map WATER)
+	(goal attackTSAhold EXHAUSTED)
+	(not (strategic-number sn-maximum-town-size == TL4-townsize-smol))
+=>
+	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	(set-strategic-number sn-cap-civilian-builders 120)
 )
 
 (defrule
@@ -515,7 +732,7 @@
 	)
 =>
 	(set-goal attackTSAvar INCREMENT)
-	(chat-local-to-self "WAFFLE: TSA is HOLDING but no enemy buildings. INCREMENT")
+	; (chat-local-to-self "WAFFLE: TSA is HOLDING but no enemy buildings. INCREMENT")
 )
 
 (defrule
@@ -606,8 +823,8 @@
 	(not (strategic-number sn-maximum-town-size == TL4-townsize))
 =>
 	(set-strategic-number sn-maximum-town-size TL4-townsize)
-	(set-strategic-number sn-sentry-distance TL4-townsize)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
 )
 
 
@@ -747,9 +964,9 @@
 	(goal iamthechosenchatter ITSME)
 	(game-time > 1)
 =>
-	(chat-to-player every-human "Hello, human! We AI play this gamemode with Deathmatch resources.")
-	(chat-to-player every-human "Your starting resources simply can't compete with what we robots have.")
-	(chat-to-player every-human "As soon as I build a Spaceport, I'll send you your share!")
+	(chat-to-player every-human "Commander, this battle begins with Deathmatch resources.")
+	(chat-to-player every-human "You will need additional supplies to hold the Monument.")
+	(chat-to-player every-human "I will tribute them once my Spaceport is ready.")
 	(disable-self)
 )
 
@@ -766,7 +983,7 @@
 	(tribute-to-player 1 food 20000)
 	(tribute-to-player 1 nova 10000)
 	(tribute-to-player 1 metal 5000)
-	(chat-to-player 1 "Here are your starting resources! May the Force be with you.")
+	(chat-to-player 1 "Your supplies have arrived, Commander. May the Force be with you.")
 	(disable-self)
 )
 
@@ -783,7 +1000,7 @@
 	(tribute-to-player 2 food 20000)
 	(tribute-to-player 2 nova 10000)
 	(tribute-to-player 2 metal 5000)
-	(chat-to-player 2 "Here are your starting resources! May the Force be with you.")
+	(chat-to-player 2 "Your supplies have arrived, Commander. May the Force be with you.")
 	(disable-self)
 )
 
@@ -800,7 +1017,7 @@
 	(tribute-to-player 3 food 20000)
 	(tribute-to-player 3 nova 10000)
 	(tribute-to-player 3 metal 5000)
-	(chat-to-player 3 "Here are your starting resources! May the Force be with you.")
+	(chat-to-player 3 "Your supplies have arrived, Commander. May the Force be with you.")
 	(disable-self)
 )
 
@@ -817,7 +1034,7 @@
 	(tribute-to-player 4 food 20000)
 	(tribute-to-player 4 nova 10000)
 	(tribute-to-player 4 metal 5000)
-	(chat-to-player 4 "Here are your starting resources! May the Force be with you.")
+	(chat-to-player 4 "Your supplies have arrived, Commander. May the Force be with you.")
 	(disable-self)
 )
 
@@ -834,7 +1051,7 @@
 	(tribute-to-player 5 food 20000)
 	(tribute-to-player 5 nova 10000)
 	(tribute-to-player 5 metal 5000)
-	(chat-to-player 5 "Here are your starting resources! May the Force be with you.")
+	(chat-to-player 5 "Your supplies have arrived, Commander. May the Force be with you.")
 	(disable-self)
 )
 
@@ -851,7 +1068,7 @@
 	(tribute-to-player 6 food 20000)
 	(tribute-to-player 6 nova 10000)
 	(tribute-to-player 6 metal 5000)
-	(chat-to-player 6 "Here are your starting resources! May the Force be with you.")
+	(chat-to-player 6 "Your supplies have arrived, Commander. May the Force be with you.")
 	(disable-self)
 )
 
@@ -868,7 +1085,7 @@
 	(tribute-to-player 7 food 20000)
 	(tribute-to-player 7 nova 10000)
 	(tribute-to-player 7 metal 5000)
-	(chat-to-player 7 "Here are your starting resources! May the force be with you.")
+	(chat-to-player 7 "Your supplies have arrived, Commander. May the Force be with you.")
 	(disable-self)
 )
 
@@ -885,7 +1102,7 @@
 	(tribute-to-player 8 food 20000)
 	(tribute-to-player 8 nova 10000)
 	(tribute-to-player 8 metal 5000)
-	(chat-to-player 8 "Here are your starting resources! May the force be with you.")
+	(chat-to-player 8 "Your supplies have arrived, Commander. May the Force be with you.")
 	(disable-self)
 )
 
@@ -899,7 +1116,7 @@
 	(true)
 =>
 	(set-strategic-number sn-initial-exploration-required 0)
-	(set-strategic-number sn-sentry-distance TL4-townsize-smol)
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
     (set-strategic-number sn-maximum-town-size TL4-townsize-smol)
 	(set-strategic-number sn-percent-civilian-builders 90)
     (set-strategic-number sn-percent-civilian-gatherers 10)
@@ -949,7 +1166,7 @@
         (game-time > 600)
 		(not (strategic-number sn-maximum-town-size == TL4-townsize))
 =>
-        (set-strategic-number sn-sentry-distance TL4-townsize)
+        (set-strategic-number sn-sentry-distance TL4-sentry-distance)
 		(set-strategic-number sn-maximum-town-size TL4-townsize)
 		(disable-self)
 )
@@ -993,6 +1210,7 @@
 (defrule
 	(building-type-count-total BLDG-SHLDGEN == 0)
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1001,6 +1219,7 @@
 	(building-type-count BLDG-SHLDGEN == 1)
 	(building-type-count-total BLDG-SHLDGEN < 2) ; everyone gets two
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1010,6 +1229,7 @@
 	(building-type-count BLDG-SHLDGEN == 2)
 	(building-type-count-total BLDG-SHLDGEN < 3)
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1019,6 +1239,7 @@
 	(building-type-count BLDG-SHLDGEN == 3)
 	(building-type-count-total BLDG-SHLDGEN < 4)
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1028,6 +1249,7 @@
 	(building-type-count BLDG-SHLDGEN == 4)
 	(building-type-count-total BLDG-SHLDGEN < 5)
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1037,6 +1259,7 @@
 	(building-type-count BLDG-SHLDGEN == 5)
 	(building-type-count-total BLDG-SHLDGEN < 6)
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1046,6 +1269,7 @@
 	(building-type-count BLDG-SHLDGEN == 6)
 	(building-type-count-total BLDG-SHLDGEN < 7)
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1055,6 +1279,7 @@
 	(building-type-count BLDG-SHLDGEN == 7)
 	(building-type-count-total BLDG-SHLDGEN < 8)
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1064,6 +1289,7 @@
 	(building-type-count BLDG-SHLDGEN == 8)
 	(building-type-count-total BLDG-SHLDGEN < 9)
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1073,6 +1299,7 @@
 	(building-type-count BLDG-SHLDGEN == 9)
 	(building-type-count-total BLDG-SHLDGEN < 10)
 	(can-build BLDG-SHLDGEN)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-SHLDGEN)
 )
@@ -1082,6 +1309,7 @@
 (defrule
 	(building-type-count-total BLDG-GOVTCTR == 0)
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1090,6 +1318,7 @@
 	(building-type-count BLDG-GOVTCTR == 1)
 	(building-type-count-total BLDG-GOVTCTR < 2) 
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1097,7 +1326,9 @@
 (defrule
 	(building-type-count BLDG-GOVTCTR == 2)
 	(building-type-count-total BLDG-GOVTCTR < 3)
+	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1105,7 +1336,9 @@
 (defrule
 	(building-type-count BLDG-GOVTCTR == 3)
 	(building-type-count-total BLDG-GOVTCTR < 4)
+	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1113,7 +1346,9 @@
 (defrule
 	(building-type-count BLDG-GOVTCTR == 4)
 	(building-type-count-total BLDG-GOVTCTR < 5)
+	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1121,7 +1356,9 @@
 (defrule
 	(building-type-count BLDG-GOVTCTR == 5) 
 	(building-type-count-total BLDG-GOVTCTR < 6) ; everyone gets 6
+	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1130,7 +1367,9 @@
 	(not (goal wonder-attempt ATTACK))
 	(building-type-count BLDG-GOVTCTR == 6)
 	(building-type-count-total BLDG-GOVTCTR < 7)
+	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1139,7 +1378,9 @@
 	(not (goal wonder-attempt ATTACK))
 	(building-type-count BLDG-GOVTCTR == 7)
 	(building-type-count-total BLDG-GOVTCTR < 8) ; defenders get 8 
+	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1148,7 +1389,9 @@
 	(goal wonder-attempt HOLDER)
 	(building-type-count BLDG-GOVTCTR == 8)
 	(building-type-count-total BLDG-GOVTCTR < 9)
+	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1157,7 +1400,9 @@
 	(goal wonder-attempt HOLDER)	; holder gets 10
 	(building-type-count BLDG-GOVTCTR == 9)
 	(building-type-count-total BLDG-GOVTCTR < 10)
+	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -1169,6 +1414,7 @@
 (defrule
 	(building-type-count-total BLDG-MISSILE-LINE < 2) ; always have some AA turrets
 	(can-build BLDG-MISSILE-LINE)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -1180,6 +1426,7 @@
 	(building-type-count-total BLDG-MISSILE-LINE < 4) 
 	(building-type-count-total BLDG-GOVTCTR > 0)
 	(can-build BLDG-MISSILE-LINE)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -1190,6 +1437,7 @@
 	(building-type-count-total BLDG-MISSILE-LINE < 6)
 	(building-type-count-total BLDG-GOVTCTR > 1)
 	(can-build BLDG-MISSILE-LINE)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -1198,6 +1446,7 @@
 	(building-type-count-total BLDG-TURRET-LINE < 3)
 	(building-type-count-total BLDG-GOVTCTR > 0)
 	(can-build BLDG-TURRET-LINE)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-TURRET-LINE)
 )
@@ -1210,6 +1459,7 @@
 	(building-type-count-total BLDG-GOVTCTR > 2)
 	(building-type-count-total BLDG-MISSILE-LINE < 8)
 	(can-build BLDG-MISSILE-LINE)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -1229,6 +1479,7 @@
 	(building-type-count-total BLDG-MISSILE-LINE < 10)
 	(building-type-count-total BLDG-SHLDGEN > 1)
 	(can-build BLDG-MISSILE-LINE)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -1238,6 +1489,7 @@
 	(building-type-count-total BLDG-TURRET-LINE < 7) ; don't go as ham on these
 	(building-type-count-total BLDG-SHLDGEN > 1)
 	(can-build BLDG-TURRET-LINE)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-TURRET-LINE)
 )
@@ -1262,11 +1514,17 @@
 		(building-type-count-total BLDG-GOVTCTR < 3)
         (current-age == tech-level-4)
         (can-build BLDG-GOVTCTR)
+	(not (goal buildpause YES))
         =>
         (build BLDG-GOVTCTR)
 )
 
 ;*********** AIR CRUISER ***********
+
+; Legacy direct-train block disabled by default.  Modern synced production
+; files now own unit composition; this old block made every civ overfocus
+; Air Cruisers and unique units in Defend Monument.
+#load-if-defined WONDER_KILL_LEGACY_DIRECT_TRAIN
 
 (defrule
 	(game-time > 480)
@@ -1302,11 +1560,11 @@
 
 (defrule
         (true)
+		(goal support-artillery YES)
+		(goal wonder-attempt ATTACK)
         (current-age == tech-level-4)
-		(and
-			(building-type-count-total SIEGE-CANNON-LINE < 4)
-			(unit-type-count-total SIEGE-CANNON-LINE < 4)
-		)
+			(building-type-count-total SIEGE-CANNON-LINE < 2)
+			(unit-type-count-total SIEGE-CANNON-LINE < 2)
         (can-train SIEGE-CANNON-LINE)
         =>
         (train SIEGE-CANNON-LINE)
@@ -1315,15 +1573,12 @@
 
 (defrule
         (true)
+		(goal support-artillery YES)
+		(goal wonder-attempt ATTACK)
         (current-age >= tech-level-4)
-		(or
-			(game-time > 480)
-			(goal wonder-attempt ATTACK)
-		)
-		(and
+		(game-time > 480)
 			(building-type-count-total SIEGE-CANNON-LINE < TL4-cannon-arm)
 			(unit-type-count-total SIEGE-CANNON-LINE < TL4-cannon-arm)
-		)
         (can-train SIEGE-CANNON-LINE)
         =>
         (train SIEGE-CANNON-LINE)
@@ -1331,15 +1586,12 @@
 
 (defrule
         (true)
+		(goal support-artillery YES)
+		(goal wonder-attempt ATTACK)
         (current-age >= tech-level-4)
-		(or
-			(game-time > 480)
-			(goal wonder-attempt ATTACK)
-		)
-		(and
+		(game-time > 480)
 			(building-type-count-total SIEGE-CANNON-LINE < TL4-cannon-arm-water)
 			(unit-type-count-total SIEGE-CANNON-LINE < TL4-cannon-arm-water)
-		)
         (can-train SIEGE-CANNON-LINE)
         =>
         (train SIEGE-CANNON-LINE)
@@ -1381,6 +1633,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-AIRSPEEDER-LINE < TL4-unique-unit-arm)
@@ -1391,6 +1644,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-AIRSPEEDER-LINE < TL4-unique-unit-arm-water)
@@ -1406,6 +1660,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-DARKTRP-LINE < TL4-unique-unit-arm)
@@ -1416,6 +1671,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-DARKTRP-LINE < TL4-unique-unit-arm-water)
@@ -1431,6 +1687,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-KNIGHT-LINE < TL4-unique-unit-arm)
@@ -1441,6 +1698,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-KNIGHT-LINE < TL4-unique-unit-arm-water)
@@ -1457,6 +1715,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-BERSERK-LINE < TL4-unique-unit-arm)
@@ -1467,6 +1726,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-BERSERK-LINE < TL4-unique-unit-arm-water)
@@ -1483,6 +1743,7 @@
 ; with help from A3DWaffle
 (defrule
         (true)
+		(goal support-uu YES)
 		(military-population > 5) ; only build Faambas if we have something to shield!
         (unit-type-count-total UNIT-SHIELD-LINE < 1)
 		(can-train UNIT-SHIELD-LINE)
@@ -1492,6 +1753,7 @@
 
 (defrule
         (true)
+		(goal support-uu YES)
 		(military-population > 15)
         (unit-type-count-total UNIT-SHIELD-LINE < 3)
 		(can-train UNIT-SHIELD-LINE)
@@ -1501,6 +1763,7 @@
 
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
 		(military-population > 25)
         (unit-type-count-total UNIT-SHIELD-LINE < TL4-unique-unit-arm)
@@ -1511,6 +1774,7 @@
 
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
 		(military-population > 25)
         (unit-type-count-total UNIT-SHIELD-LINE < TL4-unique-unit-arm-water)
@@ -1527,6 +1791,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-DESTDROID-LINE < TL4-unique-unit-arm)
@@ -1537,6 +1802,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-DESTDROID-LINE < TL4-unique-unit-arm-water)
@@ -1553,6 +1819,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-JEDIFGT-LINE < TL4-unique-unit-arm)
@@ -1563,6 +1830,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-JEDIFGT-LINE < TL4-unique-unit-arm-water)
@@ -1579,6 +1847,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-MAGNAGUARD-LINE < TL4-unique-unit-arm)
@@ -1589,6 +1858,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-MAGNAGUARD-LINE < TL4-unique-unit-arm-water)
@@ -1604,6 +1874,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-GEOFLYR-LINE < TL4-unique-unit-arm)
@@ -1614,6 +1885,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-GEOFLYR-LINE < TL4-unique-unit-arm-water)
@@ -1629,6 +1901,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-DEFILER-LINE < TL4-unique-unit-arm)
@@ -1639,6 +1912,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-DEFILER-LINE < TL4-unique-unit-arm-water)
@@ -1654,6 +1928,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-SKISPEEDER-LINE < TL4-unique-unit-arm)
@@ -1664,6 +1939,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-SKISPEEDER-LINE < TL4-unique-unit-arm-water)
@@ -1680,6 +1956,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-JETTROOPER-LINE < TL4-unique-unit-arm)
@@ -1690,6 +1967,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-JETTROOPER-LINE < TL4-unique-unit-arm-water)
@@ -1705,6 +1983,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-SHADOWTROOPER-LINE < TL4-unique-unit-arm)
@@ -1715,6 +1994,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-SHADOWTROOPER-LINE < TL4-unique-unit-arm-water)
@@ -1731,6 +2011,7 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-VWING-LINE < TL4-unique-unit-arm)
@@ -1741,6 +2022,7 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
         (unit-type-count-total UNIT-VWING-LINE < TL4-unique-unit-arm-water)
@@ -1755,12 +2037,11 @@
 ; T4 train
 (defrule
         (true)
+		(goal support-uu YES)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
-        (and
 			(unit-type-count-total UNIT-GLADIATORDROID1-LINE < TL4-unique-unit-arm)
 			(unit-type-count-total UNIT-GLADIATORDROID2-LINE < TL4-unique-unit-arm)
-		)
         (can-train UNIT-GLADIATORDROID1-LINE)
         =>
         (train UNIT-GLADIATORDROID1-LINE)
@@ -1768,12 +2049,11 @@
 ; T4 train with water
 (defrule
         (true)
+		(goal support-uu YES)
 		(goal special-map WATER)
         (current-age == tech-level-4)
-        (and
 			(unit-type-count-total UNIT-GLADIATORDROID1-LINE < TL4-unique-unit-arm-water)
 			(unit-type-count-total UNIT-GLADIATORDROID2-LINE < TL4-unique-unit-arm-water)
-		)
         (can-train UNIT-GLADIATORDROID1-LINE)
         =>
         (train UNIT-GLADIATORDROID1-LINE)
@@ -1787,5 +2067,7 @@
 
 
 ;**********************************************
+
+#end-if
 
 #end-if

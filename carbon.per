@@ -1,29 +1,49 @@
 ; =====================================================
 ; FILE: carbon
 ; PURPOSE:
-;   Builds carbon processing centers and researches carbon-side economy techs.
+;   Builds Carbon Processing Centers and researches carbon-side economy techs.
 ;
 ; =====================================================
 ; *** Table of Contents *** 
 ; =====================================================
 ;
-;	Chapter 0: SETUP
-;	Chapter 1: CARBON CTR
-;	Chapter 2: T3+ CARBON CTR
-;	Chapter 3: TECHS
+;	Chapter 1: CARBON PROCESSING CENTERS
+;	Chapter 2: CARBON ECONOMY TECHS
 ;
 ; =====================================================
-; *** Chapter 0: SETUP ***
+; *** Chapter 1: CARBON PROCESSING CENTERS ***
 ; =====================================================
+
+; Hunt openers need early carbon infrastructure before the first Food Proc Ctr.
+; Otherwise hunt-delayed food rules can leave the opener with neither eco anchor.
+(defrule
+	(game-time > 45)
+	(current-age == tech-level-1)
+	(goal hunt-present YES)
+	(building-type-count BLDG-MAIN > 0)
+	(building-type-count-total BLDG-DROPCARBON == 0)
+	(not (dropsite-min-distance carbon == -1))
+	(not (dropsite-min-distance carbon == 255))
+	(dropsite-min-distance carbon > 1)
+	(can-build-with-escrow BLDG-DROPCARBON)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(set-goal resourcerefund ccarbonproc)
+	(build BLDG-DROPCARBON)
+)
 
 (defrule
 	(building-type-count BLDG-MAIN > 0)
 	(building-type-count-total BLDG-DROPCHOW > 0)
 	(building-type-count-total BLDG-DROPCARBON == 0)
-	(dropsite-min-distance carbon > 3)
+	(not (dropsite-min-distance carbon == -1))
+	(not (dropsite-min-distance carbon == 255))
+	(dropsite-min-distance carbon > 1)
 	(can-build BLDG-DROPCARBON)
 	(not (goal savetheanimals YES)) ; wanna get those nerfs housed ASAP
 	(game-time > 60) ; do not do immediately
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund ccarbonproc)
 	(build BLDG-DROPCARBON)
@@ -34,6 +54,7 @@
 	(game-time > 180)
 	(building-type-count-total BLDG-DROPCARBON == 0)
 	(can-build BLDG-DROPCARBON)
+	(not (goal buildpause YES))
 	=>
 	(set-goal resourcerefund ccarbonproc)
 	(build BLDG-DROPCARBON)
@@ -50,6 +71,7 @@
 	(building-type-count BLDG-DROPCARBON < 12) ; cap of 12, but these can and should be deleted
 	(game-time > 180) ; 3min
 	(can-build-with-escrow BLDG-DROPCARBON)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(set-goal resourcerefund ccarbonproc)
@@ -66,9 +88,19 @@
 	(delete-complete-building BLDG-DROPCARBON)
 )
 
+; =====================================================
+; *** Chapter 2: CARBON ECONOMY TECHS ***
+; =====================================================
+
 (defrule
 	; Handheld CarbonExtractor
-	(current-age >= tech-level-3)
+	(or
+		(current-age >= tech-level-3)
+		(and
+			(current-age == tech-level-2)
+			(goal agingup YES)
+		)
+	)
 	(can-research-with-escrow rt-fusion-cutter)
 =>
 	(release-escrow food)
@@ -106,5 +138,3 @@
 	(release-escrow carbon)
 	(research ut-peopleoftrees)
 )
-
-

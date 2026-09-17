@@ -31,8 +31,8 @@
 (defrule
 	(true)
 =>
-	(set-strategic-number sn-food-dropsite-distance 4)
-	(set-strategic-number sn-carbon-dropsite-distance 4) ; these sn's affect dropsite placement more than anything else apparently
+	(set-strategic-number sn-food-dropsite-distance 3)
+	(set-strategic-number sn-carbon-dropsite-distance 1) ; keep Carbon Proc Ctrs tight against carbon
 	(set-strategic-number sn-metal-dropsite-distance 3)
 	(set-strategic-number sn-nova-dropsite-distance 3)
 	(set-strategic-number sn-retask-gather-amount 5)
@@ -61,12 +61,20 @@
 	(true)
 =>
 	(set-strategic-number sn-maximum-carbon-drop-distance 20)
-	(set-strategic-number sn-maximum-food-drop-distance 14)
-	(set-strategic-number sn-maximum-hunt-drop-distance 40) ; This isn't hunt "drop" distance as per se, but sheer HUNT distance. If a lure is out of this range, it will just not be targeted
+	(set-strategic-number sn-maximum-food-drop-distance 9)
+	(set-strategic-number sn-maximum-hunt-drop-distance 30) ; This is the real hunt/lure targeting range, not just drop distance.
+	(set-strategic-number sn-minimum-boar-hunt-group-size 99) ; block risky solo lure parties during the opening
 
-	(set-strategic-number sn-maximum-fish-boat-drop-distance -1) ; infinite
+	(set-strategic-number sn-maximum-fish-boat-drop-distance 30)
 	(set-strategic-number sn-maximum-nova-drop-distance 15)
 	(set-strategic-number sn-maximum-metal-drop-distance 15)
+	(disable-self)
+)
+
+(defrule
+	(game-time > 240)
+=>
+	(set-strategic-number sn-minimum-boar-hunt-group-size 3)
 	(disable-self)
 )
 
@@ -174,7 +182,7 @@
 
 (defrule
 	(current-age == tech-level-4)
-	(game-time > 3600) ; 1hr 
+	(game-time > 2400) ; 40min 
 	(strategic-number sn-camp-max-distance < 60)
 =>
 	(set-strategic-number sn-camp-max-distance 60)
@@ -193,7 +201,7 @@
 )
 (defrule
 	(current-age == tech-level-4)
-	(game-time > 5400) ; 1h30
+	(game-time > 3600) ; 1hr
 	(strategic-number sn-camp-max-distance < 70)
 =>
 	(set-strategic-number sn-camp-max-distance 70)
@@ -202,7 +210,7 @@
 )
 (defrule
 	(current-age == tech-level-4)
-	(game-time > 7200) ; 2hr
+	(game-time > 5400) ; 1h30
 	(strategic-number sn-camp-max-distance < 80)
 =>
 	(set-strategic-number sn-camp-max-distance 80)
@@ -270,8 +278,8 @@
 	(not (strategic-number sn-maximum-town-size == TL2-townsize-smol))
 =>
 	(set-strategic-number sn-maximum-town-size TL2-townsize-smol)
-	(set-strategic-number sn-sentry-distance TL2-townsize-smol)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now SMOL")
+	(set-strategic-number sn-sentry-distance TL2-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now SMOL")
 )
 (defrule
 	(current-age == tech-level-2)
@@ -280,8 +288,8 @@
 	(not (strategic-number sn-maximum-town-size == TL2-townsize))
 =>
 	(set-strategic-number sn-maximum-town-size TL2-townsize)
-	(set-strategic-number sn-sentry-distance TL2-townsize)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
+	(set-strategic-number sn-sentry-distance TL2-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
 )
 (defrule
 	(current-age == tech-level-2)
@@ -290,8 +298,8 @@
 	(not (strategic-number sn-maximum-town-size == TL2-townsize-big))
 =>
 	(set-strategic-number sn-maximum-town-size TL2-townsize-big)
-	(set-strategic-number sn-sentry-distance TL2-townsize-big)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIG")
+	(set-strategic-number sn-sentry-distance TL2-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now BIG")
 )
 (defrule
 	(current-age == tech-level-2)
@@ -300,8 +308,8 @@
 	(not (strategic-number sn-maximum-town-size == TL2-townsize-bigger))
 =>
 	(set-strategic-number sn-maximum-town-size TL2-townsize-bigger)
-	(set-strategic-number sn-sentry-distance TL2-townsize-bigger)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
+	(set-strategic-number sn-sentry-distance TL2-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
 )
 
 
@@ -313,8 +321,8 @@
 	(not (strategic-number sn-maximum-town-size == TL3-townsize-smol))
 =>
 	(set-strategic-number sn-maximum-town-size TL3-townsize-smol)
-	(set-strategic-number sn-sentry-distance TL3-townsize-smol)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now SMOL")
+	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now SMOL")
 )
 (defrule
 	(current-age == tech-level-3)
@@ -323,8 +331,8 @@
 	(not (strategic-number sn-maximum-town-size == TL3-townsize))
 =>
 	(set-strategic-number sn-maximum-town-size TL3-townsize)
-	(set-strategic-number sn-sentry-distance TL3-townsize)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
+	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
 )
 (defrule
 	(current-age == tech-level-3)
@@ -333,8 +341,8 @@
 	(not (strategic-number sn-maximum-town-size == TL3-townsize-big))
 =>
 	(set-strategic-number sn-maximum-town-size TL3-townsize-big)
-	(set-strategic-number sn-sentry-distance TL3-townsize-big)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIG")
+	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now BIG")
 )
 (defrule
 	(current-age == tech-level-3)
@@ -343,8 +351,8 @@
 	(not (strategic-number sn-maximum-town-size == TL3-townsize-bigger))
 =>
 	(set-strategic-number sn-maximum-town-size TL3-townsize-bigger)
-	(set-strategic-number sn-sentry-distance TL3-townsize-bigger)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
+	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
 )
 
 ; tech 4
@@ -355,8 +363,8 @@
 	(not (strategic-number sn-maximum-town-size == TL4-townsize-smol))
 =>
 	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
-	(set-strategic-number sn-sentry-distance TL4-townsize-smol)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now SMOL")
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now SMOL")
 )
 (defrule
 	(current-age == tech-level-4)
@@ -365,8 +373,8 @@
 	(not (strategic-number sn-maximum-town-size == TL4-townsize))
 =>
 	(set-strategic-number sn-maximum-town-size TL4-townsize)
-	(set-strategic-number sn-sentry-distance TL4-townsize)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now NORM")
 )
 (defrule
 	(current-age == tech-level-4)
@@ -375,8 +383,8 @@
 	(not (strategic-number sn-maximum-town-size == TL4-townsize-big))
 =>
 	(set-strategic-number sn-maximum-town-size TL4-townsize-big)
-	(set-strategic-number sn-sentry-distance TL4-townsize-big)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIG")
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now BIG")
 )
 (defrule
 	(current-age == tech-level-4)
@@ -385,8 +393,29 @@
 	(not (strategic-number sn-maximum-town-size == TL4-townsize-bigger))
 =>
 	(set-strategic-number sn-maximum-town-size TL4-townsize-bigger)
-	(set-strategic-number sn-sentry-distance TL4-townsize-bigger)
-	(chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
+)
+
+; Water maps have constrained shoreline build space. Keep town size compact so
+; the AI prioritizes docks and nearby production instead of sprawling inland.
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(not (strategic-number sn-maximum-town-size == TL3-townsize-smol))
+=>
+	(set-strategic-number sn-maximum-town-size TL3-townsize-smol)
+	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(not (strategic-number sn-maximum-town-size == TL4-townsize-smol))
+=>
+	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	(set-strategic-number sn-cap-civilian-builders 120)
 )
 
 
@@ -412,8 +441,8 @@
 	(or
 		(game-time > 240) ; up town size a bit once enough time has passed
 		(and
-			(building-type-count-total BECO-CARB > 0)
-			(building-type-count-total BECO-FOOD > 0)
+			(building-type-count-total BLDG-DROPCARBON > 0)
+			(building-type-count-total BLDG-DROPCHOW > 0)
 		)
 	)
 	(current-age == tech-level-1)
@@ -440,9 +469,9 @@
 
 
 (defrule
-	(building-type-count BECO-CARB > 0)
+	(building-type-count BLDG-DROPCARBON > 0)
 =>
-	(set-strategic-number sn-carbon-dropsite-distance 3)
+	(set-strategic-number sn-carbon-dropsite-distance 1)
 	(disable-self)
 )
 
@@ -516,7 +545,7 @@
 (defrule
         (current-age >= tech-level-2)
 =>
-		(set-strategic-number sn-sentry-distance TL2-townsize)
+		(set-strategic-number sn-sentry-distance TL2-sentry-distance)
         (set-strategic-number sn-maximum-town-size TL2-townsize)
 		(set-goal townsizetracker NORM)
 
@@ -558,7 +587,7 @@
 	(set-goal townsizetrackertwo GETYOURUNITSTOGETHER)
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 10) ; Give it 10s for units to get their bearing
-	(chat-local-to-self "WAFFLE: T2 enemy building. Starting 10s timer")
+	; (chat-local-to-self "WAFFLE: T2 enemy building. Starting 10s timer")
 )
 
 (defrule
@@ -570,7 +599,8 @@
 	(set-goal townsizetrackertwo WAITING)
 	(set-goal townsizetracker SMOL)
 	(set-strategic-number sn-maximum-town-size TL2-townsize-smol)
-	(chat-local-to-self "WAFFLE: T2 Enemy Building. TS Smol. Start timer")
+	(set-strategic-number sn-sentry-distance TL2-sentry-distance)
+	; (chat-local-to-self "WAFFLE: T2 Enemy Building. TS Smol. Start timer")
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 300) ; 5min ought to be enough to poke our head above the water again and see if those buildings have gone
 )
@@ -585,7 +615,8 @@
 	(set-goal townsizetrackertwo NULL)
 	(set-goal townsizetracker NORM)
 	(set-strategic-number sn-maximum-town-size TL2-townsize)
-	(chat-local-to-self "WAFFLE: T2 Smol Timeout. Increasing to Norm")
+	(set-strategic-number sn-sentry-distance TL2-sentry-distance)
+	; (chat-local-to-self "WAFFLE: T2 Smol Timeout. Increasing to Norm")
 	(disable-timer t-townsize)
 
 )
@@ -613,7 +644,7 @@
 	(set-goal townsizetrackertwo NOBUILDINGS)
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 300) ; 5min to build them
-	(chat-local-to-self "WAFFLE: T2 TS: No bldgs. Timer on")
+	; (chat-local-to-self "WAFFLE: T2 TS: No bldgs. Timer on")
 )
 
 ; if we have them, cancel the timer
@@ -627,7 +658,7 @@
 =>
 	(disable-timer t-townsize)
 	(set-goal townsizetrackertwo NULL)
-	(chat-local-to-self "WAFFLE: T2 TS: Yes bldgs. Disabling timer")
+	; (chat-local-to-self "WAFFLE: T2 TS: Yes bldgs. Disabling timer")
 )
 
 ; if we don't when timer runs out, increase townsize
@@ -649,13 +680,13 @@
 	(set-goal townsizetrackertwo NULL)
 	
 	(set-goal townsizetracker BIG)
-	(set-strategic-number sn-sentry-distance TL2-townsize-big)
+	(set-strategic-number sn-sentry-distance TL2-sentry-distance)
 	(set-strategic-number sn-maximum-town-size TL2-townsize-big)
 	
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 300) ; Check for another 5min
 	
-	(chat-local-to-self "WAFFLE: T2 Town Size Big")
+	; (chat-local-to-self "WAFFLE: T2 Town Size Big")
 )
 
 ; if we STILL have no space for our buildings
@@ -676,12 +707,12 @@
 	(set-goal townsizetrackertwo NULL)
 	
 	(set-goal townsizetracker BIGGER)
-	(set-strategic-number sn-sentry-distance TL2-townsize-bigger)
+	(set-strategic-number sn-sentry-distance TL2-sentry-distance)
 	(set-strategic-number sn-maximum-town-size TL2-townsize-bigger)
 	
 	(disable-timer t-townsize)
 	
-	(chat-local-to-self "WAFFLE: T2 Town Size Bigger")
+	; (chat-local-to-self "WAFFLE: T2 Town Size Bigger")
 )
 
 
@@ -695,7 +726,7 @@
 (defrule
         (current-age == tech-level-3)
 =>
-        (set-strategic-number sn-sentry-distance TL3-townsize)
+        (set-strategic-number sn-sentry-distance TL3-sentry-distance)
         (set-strategic-number sn-maximum-town-size TL3-townsize)
 		(set-strategic-number sn-percent-civilian-builders 50)
         (set-strategic-number sn-percent-civilian-gatherers 50)
@@ -719,7 +750,7 @@
 	(set-goal townsizetrackertwo GETYOURUNITSTOGETHER)
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 20) ; Give it 20s for units to get their bearing
-	(chat-local-to-self "WAFFLE: T3 enemy building. Starting 20s timer")
+	; (chat-local-to-self "WAFFLE: T3 enemy building. Starting 20s timer")
 )
 
 (defrule
@@ -731,7 +762,8 @@
 	(set-goal townsizetrackertwo WAITING)
 	(set-goal townsizetracker SMOL)
 	(set-strategic-number sn-maximum-town-size TL3-townsize-smol)
-	(chat-local-to-self "WAFFLE: T3 Enemy Building. TS Smol. Start timer")
+	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
+	; (chat-local-to-self "WAFFLE: T3 Enemy Building. TS Smol. Start timer")
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 300) ; 5min ought to be enough to poke our head above the water again and see if those buildings have gone
 )
@@ -758,7 +790,8 @@
 	(set-goal townsizetrackertwo NULL)
 	(set-goal townsizetracker NORM)
 	(set-strategic-number sn-maximum-town-size TL3-townsize)
-	(chat-local-to-self "WAFFLE: T3 Smol Timeout. Increasing to Norm")
+	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
+	; (chat-local-to-self "WAFFLE: T3 Smol Timeout. Increasing to Norm")
 	(disable-timer t-townsize)
 
 )
@@ -790,7 +823,7 @@
 	(set-goal townsizetrackertwo NOBUILDINGS)
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 300) ; 5min to build them
-	(chat-local-to-self "WAFFLE: T3 TS: No bldgs. Timer on")
+	; (chat-local-to-self "WAFFLE: T3 TS: No bldgs. Timer on")
 )
 
 ; if we have them, cancel the timer
@@ -805,7 +838,7 @@
 =>
 	(disable-timer t-townsize)
 	(set-goal townsizetrackertwo NULL)
-	(chat-local-to-self "WAFFLE: T3 TS: Yes bldgs. Disabling timer")
+	; (chat-local-to-self "WAFFLE: T3 TS: Yes bldgs. Disabling timer")
 )
 
 ; if we don't when timer runs out, increase townsize
@@ -830,13 +863,13 @@
 	(set-goal townsizetrackertwo NULL)
 	
 	(set-goal townsizetracker BIG)
-	(set-strategic-number sn-sentry-distance TL3-townsize-big)
+	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
 	(set-strategic-number sn-maximum-town-size TL3-townsize-big)
 	
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 300) ; Check for another 5min
 	
-	(chat-local-to-self "WAFFLE: T3 Town Size Big")
+	; (chat-local-to-self "WAFFLE: T3 Town Size Big")
 )
 
 ; if we STILL have no space for our buildings
@@ -860,12 +893,12 @@
 	(set-goal townsizetrackertwo NULL)
 	
 	(set-goal townsizetracker BIGGER)
-	(set-strategic-number sn-sentry-distance TL3-townsize-bigger)
+	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
 	(set-strategic-number sn-maximum-town-size TL3-townsize-bigger)
 	
 	(disable-timer t-townsize)
 	
-	(chat-local-to-self "WAFFLE: T3 Town Size Bigger")
+	; (chat-local-to-self "WAFFLE: T3 Town Size Bigger")
 )
 
 
@@ -878,13 +911,13 @@
 (defrule
         (current-age == tech-level-4)
 =>
-		(set-strategic-number sn-sentry-distance TL4-townsize)
+		(set-strategic-number sn-sentry-distance TL4-sentry-distance)
         (set-strategic-number sn-maximum-town-size TL4-townsize)
         (set-strategic-number sn-percent-civilian-builders 50)
         (set-strategic-number sn-percent-civilian-gatherers 50)
 		
-        (set-strategic-number sn-maximum-food-drop-distance 12)
-        (set-strategic-number sn-maximum-hunt-drop-distance 20)
+        (set-strategic-number sn-maximum-food-drop-distance 9)
+        (set-strategic-number sn-maximum-hunt-drop-distance 50)
 
         ; (set-strategic-number sn-max-unpowered-buildings 1) ; was originally 0
 		(set-strategic-number sn-allow-civilian-defense 0)
@@ -902,10 +935,10 @@
 		(current-age-time > 1800) ; 30min into T4
 =>
         (set-strategic-number sn-maximum-carbon-drop-distance 50)
-        (set-strategic-number sn-maximum-food-drop-distance 12)
-        (set-strategic-number sn-maximum-hunt-drop-distance 20)
+        (set-strategic-number sn-maximum-food-drop-distance 9)
+        (set-strategic-number sn-maximum-hunt-drop-distance 50)
 
-        (set-strategic-number sn-maximum-fish-boat-drop-distance -1) ; infinite apparently? 
+        (set-strategic-number sn-maximum-fish-boat-drop-distance 45)
         (set-strategic-number sn-maximum-nova-drop-distance 20)
         (set-strategic-number sn-maximum-metal-drop-distance 20)
 		
@@ -922,7 +955,8 @@
 	(set-goal townsizetrackertwo WAITING)
 	(set-goal townsizetracker SMOL)
 	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
-	(chat-local-to-self "WAFFLE: T4 Start. TS Smol. Start timer")
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	; (chat-local-to-self "WAFFLE: T4 Start. TS Smol. Start timer")
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 420)
 	(disable-self)
@@ -941,7 +975,7 @@
 	(set-goal townsizetrackertwo GETYOURUNITSTOGETHER)
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 20) ; Give it 20s for units to get their bearing
-	(chat-local-to-self "WAFFLE: T4 enemy building. Starting 20s timer")
+	; (chat-local-to-self "WAFFLE: T4 enemy building. Starting 20s timer")
 )
 
 (defrule
@@ -953,7 +987,8 @@
 	(set-goal townsizetrackertwo WAITING)
 	(set-goal townsizetracker SMOL)
 	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
-	(chat-local-to-self "WAFFLE: T4 Enemy Building. TS Smol. Start timer")
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	; (chat-local-to-self "WAFFLE: T4 Enemy Building. TS Smol. Start timer")
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 300) ; 5min ought to be enough to poke our head above the water again and see if those buildings have gone
 )
@@ -980,7 +1015,8 @@
 	(set-goal townsizetrackertwo NULL)
 	(set-goal townsizetracker NORM)
 	(set-strategic-number sn-maximum-town-size TL4-townsize)
-	(chat-local-to-self "WAFFLE: T4 Smol Timeout. Increasing to Norm")
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	; (chat-local-to-self "WAFFLE: T4 Smol Timeout. Increasing to Norm")
 	(disable-timer t-townsize)
 
 )
@@ -1011,7 +1047,7 @@
 	(set-goal townsizetrackertwo NOBUILDINGS)
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 300) ; 5min to build them
-	(chat-local-to-self "WAFFLE: T4 TS: No bldgs. Timer on")
+	; (chat-local-to-self "WAFFLE: T4 TS: No bldgs. Timer on")
 )
 
 ; if we have them, cancel the timer
@@ -1027,7 +1063,7 @@
 =>
 	(disable-timer t-townsize)
 	(set-goal townsizetrackertwo NULL)
-	(chat-local-to-self "WAFFLE: T4 TS: Yes bldgs. Disabling timer")
+	; (chat-local-to-self "WAFFLE: T4 TS: Yes bldgs. Disabling timer")
 )
 
 ; if we don't when timer runs out, increase townsize
@@ -1056,13 +1092,13 @@
 	(set-goal townsizetrackertwo NULL)
 	
 	(set-goal townsizetracker BIG)
-	(set-strategic-number sn-sentry-distance TL4-townsize-big)
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
 	(set-strategic-number sn-maximum-town-size TL4-townsize-big)
 	
 	(disable-timer t-townsize)
 	(enable-timer t-townsize 300) ; Check for another 5min
 	
-	(chat-local-to-self "WAFFLE: T4 Town Size Big")
+	; (chat-local-to-self "WAFFLE: T4 Town Size Big")
 )
 
 ; if we STILL have no space for our buildings
@@ -1090,12 +1126,12 @@
 	(set-goal townsizetrackertwo NULL)
 	
 	(set-goal townsizetracker BIGGER)
-	(set-strategic-number sn-sentry-distance TL4-townsize-bigger)
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
 	(set-strategic-number sn-maximum-town-size TL4-townsize-bigger)
 	
 	(disable-timer t-townsize)
 	
-	(chat-local-to-self "WAFFLE: T4 Town Size Bigger")
+	; (chat-local-to-self "WAFFLE: T4 Town Size Bigger")
 )
 
 ; go big when your population gets high

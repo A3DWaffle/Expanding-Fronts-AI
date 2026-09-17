@@ -8,87 +8,279 @@
 ; =====================================================
 ;
 ;	Chapter 0: SETUP
-;	Chapter 1: T2 RESEARCH
-;	Chapter 2: T3 RESEARCH
-;	Chapter 3: T4 RESEARCH
-;	Chapter 4: CIV RESEARCH
+;	Chapter 1: GLOBAL PRIORITY
+;	Chapter 2: SHIPYARD
+;	Chapter 3: COMMAND CENTER
+;	Chapter 4: DEFENSIVE RESEARCH
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
 ; =====================================================
 
-(defrule
-	(goal openingstyle STYLE-AGRESSIVE)
-	(research-completed rt-macrobinoculars)
-	(research-completed rt-fusion-cutter)
-	(research-completed rt-irrigation)
-=>
-	(set-goal importantT2research DONE)
-	(disable-self)
-)
+; Strategy bundles keep the AI from calling an age's "important" research done
+; before the rolled combat package has its actual foundation techs.
 
 (defrule
-	(goal openingstyle STYLE-RUSH)
+	(goal combat-arm TROOP)
 	(research-completed rt-macrobinoculars)
 	(research-completed rt-primary-focus-coils)
 	(research-completed rt-basic-armor)
 =>
-	(set-goal importantT2research DONE)
+	(set-goal researchbundleT2 DONE)
 	(disable-self)
 )
 
 (defrule
-	(goal openingstyle STYLE-DEFENSIVE)
+	(goal combat-arm TROOP/HW)
+	(research-completed rt-macrobinoculars)
+	(research-completed rt-primary-focus-coils)
+	(research-completed rt-basic-armor)
 =>
-	(set-goal importantT2research DONE)
+	(set-goal researchbundleT2 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm MECH)
+	(research-completed rt-macrobinoculars)
+	(research-completed rt-primary-focus-coils)
+	(research-completed rt-light-plating)
+=>
+	(set-goal researchbundleT2 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm MECH/HW)
+	(research-completed rt-macrobinoculars)
+	(research-completed rt-primary-focus-coils)
+	(research-completed rt-light-plating)
+=>
+	(set-goal researchbundleT2 DONE)
+	(disable-self)
+)
+
+(defrule
+	(or
+		(goal support-aircraft YES)
+		(goal combat-arm SEA)
+	)
+	(research-completed rt-macrobinoculars)
+=>
+	(set-goal researchbundleT2 DONE)
 	(disable-self)
 )
 
 ; T3
 (defrule
-	(goal openingstyle STYLE-AGRESSIVE)
+	(goal combat-arm TROOP)
 	(research-completed rt-portable-scanners)
-	(research-completed rt-elevation-tracking)
-	(research-completed rt-external-sensor-pod)
-	(research-completed rt-upgraded-motivator)
-	(research-completed rt-enh-fusion-cutter)
-	(research-completed rt-harvesting)
-	(research-completed rt-tracking-computer) ; does slow down the works, but that's probably fine
+	(research-completed ut-laser-3)
+	(research-completed rt-light-armor)
 =>
-	(set-goal importantT3research DONE)
+	(set-goal researchbundleT3 DONE)
 	(disable-self)
 )
 
 (defrule
-	(goal openingstyle STYLE-DEFENSIVE)
-	(research-completed rt-upgraded-motivator)
-	(research-completed rt-elevation-tracking)
-	(research-completed rt-external-sensor-pod)
-	(research-completed rt-fusion-cutter)
-	(research-completed rt-irrigation)
-	(research-completed rt-enh-fusion-cutter)
-	(research-completed rt-harvesting)
+	(goal combat-arm TROOP/HW)
+	(research-completed rt-portable-scanners)
+	(research-completed ut-laser-3)
+	(research-completed rt-light-armor)
 =>
-	(set-goal importantT3research DONE)
+	(set-goal researchbundleT3 DONE)
 	(disable-self)
 )
 
 (defrule
-	(goal openingstyle STYLE-RUSH)
-	(not (research-available rt-primary-focus-coils))
-	(not (research-available rt-basic-armor))
+	(goal combat-arm MECH)
+	(research-completed rt-elevation-tracking)
+	(research-completed rt-external-sensor-pod)
+	(research-completed rt-medium-plating)
 =>
-	(set-goal importantT3research DONE)
+	(set-goal researchbundleT3 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm MECH/HW)
+	(research-completed rt-elevation-tracking)
+	(research-completed rt-external-sensor-pod)
+	(research-completed rt-medium-plating)
+=>
+	(set-goal researchbundleT3 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal support-aircraft YES)
+=>
+	(set-goal researchbundleT3 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm SEA)
+	(research-completed rt-upgraded-motivator)
+=>
+	(set-goal researchbundleT3 DONE)
 	(disable-self)
 )
 
 ; T4
+; Split availability-safe tech checks so bundle rules stay below the rule-size cap.
 (defrule
-	(research-completed rt-homing-sensors)
-	(research-completed rt-heavy-fusion-cutter)
-	(research-completed rt-adv-harvesting)
-	(research-completed rt-targetting-sensors)
-	(research-completed rt-optimized-motivator)
+	(current-age == tech-level-4)
+	(or
+		(research-completed ut-laser-4)
+		(not (research-available ut-laser-4))
+	)
+=>
+	(set-goal t4-laser-ready DONE)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(research-completed rt-heavy-armor)
+		(not (research-available rt-heavy-armor))
+	)
+=>
+	(set-goal t4-heavy-armor-ready DONE)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(research-completed rt-homing-sensors)
+		(not (research-available rt-homing-sensors))
+	)
+=>
+	(set-goal t4-homing-ready DONE)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(research-completed rt-heavy-plating)
+		(not (research-available rt-heavy-plating))
+	)
+=>
+	(set-goal t4-heavy-plating-ready DONE)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(research-completed rt-targetting-sensors)
+		(not (research-available rt-targetting-sensors))
+	)
+=>
+	(set-goal t4-targeting-ready DONE)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(research-completed ut-artillery-2)
+		(not (research-available ut-artillery-2))
+	)
+=>
+	(set-goal t4-artillery-ready DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm TROOP)
+	(goal t4-laser-ready DONE)
+	(goal t4-heavy-armor-ready DONE)
+	(goal t4-homing-ready DONE)
+=>
+	(set-goal researchbundleT4 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm TROOP/HW)
+	(goal t4-laser-ready DONE)
+	(goal t4-heavy-armor-ready DONE)
+	(goal t4-homing-ready DONE)
+	(goal t4-artillery-ready DONE)
+=>
+	(set-goal researchbundleT4 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm MECH)
+	(goal t4-heavy-plating-ready DONE)
+	(goal t4-targeting-ready DONE)
+=>
+	(set-goal researchbundleT4 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm MECH/HW)
+	(goal t4-heavy-plating-ready DONE)
+	(goal t4-targeting-ready DONE)
+	(goal t4-artillery-ready DONE)
+=>
+	(set-goal researchbundleT4 DONE)
+	(disable-self)
+)
+
+; Do not let one missing HW upgrade hold MECH/HW in passive TL4 forever.
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(not (goal researchbundleT4 DONE))
+	(current-age-time > 600)
+	(military-population >= 24)
+=>
+	(set-goal researchbundleT4 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal support-aircraft YES)
+	(goal t4-homing-ready DONE)
+	(goal t4-targeting-ready DONE)
+=>
+	(set-goal researchbundleT4 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm SEA)
+	(goal t4-homing-ready DONE)
+	(goal t4-targeting-ready DONE)
+=>
+	(set-goal researchbundleT4 DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal researchbundleT2 DONE)
+=>
+	(set-goal importantT2research DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal researchbundleT3 DONE)
+=>
+	(set-goal importantT3research DONE)
+	(disable-self)
+)
+
+(defrule
+	(goal researchbundleT4 DONE)
 =>
 	(set-goal importantT4research DONE)
 	(disable-self)
@@ -107,19 +299,16 @@
 	; Shield Modifications - prioritize for real air comps and air UUs
 	(can-research-with-escrow rt-shield-mods)
 	(or
-		(goal combat-arm AIR)
+		(goal support-aircraft YES)
 		(or
 			(goal support-aircraft YES)
 			(or
-				(goal support-aircraft YES)
+				(unit-type-count-total UNIT-AIRSPEEDER-LINE > 0)
 				(or
-					(unit-type-count-total UNIT-AIRSPEEDER-LINE > 0)
+					(unit-type-count-total UNIT-GEOFLYR-LINE > 0)
 					(or
-						(unit-type-count-total UNIT-GEOFLYR-LINE > 0)
-						(or
-							(unit-type-count-total UNIT-VWING-LINE > 0)
-							(unit-type-count-total UNIT-JEDIFGT-LINE > 0)
-						)
+						(unit-type-count-total UNIT-VWING-LINE > 0)
+						(unit-type-count-total UNIT-JEDIFGT-LINE > 0)
 					)
 				)
 			)
@@ -129,6 +318,174 @@
 	(release-escrow food)
 	(release-escrow nova)
 	(research rt-shield-mods)
+)
+
+(defrule
+	; Bundle priority: troop arms want TL2 damage online.
+	(current-age >= tech-level-2)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal combat-arm MECH)
+				(goal combat-arm MECH/HW)
+			)
+		)
+	)
+	(can-research rt-primary-focus-coils)
+=>
+	(research rt-primary-focus-coils)
+)
+
+(defrule
+	; Bundle priority: troop arms want TL2 armor online.
+	(current-age >= tech-level-2)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(can-research-with-escrow rt-basic-armor)
+=>
+	(release-escrow food)
+	(research rt-basic-armor)
+)
+
+(defrule
+	; Bundle priority: mech arms want TL2 plating online.
+	(current-age >= tech-level-2)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(can-research-with-escrow rt-light-plating)
+=>
+	(release-escrow food)
+	(research rt-light-plating)
+)
+
+(defrule
+	; Bundle priority: troop arms need TL3 range.
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(can-research-with-escrow rt-portable-scanners)
+=>
+	(release-escrow food)
+	(research rt-portable-scanners)
+)
+
+(defrule
+	; Bundle priority: troop arms commit to heavy troopers.
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(can-research-with-escrow ut-laser-3)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research ut-laser-3)
+)
+
+(defrule
+	; Bundle priority: troop arms want TL3 armor.
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(can-research-with-escrow rt-light-armor)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-light-armor)
+)
+
+(defrule
+	; Bundle priority: mech arms want range before expanding into side techs.
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(can-research-with-escrow rt-elevation-tracking)
+=>
+	(release-escrow food)
+	(research rt-elevation-tracking)
+)
+
+(defrule
+	; Bundle priority: mech arms want TL3 follow-up range.
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(can-research-with-escrow rt-external-sensor-pod)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-external-sensor-pod)
+)
+
+(defrule
+	; Bundle priority: mech arms want TL3 plating.
+	(current-age >= tech-level-3)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(can-research-with-escrow rt-medium-plating)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-medium-plating)
+)
+
+(defrule
+	; Bundle priority: troop arms finish their TL4 unit upgrade.
+	(current-age >= tech-level-4)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(can-research-with-escrow ut-laser-4)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research ut-laser-4)
+)
+
+(defrule
+	; Bundle priority: troop arms finish their TL4 armor.
+	(current-age >= tech-level-4)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(can-research-with-escrow rt-heavy-armor)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-heavy-armor)
+)
+
+(defrule
+	; Bundle priority: mech arms finish their TL4 plating.
+	(current-age >= tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(can-research-with-escrow rt-heavy-plating)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-heavy-plating)
 )
 
 (defrule
@@ -150,6 +507,11 @@
 
 (defrule
     ; Adv Missile Turret
+	(current-age >= tech-level-4)
+	(or
+		(goal enemyT4airsighted YES)
+		(current-age-time >= 300)
+	)
     (can-research-with-escrow ut-adv-missile-turret) ; important tech
 =>
 	(release-escrow carbon)
@@ -157,139 +519,9 @@
     (research ut-adv-missile-turret)
 )
 
-;=============================
-; *** Chapter 2: SPACEPORT ***
-;=============================
-
-(defrule
-	; Holonet Transceiver
-	(current-age >= tech-level-2)
-	(player-in-game any-ally)
-	(research-completed rt-upgraded-motivator)
-	(can-research-with-escrow rt-holonet)
-=>
-	(release-escrow nova)
-	(research rt-holonet)
-)
-
-(defrule
-	; Hutt Endorsement
-	(can-research-with-escrow rt-hutt-endorsement)
-	(goal importantT3research DONE)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-hutt-endorsement)
-)
-
-(defrule
-	; Galactic Banking
-	(can-research-with-escrow rt-galactic-banking)
-	(goal importantT4research DONE)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-galactic-banking)
-)
-
-(defrule
-	; Galactic Trade Commission
-	(current-age >= tech-level-4)
-	(can-research-with-escrow rt-galactic-trade-comm)
-=>      
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-galactic-trade-comm)
-)
-
-(defrule
-	; TF Neimoidian Endorsement
-	(current-age >= tech-level-2)
-	(can-research-with-escrow rt-neimoidian-endorse)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-neimoidian-endorse)
-)
-
-(defrule
-	; TF Insider Trading
-	(current-age >= tech-level-3)
-	(can-research-with-escrow rt-insider-trading)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-insider-trading)
-)
-
-(defrule
-	; TF Market Control
-	(current-age >= tech-level-4)
-	(can-research-with-escrow rt-market-control)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-market-control)
-)
-
-(defrule
-	; GE Altered Bargains
-	(current-age >= tech-level-4)
-	(can-research-with-escrow rt-altered-bargains)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-altered-bargains)
-)
-
-(defrule
-	; CF Confederacy Alliance
-	(current-age >= tech-level-4)
-	(can-research-with-escrow rt-confalli)
-	(player-in-game any-ally)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-confalli)
-)
-
-(defrule
-	; ZC Piracy
-	(current-age >= tech-level-3)
-	(can-research-with-escrow rt-piracy)
-	(player-in-game any-ally)
-	(goal importantT3research DONE)
-=>
-	(release-escrow carbon)
-	(release-escrow nova)
-	(research rt-piracy)
-)
-
-(defrule        
-	; RS Supply Lines
-	(current-age >= tech-level-3)
-	(can-research-with-escrow rt-supplylines)
-	(player-in-game any-ally)
-=>
-	(release-escrow metal)
-	(release-escrow nova)
-	(research rt-supplylines)
-)
-
-(defrule
-	; BS Cloaked Smuggling
-	(current-age == tech-level-4)
-	(can-research-with-escrow rt-cloakedsmug)
-	(player-in-game any-ally) 
-	(goal importantT4research DONE)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-cloakedsmug)
-)
 
 ;==============================
-; *** Chapter 3: SHIPYARD ***
+; *** Chapter 2: SHIPYARD ***
 ;==============================
 
 (defrule
@@ -336,7 +568,7 @@
 )
 
 ; -----------------------------------------------------
-; *** Chapter 4: COMMAND CENTER
+; *** Chapter 3: COMMAND CENTER
 ; -----------------------------------------------------
 
 ; Motivators & basic training moved to homebase due to file load issues
@@ -401,7 +633,7 @@
 )
 
 ; -----------------------------------------------------
-; *** Chapter 5: DEFENSIVE RESEARCH *** 
+; *** Chapter 4: DEFENSIVE RESEARCH *** 
 ; -----------------------------------------------------
 ; TURRETS, WALLS, ALL THOSE FUN THINGS
 ; All Yittreas approved structures, of course.
@@ -513,4 +745,3 @@
 	(release-escrow metal)
 	(research rt-pwrcshld)
 )
-

@@ -16,7 +16,7 @@
 ; =====================================================
 
 (defrule
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
         =>
         (set-strategic-number sn-total-number-explorers 4)
 		(set-strategic-number sn-percentage-explore-exterminators 100)
@@ -28,22 +28,26 @@
 )
 
 (defrule
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
+		(not (goal supplement-scenario-setup DONE))
 		=>
 		(set-strategic-number sn-initial-attack-delay 30)
 		(set-strategic-number sn-initial-attack-delay-type 2)
+		(set-goal supplement-scenario-setup DONE)
 )
 
 (defrule
 		(player-in-game any-neutral)
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
+		(not (goal supplement-neutral-stance DONE))
 		=>
 		(set-stance this-any-neutral enemy)
+		(set-goal supplement-neutral-stance DONE)
 )
 
 (defrule
 		(timer-triggered t-nerfs)
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
         (military-population > 0)
 		=>
 		(attack-now)
@@ -52,7 +56,7 @@
 )
 
 (defrule
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
 		(nova-amount < 30)
         (unit-type-count UNIT-LASER-LINE < 25)
         (can-train UNIT-LASER-LINE)
@@ -63,15 +67,15 @@
 #load-if-defined REPUBLIC
 
 (defrule
-		(building-type-count-total 3111 > 0)
-        (cc-players-building-type-count any-enemy 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
+        (cc-players-building-type-count any-enemy OBJ-SUPPLEMENT-SCENARIO > 0)
         (can-train 1955)
         =>
         (train 1955)
 )
 
 (defrule
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
         (cc-players-unit-type-count any-enemy UNIT-LASER-LINE > 0)
         (can-train 1995)
         =>
@@ -79,7 +83,7 @@
 )
 
 (defrule
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
         (cc-players-unit-type-count any-enemy UNIT-BXCMD-2 > 0)
         (can-train 2382TROOPER)
         =>
@@ -87,7 +91,7 @@
 )
 
 (defrule
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
         (cc-players-unit-type-count any-enemy UNIT-DESTDROID2 > 0)
         (can-train 1856)
         =>
@@ -100,15 +104,15 @@
 #load-if-defined CONFEDERACY
 
 (defrule
-		(building-type-count-total 3111 > 0)
-        (cc-players-building-type-count any-enemy 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
+        (cc-players-building-type-count any-enemy OBJ-SUPPLEMENT-SCENARIO > 0)
         (can-train 4097)
         =>
         (train 4097)
 )
 
 (defrule
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
         (cc-players-unit-type-count any-enemy UNIT-LASER-LINE > 0)
         (can-train UNIT-BXCMD-2)
         =>
@@ -116,7 +120,7 @@
 )
 
 (defrule
-		(building-type-count-total 3111 > 0)
+		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
         (cc-players-unit-type-count any-enemy 1995 > 0)
         (can-train UNIT-DESTDROID2)
         =>
@@ -154,6 +158,5 @@
 =>
 	(research nt-power-convert)
 )
-
 
 

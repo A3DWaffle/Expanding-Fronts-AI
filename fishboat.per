@@ -8,10 +8,20 @@
 ; =====================================================
 ;
 ;	Chapter 0: SETUP
-;	Chapter 1: LOGIC
+;	Chapter 1: ADVANCED INFANTRY CENTER DETECTION
+;	Chapter 2: BUILDINGS
+;	Chapter 3: UNITS
+;	Chapter 4: RESEARCH
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
+; =====================================================
+
+; This legacy file now owns Advanced Infantry Center support.
+; Fishing boat and naval logic live in shipyard.
+
+; =====================================================
+; *** Chapter 1: ADVANCED INFANTRY CENTER DETECTION ***
 ; =====================================================
 
 (defrule
@@ -46,16 +56,17 @@
 	(disable-self)
 )
 
-; / --------------------- \
-; | ----- BUILDINGS ----- |
-; \ --------------------- /
+; =====================================================
+; *** Chapter 2: BUILDINGS ***
+; =====================================================
 
-; one to get you started 
+; One to get started.
 (defrule
 	(goal advinfcen YES)
 	(building-type-count-total BLDG-MAIN > 0)
 	(can-build-with-escrow BLDG-ADVRANGE2)
 	(building-type-count-total BLDG-ADVRANGE2 == 0)
+	(goal buildpause NO)
 =>
 	(release-escrow carbon)
 	(build BLDG-ADVRANGE2)
@@ -72,13 +83,14 @@
 			(civ-selected GUNGANS)
 			(or
 				(civ-selected RESISTANCE)
-				(civ-selected NEWREPUBLIC) ; these civs have no adv inf centre units
+				(civ-selected NEWREPUBLIC)
 			)
 		)
 	)
 	(building-type-count-total BLDG-MAIN > 0)
 	(can-build-with-escrow BLDG-ADVRANGE2)
 	(building-type-count-total BLDG-ADVRANGE2 < 2) 
+	(goal buildpause NO)
 =>
 	(release-escrow carbon)
 	(build BLDG-ADVRANGE2)
@@ -94,6 +106,7 @@
 		(civ-selected EMPIRE)
 	)
 	(can-build-with-escrow BLDG-ADVRANGE2)
+	(goal buildpause NO)
 =>
 	(release-escrow carbon)
 	(build BLDG-ADVRANGE2)
@@ -115,93 +128,79 @@
 		)
 	)
 	(can-build-with-escrow BLDG-ADVRANGE2)
+	(goal buildpause NO)
 =>
 	(release-escrow carbon)
 	(build BLDG-ADVRANGE2)
 )
 
 
+; =====================================================
+; *** Chapter 3: UNITS ***
+; =====================================================
 
-
-
-; / --------------------- \
-; | ------- UNITS ------- |
-; \ --------------------- /
-
-; TROOPER LINE REPLACEMENTS
+; Trooper-line replacements.
 
 (defrule
-		(goal advinfcen YES)
-		(current-age == tech-level-1)
-        (unit-type-count ADV-TROOPER-LINE < TL1-trooper-core)
-        (can-train ADV-TROOPER-LINE)
-		(or
-			(civ-selected GEONOSIANS)
-			(civ-selected CONFEDERACY)
-		)
-        =>
-        (train ADV-TROOPER-LINE)
+	(goal advinfcen YES)
+	(current-age == tech-level-1)
+	(unit-type-count ADV-TROOPER-LINE < TL1-trooper-core)
+	(can-train ADV-TROOPER-LINE)
+	(or
+		(civ-selected GEONOSIANS)
+		(civ-selected CONFEDERACY)
+	)
+=>
+	(train ADV-TROOPER-LINE)
 )
 
 (defrule
-		(goal advinfcen YES)
-		(current-age == tech-level-2)
-        (unit-type-count ADV-TROOPER-LINE < TL2-trooper-core)
-        (can-train ADV-TROOPER-LINE)
-		(research-completed ut-laser-2) ; allow training more once these research are complete
-		(research-completed rt-macrobinoculars)
-		(or
-			(civ-selected GEONOSIANS)
-			(civ-selected CONFEDERACY)
-		)
-        =>
-        (train ADV-TROOPER-LINE)
+	(goal advinfcen YES)
+	(current-age == tech-level-2)
+	(unit-type-count ADV-TROOPER-LINE < TL2-trooper-core)
+	(can-train ADV-TROOPER-LINE)
+	(research-completed ut-laser-2)
+	(research-completed rt-macrobinoculars)
+	(or
+		(civ-selected GEONOSIANS)
+		(civ-selected CONFEDERACY)
+	)
+=>
+	(train ADV-TROOPER-LINE)
 )
 
-; using water constants so as to not spam too many of them
+; Use the smaller water constants so this helper package stays capped.
 (defrule
-		(goal advinfcen YES)
-		(current-age == tech-level-3)
-        (unit-type-count ADV-TROOPER-LINE < TL3-trooper-core-water)
-        (can-train ADV-TROOPER-LINE)
-		(or
-			(civ-selected GEONOSIANS)
-			(civ-selected CONFEDERACY)
-		)
-        =>
-        (train ADV-TROOPER-LINE)
+	(goal advinfcen YES)
+	(current-age == tech-level-3)
+	(unit-type-count ADV-TROOPER-LINE < TL3-trooper-core-water)
+	(can-train ADV-TROOPER-LINE)
+	(or
+		(civ-selected GEONOSIANS)
+		(civ-selected CONFEDERACY)
+	)
+=>
+	(train ADV-TROOPER-LINE)
 )
 
 (defrule
-		(goal advinfcen YES)
-		(current-age == tech-level-4)
-        (unit-type-count ADV-TROOPER-LINE < TL4-trooper-arm-water)
-        (can-train ADV-TROOPER-LINE)
-		(or
-			(civ-selected GEONOSIANS)
-			(civ-selected CONFEDERACY)
-		)
-        =>
-        (train ADV-TROOPER-LINE)
+	(goal advinfcen YES)
+	(current-age == tech-level-4)
+	(unit-type-count ADV-TROOPER-LINE < TL4-trooper-arm-water)
+	(can-train ADV-TROOPER-LINE)
+	(or
+		(civ-selected GEONOSIANS)
+		(civ-selected CONFEDERACY)
+	)
+=>
+	(train ADV-TROOPER-LINE)
 )
 
-; random junk-unit training removed from the Advanced Infantry Center
+; =====================================================
+; *** Chapter 4: RESEARCH ***
+; =====================================================
 
-
-
-
-
-
-
-
-; / --------------------- \
-; | ------ RESEARCH ----- |
-; \ --------------------- /
-
-
-
-; TROOPER LINE REPLACEMENTS
-
+; Trooper-line replacements.
 
 (defrule
 	(goal advinfcen YES)
@@ -263,7 +262,7 @@
 	(disable-self)
 )
 
-; GEONOSIAN BRAINWORMS
+; Geonosian Brain Worms.
 
 (defrule
 	(civ-selected GEONOSIANS)
@@ -274,7 +273,7 @@
 	(research rt-brainworms)
 )
 
-; OTHER RANDOM TECHS
+; Other Advanced Infantry Center techs.
 
 (defrule
 	(goal advinfcen YES)
@@ -329,7 +328,3 @@
 	(release-escrow nova)
 	(research aic-adv-melee-2)
 )
-
-
-
-

@@ -10,11 +10,16 @@
 ;	Chapter 0: SETUP
 ;	Chapter 1: BUILDINGS
 ;	Chapter 2: UPGRADES
-;	Chapter 3: TL3 SIEGE
-;	Chapter 4: TL4 SIEGE
+;	Chapter 3: AIR-ALERT AA MOBILE
+;	Chapter 4: TL3 SIEGE AND TL4 RAMS
+;	Chapter 5: TL4 ARTILLERY
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
+; =====================================================
+
+; =====================================================
+; *** Chapter 1: BUILDINGS ***
 ; =====================================================
 
 (defrule
@@ -28,6 +33,7 @@
 	(can-build-with-escrow BLDG-TRAINHEAVY)
 	(metal-amount > 25)
 	(not (goal tryingtobuild HVYWEAP))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild HVYWEAP)
@@ -35,7 +41,7 @@
 
 (defrule
 	(current-age == tech-level-3)
-	(goal openingstyle STYLE-AGRESSIVE)
+	(goal openingstyle STYLE-AGGRESSIVE)
 	(building-type-count-total BLDG-MAIN > 2)
 	(building-type-count-total BLDG-TRAINMECH >= 1)
 	(building-type-count-total BLDG-SPACEPORT >= 1)
@@ -44,6 +50,7 @@
 	(can-build-with-escrow BLDG-TRAINHEAVY)
 	(metal-amount > 25)
 	(not (goal tryingtobuild HVYWEAP))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild HVYWEAP)
@@ -61,6 +68,7 @@
 	(can-build-with-escrow BLDG-TRAINHEAVY)
 	(metal-amount > 25)
 	(not (goal tryingtobuild HVYWEAP))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild HVYWEAP)
@@ -73,6 +81,27 @@
 	(can-build-with-escrow BLDG-TRAINHEAVY)
 	(metal-amount > 25)
 	(not (goal tryingtobuild HVYWEAP))
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+=>
+	(set-goal tryingtobuild HVYWEAP)
+)
+
+; TL3 post-spine Heavy Weapons scaling.
+(defrule
+	(current-age == tech-level-3)
+	(building-type-count-total BLDG-TRAINHEAVY < 2)
+	(building-type-count-total BLDG-TRAINHEAVY >= 1)
+	(building-type-count-total BLDG-TRAINMECH >= 1)
+	(building-type-count-total BLDG-SPACEPORT >= 1)
+	(building-type-count-total BLDG-WARCTR >= 1)
+	(building-type-count-total BLDG-MAIN >= 2)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-TRAINHEAVY)
+	(carbon-amount > 600)
+	(metal-amount > 50)
+	(not (goal tryingtobuild HVYWEAP))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild HVYWEAP)
@@ -82,12 +111,9 @@
 	(current-age >= tech-level-4)
 	(or
 		(goal combat-arm TROOP/HW)
-		(or 
+		(or
 			(goal support-artillery YES)
-			(or
-		 		(goal support-artillery YES)
-				(goal combat-arm MECH/HW)
-			)
+			(goal combat-arm MECH/HW)
 		)
 	)
 	(building-type-count-total BLDG-TRAINHEAVY < 3)
@@ -95,6 +121,7 @@
 	(can-build-with-escrow BLDG-TRAINHEAVY)
 	(metal-amount > 25)
 	(not (goal tryingtobuild HVYWEAP))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild HVYWEAP)
@@ -108,6 +135,7 @@
 	(can-build-with-escrow BLDG-TRAINHEAVY)
 	(metal-amount > 25)
 	(not (goal tryingtobuild HVYWEAP))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild HVYWEAP)
@@ -121,13 +149,41 @@
 	(can-build-with-escrow BLDG-TRAINHEAVY)
 	(metal-amount > 25)
 	(not (goal tryingtobuild HVYWEAP))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild HVYWEAP)
 )
 
+; Rich TL4 forward heavy-weapon scaling for artillery or anti-air-heavy games.
+(defrule
+	(current-age >= tech-level-4)
+	(or
+		(goal combat-arm TROOP/HW)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-artillery YES)
+		)
+	)
+	(building-type-count-total BLDG-TRAINHEAVY >= 3)
+	(building-type-count-total BLDG-TRAINHEAVY < 5)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(carbon-amount > 2500)
+	(food-amount > 1000)
+	(nova-amount > 500)
+	(metal-amount > 300)
+	(military-population >= MIL_POP_B)
+	(can-build-with-escrow BLDG-TRAINHEAVY)
+	(not (goal tryingtobuild HVYWEAP))
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+=>
+	(release-escrow carbon)
+	(build-forward BLDG-TRAINHEAVY)
+)
+
 ; =====================================================
-; CHAPTER 2: UPGRADES
+; *** Chapter 2: UPGRADES ***
 ; =====================================================
 
 ; --- Heavy Artillery ---
@@ -148,19 +204,14 @@
 )
 
 ; --- Heavy Ram ---
-(defrule
-	(can-research-with-escrow ut-ram-2)
-	(goal openingstyle STYLE-RUSH)
-	(goal importantT4research DONE)
-=>
-	(release-escrow carbon)
-	(release-escrow nova)
-	(research ut-ram-2)
-)
+; Temporarily disabled: pummels are not worth the current AI resource/time cost.
 
 ; --- Heavy AA Mobile ---
 (defrule
+	(current-age >= tech-level-4)
 	(can-research-with-escrow ut-missile-launcher-2)
+	(not (goal support-aircraft YES))
+	(not (goal enemyairsighted AIR-ALERT-NONE))
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -169,7 +220,11 @@
 
 (defrule
     ; Anti-Air Retrofit
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-aaretrofit)
+	(not (goal support-aircraft YES))
+	(not (goal enemyairsighted AIR-ALERT-NONE))
+	(goal importantT4research DONE)
 =>
 	(release-escrow metal)
 	(release-escrow carbon)
@@ -178,7 +233,16 @@
 
 (defrule
 	; Strengthened Frame
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-strengthened-frames)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP/HW)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-artillery YES)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -187,7 +251,16 @@
 
 (defrule
 	; Reinforced Frame
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-reinforced-frames)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP/HW)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-artillery YES)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -196,7 +269,16 @@
 
 (defrule
 	; Mechanics
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-rebel-mechanics)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP/HW)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-artillery YES)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow metal)
@@ -205,7 +287,16 @@
 
 (defrule
 	; GN Creature Training
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-creature-training)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP/HW)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-artillery YES)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -214,7 +305,16 @@
 
 (defrule
 	; WK Forest Vision
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-forest-vision)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP/HW)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-artillery YES)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -223,7 +323,16 @@
 
 (defrule
 	; GO Geonosian Engineers
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-geoengnr)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP/HW)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-artillery YES)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -232,7 +341,16 @@
 
 (defrule
 	; GO Hailfire Rocket Pods
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-hailfire-missiles)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP/HW)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-artillery YES)
+		)
+	)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -240,131 +358,434 @@
 )
 
 ; =====================================================
-; CHAPTER 3: AIR-ALERT AA MOBILE
+; *** Chapter 3: AIR-ALERT AA MOBILE ***
 ; =====================================================
+
+; --- Core AA Mobile p1 ---
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1-water)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1-asteroid)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1-hybrid)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
 
 ; --- TL3 AA Mobile air-alert low ---
 (defrule
 	(current-age == tech-level-3)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-low-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-low-p1-water)
-		)
-	)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-low-p1)
 	(goal enemyairsighted AIR-ALERT-LOW)
+	(military-population >= MIL_POP_A)
 	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
 =>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-low-p1)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-low-p1)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-low-p1)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
 	(train SIEGE-MISSILE-LINE)
 )
 
 ; --- TL3 AA Mobile air-alert guard ---
 (defrule
 	(current-age == tech-level-3)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-guard-p2)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-guard-p2-water)
-		)
-	)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-guard-p2)
 	(goal enemyairsighted AIR-ALERT-GUARD)
+	(military-population >= MIL_POP_A)
 	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
 =>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-guard-p2)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-guard-p2)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-guard-p2)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
 	(train SIEGE-MISSILE-LINE)
 )
 
 ; --- TL3 AA Mobile air-alert danger ---
 (defrule
 	(current-age == tech-level-3)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-danger-p3)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-danger-p3-water)
-		)
-	)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-danger-p3)
 	(goal enemyairsighted AIR-ALERT-DANGER)
+	(military-population >= MIL_POP_A)
 	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
 =>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-danger-p3)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-danger-p3)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL3-aa-mobile-detect-air-alert-danger-p3)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
 	(train SIEGE-MISSILE-LINE)
 )
 
 ; --- TL4 AA Mobile air-alert low ---
 (defrule
 	(current-age == tech-level-4)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1-water)
-		)
-	)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1)
 	(goal enemyairsighted AIR-ALERT-LOW)
+	(military-population >= MIL_POP_A)
 	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
 =>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1-water)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1-asteroid)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1-hybrid)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
 	(train SIEGE-MISSILE-LINE)
 )
 
 ; --- TL4 AA Mobile air-alert guard ---
 (defrule
 	(current-age == tech-level-4)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-guard-p2)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-guard-p2-water)
-		)
-	)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-guard-p2)
 	(goal enemyairsighted AIR-ALERT-GUARD)
+	(military-population >= MIL_POP_A)
 	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
 =>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-guard-p2-water)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-guard-p2-asteroid)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-guard-p2-hybrid)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
 	(train SIEGE-MISSILE-LINE)
 )
 
 ; --- TL4 AA Mobile air-alert danger ---
 (defrule
 	(current-age == tech-level-4)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-danger-p3)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-danger-p3-water)
-		)
-	)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-danger-p3)
 	(goal enemyairsighted AIR-ALERT-DANGER)
+	(military-population >= MIL_POP_A)
 	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
 =>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-danger-p3-water)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-danger-p3-asteroid)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-MISSILE-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-danger-p3-hybrid)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(military-population >= MIL_POP_A)
+	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
 	(train SIEGE-MISSILE-LINE)
 )
 
 ; =====================================================
-; CHAPTER 4: TECH 3 SIEGE PACKAGES
+; *** Chapter 4: TL3 SIEGE AND TL4 RAMS ***
 ; =====================================================
 
 ; -----------------------
@@ -373,16 +794,23 @@
 
 (defrule
 	(current-age == tech-level-3)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-	(goal openingstyle STYLE-AGRESSIVE)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL3-artillery-core)
 	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL3-artillery-core)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL3-artillery-core-water)
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL3-aa-mobile-detect-air-alert-low-p1)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL3-aa-mobile-detect-air-alert-low-p1)
+				)
+			)
 		)
 	)
 	(can-train SIEGE-ARTILLERY-LINE)
@@ -390,105 +818,113 @@
 	(train SIEGE-ARTILLERY-LINE)
 )
 
+(defrule
+	(current-age == tech-level-3)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL3-artillery-core-water)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL3-aa-mobile-detect-air-alert-low-p1)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL3-aa-mobile-detect-air-alert-low-p1)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL3-artillery-core-asteroid)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL3-aa-mobile-detect-air-alert-low-p1)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL3-aa-mobile-detect-air-alert-low-p1)
+				)
+			)
+		)
+	)
+	(can-train-with-escrow SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL3-artillery-core-hybrid)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL3-aa-mobile-detect-air-alert-low-p1)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL3-aa-mobile-detect-air-alert-low-p1)
+				)
+			)
+		)
+	)
+	(can-train-with-escrow SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+	(train SIEGE-ARTILLERY-LINE)
+)
+
 ; -----------------------
 ; RAMS
 ; -----------------------
 
-; --- TL3 Ram p1 ---
-(defrule
-	(current-age == tech-level-3)
-	(goal openingstyle STYLE-RUSH)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-RAM-LINE < TL3-ram-core-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-RAM-LINE < TL3-ram-core-p1-water)
-		)
-	)
-	(can-train SIEGE-RAM-LINE)
-=>
-	(train SIEGE-RAM-LINE)
-)
-
-; --- TL3 Ram p2 ---
-(defrule
-	(current-age == tech-level-3)
-	(goal openingstyle STYLE-RUSH)
-	(goal importantT3research DONE)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-RAM-LINE < TL3-ram-core-p2)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-RAM-LINE < TL3-ram-core-p2-water)
-		)
-	)
-	(can-train SIEGE-RAM-LINE)
-=>
-	(train SIEGE-RAM-LINE)
-)
-
-; --- TL4 MECH Ram p1 ---
-(defrule
-	(current-age == tech-level-4)
-	(goal combat-arm MECH)
-	(goal importantT4research DONE)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
-				(unit-type-count-total SIEGE-RAM-LINE < TL4-ram-arm-p1)
-			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
-				(unit-type-count-total SIEGE-RAM-LINE < TL4-ram-arm-p1-water)
-			)
-		)
-	)
-	(can-train SIEGE-RAM-LINE)
-=>
-	(train SIEGE-RAM-LINE)
-)
-
-(defrule
-	(current-age == tech-level-4)
-	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH4-LINE >= TL4-mech4-supp-p1)
-				(unit-type-count-total SIEGE-RAM-LINE < TL4-ram-arm-p1)
-			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH4-LINE >= TL4-mech4-supp-p1-water)
-				(unit-type-count-total SIEGE-RAM-LINE < TL4-ram-arm-p1-water)
-			)
-		)
-	)
-	(can-train SIEGE-RAM-LINE)
-=>
-	(train SIEGE-RAM-LINE)
-)
+; Temporarily disabled: pummels are wasting production time and resources.
 
 ; =====================================================
-; CHAPTER 5: TECH 4 ARTILLERY PACKAGES
+; *** Chapter 5: TL4 ARTILLERY ***
 ; =====================================================
+
+; Keep MECH/HW artillery from sitting behind TL4 escrow without bloating the
+; already-large map/air-alert training rules.
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(can-train-with-escrow SIEGE-ARTILLERY-LINE)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(release-escrow metal)
+)
 
 ; --- Core Artillery p1 ---
 (defrule
@@ -497,17 +933,115 @@
 		(goal combat-arm MECH/HW)
 		(goal combat-arm TROOP/HW)
 	)
+	(goal special-map LAND)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p1)
 	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p1-water)
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
 		)
 	)
 	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH/HW)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p1-water)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(or
+	(goal combat-arm MECH/HW)
+	(goal combat-arm TROOP/HW)
+	)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p1-asteroid)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(or
+	(goal combat-arm MECH/HW)
+	(goal combat-arm TROOP/HW)
+	)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p1-hybrid)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
 =>
 	(train SIEGE-ARTILLERY-LINE)
 )
@@ -516,19 +1050,175 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm MECH/HW)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p1)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p1)
+			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2)
+			)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
 			)
 		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p1-water)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2-water)
+	)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p1-asteroid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2-asteroid)
+	)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p1-hybrid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2-hybrid)
+	)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP/HW)
+	(goal importantT4research DONE)
+		(goal special-map LAND)
 		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p1-water)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2-water)
+			(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1)
+			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2)
+			)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP/HW)
+	(goal importantT4research DONE)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-water)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2-water)
+	)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
 			)
 		)
 	)
@@ -541,23 +1231,60 @@
 	(current-age == tech-level-4)
 	(goal combat-arm TROOP/HW)
 	(goal importantT4research DONE)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-asteroid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2-asteroid)
+	)
 	(or
-		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2)
-			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-water)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2-water)
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
 			)
 		)
 	)
 	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP/HW)
+	(goal importantT4research DONE)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-hybrid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p2-hybrid)
+	)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
 =>
 	(train SIEGE-ARTILLERY-LINE)
 )
@@ -566,23 +1293,182 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm MECH/HW)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
+			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3-water)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
 			)
 		)
 	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3-water)
+	)
 	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-asteroid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3-asteroid)
+	)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-hybrid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3-hybrid)
+	)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP/HW)
+		(goal special-map LAND)
+		(and
+			(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2)
+			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3)
+			)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP/HW)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-water)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3-water)
+	)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
 	(can-train SIEGE-ARTILLERY-LINE)
 =>
 	(train SIEGE-ARTILLERY-LINE)
@@ -591,24 +1477,61 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm TROOP/HW)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-asteroid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3-asteroid)
+	)
+	(goal importantT4research DONE)
 	(or
-		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3)
-			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-water)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3-water)
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
 			)
 		)
 	)
-	(goal importantT4research DONE)
 	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP/HW)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-hybrid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p3-hybrid)
+	)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
 =>
 	(train SIEGE-ARTILLERY-LINE)
 )
@@ -617,23 +1540,182 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm MECH/HW)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p3)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p3)
+			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p3-water)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4-water)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
 			)
 		)
 	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p3-water)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4-water)
+	)
 	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p3-asteroid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4-asteroid)
+	)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p3-hybrid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4-hybrid)
+	)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP/HW)
+		(goal special-map LAND)
+		(and
+			(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3)
+			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4)
+			)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP/HW)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-water)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4-water)
+	)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
 	(can-train SIEGE-ARTILLERY-LINE)
 =>
 	(train SIEGE-ARTILLERY-LINE)
@@ -642,24 +1724,61 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm TROOP/HW)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-asteroid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4-asteroid)
+	)
+	(goal importantT4research DONE)
 	(or
-		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4)
-			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-water)
-				(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4-water)
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
 			)
 		)
 	)
-	(goal importantT4research DONE)
 	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP/HW)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-hybrid)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-arm-p4-hybrid)
+	)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
 =>
 	(train SIEGE-ARTILLERY-LINE)
 )
@@ -668,17 +1787,53 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal support-artillery YES)
+		(goal special-map LAND)
+		(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p1)
+	(goal importantT4research DONE)
 	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p1-water)
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
 		)
 	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-artillery YES)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p1-water)
 	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
 	(can-train SIEGE-ARTILLERY-LINE)
 =>
 	(train SIEGE-ARTILLERY-LINE)
@@ -687,17 +1842,109 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal support-artillery YES)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p1-asteroid)
+	(goal importantT4research DONE)
 	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p2)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p2-water)
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
 		)
 	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-artillery YES)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p1-hybrid)
 	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-artillery YES)
+		(goal special-map LAND)
+		(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p2)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-artillery YES)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p2-water)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
 	(can-train SIEGE-ARTILLERY-LINE)
 =>
 	(train SIEGE-ARTILLERY-LINE)
@@ -706,19 +1953,166 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal support-artillery YES)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p2-asteroid)
+	(goal importantT4research DONE)
 	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p3)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p3-water)
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
 		)
 	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-artillery YES)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p2-hybrid)
 	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-artillery YES)
+		(goal special-map LAND)
+		(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p3)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-artillery YES)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p3-water)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
 	(can-train SIEGE-ARTILLERY-LINE)
 =>
 	(train SIEGE-ARTILLERY-LINE)
 )
 
+(defrule
+	(current-age == tech-level-4)
+	(goal support-artillery YES)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p3-asteroid)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal support-artillery YES)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-artillery-supp-p3-hybrid)
+	(goal importantT4research DONE)
+	(or
+		(goal enemyairsighted AIR-ALERT-NONE)
+		(or
+			(goal enemyairsighted AIR-ALERT-LOW)
+			(or
+				(and
+					(goal enemyairsighted AIR-ALERT-GUARD)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-guard-p2)
+				)
+				(and
+					(goal enemyairsighted AIR-ALERT-DANGER)
+					(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-danger-p3)
+				)
+			)
+		)
+	)
+	(can-train SIEGE-ARTILLERY-LINE)
+	(not (goal special-map WATER))
+=>
+	(train SIEGE-ARTILLERY-LINE)
+)

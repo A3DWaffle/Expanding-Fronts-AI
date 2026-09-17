@@ -1,7 +1,9 @@
 ; =====================================================
 ; FILE: randomgame
 ; PURPOSE:
-;   Main random-map loader for the Computer Prototype AI.
+;   Main loader for random-map and monument special-mode AI modules.
+;   Prototype source loads files from /Computer Prototype; the packaged
+;   gamedata_x2 copy uses bare load names.
 ;
 ; =====================================================
 ; *** Table of Contents *** 
@@ -18,22 +20,24 @@
 (defrule
 	(true)
 =>
-	(chat-to-player every-computer "147") ; for CE cheat detection. You can stay in one more patch, as a treat
+	(chat-to-player every-computer "147") ; legacy CE compatibility ping used by other computer players
 	(disable-self)
 )
 
-; ALWAYS LOAD:
+; ALWAYS LOAD: shared constants, population targets, map/resource detection,
+; and building-count goals used by every randomgame branch.
 
-(load "/Computer Prototype/constants")				; main file
-(load "/Computer Prototype/population")     		; old eco numbers
-(load "/Computer Prototype/military-population")	; easy/easiest package constants
-(load "/Computer Prototype/military-population-hard") ; unit numbers
-(load "/Computer Prototype/map-loads") 				; map detection, including asteroid and fish checks
-(load "/Computer Prototype/building-count")   		; CC amount and some build logic
+(load "/Computer Prototype/constants")				; shared constants, aliases, timers, alerts, and detection helpers
+(load "/Computer Prototype/population")     		; economy, worker, trade, and pop-limit targets
+(load "/Computer Prototype/military-population")	; standard-difficulty military package thresholds
+(load "/Computer Prototype/military-population-hard") ; hard+ military package thresholds
+(load "/Computer Prototype/map-loads") 				; map detection, including marker objects, asteroid, and fish checks
+(load "/Computer Prototype/building-count")   		; shared builder counts and Command Center targets
 
 ; NORMAL OPERATION
-;     Deathmatch now part of random map
-;     Monuments not built due to AI issues
+;     Used when neither DEFEND-MONUMENT nor MONUMENT-RACE is active.
+;     Deathmatch behavior is handled by the normal random-map modules.
+;     Standard monument construction remains disabled in random maps.
 
 #load-if-not-defined DEFEND-MONUMENT
 #load-if-not-defined MONUMENT-RACE
@@ -41,74 +45,74 @@
 ; INITIAL SETUP
 
 (load "/Computer Prototype/escrow")					; escrow & eco logic
-(load "/Computer Prototype/init-goals")				; almost empty file
+(load "/Computer Prototype/init-goals")				; initializes shared goals and starting strategic numbers
 
-(load "/Computer Prototype/sn-homebase")			; townsize and a few other sn's
-(load "/Computer Prototype/sn-gather")				; economy, includes herdable logic
-(load "/Computer Prototype/sn-soldiers")			; scouting and difficulty logic
+(load "/Computer Prototype/sn-homebase")			; homebase SNs, town size, camp distance, and expansion posture
+(load "/Computer Prototype/sn-gather")				; gather percentages, resource assignment, hunt, and eco switching
+(load "/Computer Prototype/sn-soldiers")			; scouting, stance, difficulty, and combat micro SNs
 (load "/Computer Prototype/combat-arm")				; core/supp package roll used by modern unit production files
 
 ; MAIN STUFF
 
-(load "/Computer Prototype/age-advancement")		; age up & config
+(load "/Computer Prototype/age-advancement")		; tech-level advancement, config menu, treaty, and AI options
 
 (load "/Computer Prototype/attack")                 ; attack script
 (load-random
-	33 "/Computer Prototype/agressive"
+	33 "/Computer Prototype/aggressive"
 	33 "/Computer Prototype/defensive"
 	"/Computer Prototype/rush"
-) ; personality overlay
+) ; picks one personality overlay: aggressive, defensive, or rush
 
 (load "/Computer Prototype/cheats")					; needs to be loaded before worker production
 
-(load "/Computer Prototype/diplomacy")              ; does very little now, basically just mirrors alliances
+(load "/Computer Prototype/diplomacy")              ; mirrors diplomacy state and handles alliance/enemy setup
 
-(load "/Computer Prototype/homebase")               ; workers, command center, prefab shelters, farms, power cores - load before research so CCs are built when reaching next TL
+(load "/Computer Prototype/homebase")               ; workers, CCs, shelters, farms, power cores, and core base infrastructure
 
-(load "/Computer Prototype/research")               ; research of everything that isn't a unit upgrade: so Hvy Trooper is in troop center, but MacroBinoculars is here 
+(load "/Computer Prototype/research")               ; shared non-unit upgrades and important tech bundles
 
 ; ECONOMY BUILDINGS
 
-(load "/Computer Prototype/spaceport")				; all things trade
+(load "/Computer Prototype/spaceport")				; Spaceports, trade, tribute, and cargo growth
 
-(load "/Computer Prototype/food")					; stuff to do with resource procs - economy is in sn gather
-(load "/Computer Prototype/carbon")
-(load "/Computer Prototype/nova")					; nova & ore in one file
-(load "/Computer Prototype/ore")					; empty file
+(load "/Computer Prototype/food")					; food processing centers and food-dropoff expansion
+(load "/Computer Prototype/carbon")					; carbon processing centers and carbon economy techs
+(load "/Computer Prototype/nova")					; nova processing and detection
+(load "/Computer Prototype/ore")					; ore processing and detection
 
-(load "/Computer Prototype/war-center")				; very small files controlling building (using them in research)
-(load "/Computer Prototype/research-center")
+(load "/Computer Prototype/war-center")				; War Centers and War Center-owned combat techs
+(load "/Computer Prototype/research-center")		; Research Centers and Research Center-owned techs
 
 ; MILITARY CONTROLS
 
-(load "/Computer Prototype/troop-center")
-(load "/Computer Prototype/shipyard")
+(load "/Computer Prototype/troop-center")			; Troop Centers, troop upgrades, and troop packages
+(load "/Computer Prototype/shipyard")				; Shipyards, naval upgrades, and naval packages
     
-(load "/Computer Prototype/mech-factory")    
-(load "/Computer Prototype/jedi-temple")  
+(load "/Computer Prototype/mech-factory")    		; Mech Factories, mech upgrades, and mech packages
+(load "/Computer Prototype/jedi-temple")  			; Jedi Temple, Jedi units, and holocron collector pacing
 
-(load "/Computer Prototype/airbase")
-(load "/Computer Prototype/fortress")			; now contains all defensive building logic
-(load "/Computer Prototype/heavy-weapons")
+(load "/Computer Prototype/airbase")				; Airbases, aircraft upgrades, and aircraft packages
+(load "/Computer Prototype/fortress")				; Fortresses, defensive buildings, fortress units, and fortress techs
+(load "/Computer Prototype/heavy-weapons")			; Heavy Weapons Factories, siege upgrades, and siege packages
 
-(load "/Computer Prototype/tower") 					; only contains walls now      
-(load "/Computer Prototype/animal")					; garbage animals (predators, probots)
-(load "/Computer Prototype/supplement")				; random map trainables
+(load "/Computer Prototype/tower") 					; walls and tower-side defensive building behavior
+(load "/Computer Prototype/animal")					; animal techs and Geonosian animal-side unique units
+(load "/Computer Prototype/supplement")				; supplemental trainables and miscellaneous support units
 
-; EF ADDITIONS
+; LEGACY/EXPANDED FRONTIERS ADDITIONS
 
-(load "/Computer Prototype/fishboat") ;; Zel addition, has nothing to do with fishing, is adv inf cent 
-(load "/Computer Prototype/warboat") ;; Zel addition, has nothing to do with warboats, is instead a lategame spam file
-(load "/Computer Prototype/warboat-island") ; Zel and Waffle addition, chitchat
+(load "/Computer Prototype/fishboat")				; legacy fishboat-name file for advanced infantry support
+(load "/Computer Prototype/warboat")				; legacy warboat-name file for late-game utility hooks
+(load "/Computer Prototype/warboat-island")			; island helpers, late-game utility, and chat behavior
 
 ; #load-if-not-defined EMPEROR
-; (load "/Computer Prototype/monument") ; monuments not built due to engine bug
+; (load "/Computer Prototype/monument") ; disabled: standard monument building is not used in random maps
 ; #end-if
 
 ; #load-if-not-defined DEATH-MATCH ; death match is now part of random map
 ; #end-if
 
-(load "/Computer Prototype/resign")         
+(load "/Computer Prototype/resign")         		; resignation checks and endgame resign behavior
 
 #end-if
 #end-if
@@ -118,14 +122,16 @@
 ; SPECIAL MODE 1: MONUMENT RACE
 #load-if-defined MONUMENT-RACE
 
-(load "/Computer Prototype/wonder-rush") ; MAIN FILE
+(load "/Computer Prototype/init-goals")				; shared goal and strategic-number initialization
 
-(load "/Computer Prototype/attack") ; hee hee hee ho
+(load "/Computer Prototype/wonder-rush")			; main Monument Race economy, build, and wonder-rush logic
 
-(load "/Computer Prototype/sn-gather")
-(load "/Computer Prototype/sn-soldiers")
+(load "/Computer Prototype/attack")					; attack orchestration reused by Monument Race
 
-(load "/Computer Prototype/spaceport")
+(load "/Computer Prototype/sn-gather")				; special-mode economy SNs
+(load "/Computer Prototype/sn-soldiers")			; special-mode scouting and combat SNs
+
+(load "/Computer Prototype/spaceport")				; trade and tribute support
 
 
 #end-if
@@ -133,22 +139,27 @@
 ; SPECIAL MODE 2: DEFEND THE MONUMENT
 #load-if-defined DEFEND-MONUMENT
 
-; instead of having all its logic in one file, which essentially caused double logic
-; it now calls all logic from the relevant files
+; Defend the Monument reuses normal economy and production files, then layers
+; wonder-kill rules over them for the special-mode defense behavior.
 
 (load "/Computer Prototype/init-goals")
 
 (load "/Computer Prototype/homebase")
-; (load "/Computer Prototype/sn-homebase") ; alternate town size checks needed
+; (load "/Computer Prototype/sn-homebase") ; skipped here: wonder-kill supplies special-mode town/base behavior
 
 (load "/Computer Prototype/sn-gather")
 (load "/Computer Prototype/sn-soldiers")
 (load "/Computer Prototype/escrow")
+(load "/Computer Prototype/aggressive")				; Defend uses the aggressive posture for modern production rules
+(load "/Computer Prototype/combat-arm")				; core/supp package roll for Defend production files
 
-; the ordering of these files - and this rule - is important for build orders
+; Build Government Centers before wonder-kill so Monument Defense starts its
+; monument infrastructure before later economy/production rules compete.
 (defrule
 	(can-build BLDG-GOVTCTR)
 	(building-type-count-total BLDG-GOVTCTR < 5)
+	(not (goal special-map WATER))
+	(goal buildpause NO)
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -160,27 +171,27 @@
 (load "/Computer Prototype/airbase")
 (load "/Computer Prototype/heavy-weapons")
 
-(load "/Computer Prototype/carbon")	; carbon moved up due to ordering issues
+(load "/Computer Prototype/carbon")					; carbon processing loads before wonder-kill for build-order support
 
-(load "/Computer Prototype/wonder-kill") ; MAIN FILE FOR DEFEND THE MONUMENT
+(load "/Computer Prototype/wonder-kill")				; main Defend the Monument defense, economy, and special-mode logic
 
 ; (load "/Computer Prototype/war-center") ; not needed as all techs are already researched
 ; (load "/Computer Prototype/research-center")
-(load "/Computer Prototype/spaceport") ; trade, tribute, and more
+(load "/Computer Prototype/spaceport")				; trade, tribute, and cargo support
 
 (load "/Computer Prototype/animal")
 (load "/Computer Prototype/supplement")
 
-(load "/Computer Prototype/food") ; carbon loaded earlier
+(load "/Computer Prototype/food")					; food processing; carbon is loaded earlier in this branch
 (load "/Computer Prototype/nova")                   
 (load "/Computer Prototype/ore")
 
 
 
-(load "/Computer Prototype/fishboat") ;; Zel addition, has nothing to do with fishing, is adv inf cent 
-(load "/Computer Prototype/warboat") ;; Zel addition, has nothing to do with warboats, is instead a lategame spam file
-(load "/Computer Prototype/warboat-island") ; chitchat
+(load "/Computer Prototype/fishboat")				; legacy fishboat-name file for advanced infantry support
+(load "/Computer Prototype/warboat")				; legacy warboat-name file for late-game utility hooks
+(load "/Computer Prototype/warboat-island")			; island helpers, late-game utility, and chat behavior
 
-(load "/Computer Prototype/cheats")
+(load "/Computer Prototype/cheats")					; difficulty resource support and AI compensation
 
 #end-if

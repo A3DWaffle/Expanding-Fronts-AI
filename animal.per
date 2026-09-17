@@ -1,19 +1,18 @@
 ; =====================================================
 ; FILE: animal
 ; PURPOSE:
-;   Handles animal-side unique units, probots, and related niche trainables.
+;   Handles animal techs and Geonosian animal-side unique unit production.
 ;
 ; =====================================================
 ; *** Table of Contents *** 
 ; =====================================================
 ;
-;	Chapter 0: SETUP
-;	Chapter 1: ANIMAL UNIQUE UNITS
-;	Chapter 2: PROBOTS
-;	Chapter 3: TECHS
+;	Chapter 1: TECHS
+;	Chapter 2: GEONOSIAN ANIMAL NURSERY
+;	Chapter 3: GEONOSIAN ANIMAL UNIQUE UNITS
 ;
 ; =====================================================
-; *** Chapter 0: SETUP ***
+; *** Chapter 1: TECHS ***
 ; =====================================================
 
 (defrule
@@ -50,6 +49,7 @@
 	; GO Beast Training
 	(current-age >= tech-level-4)
 	(goal importantT4research DONE)
+	(goal support-acklay YES)
 	(can-research-with-escrow rt-beast-training) ; this does not need to be so high priority but it's okay
 =>
 	(release-escrow food)
@@ -61,6 +61,15 @@
 	; RP Kaminoan Refit
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-kamino-refit)
+	(goal importantT4research DONE)
+	(building-type-count BLDG-DROPANIM > 0)
+	(or
+		(unit-type-count-total SCN-PREDATOR-LINE > 0)
+		(or
+			(unit-type-count-total SCN-TROOP-GUNNER-LINE > 0)
+			(unit-type-count-total SCN-TROOP-DEMOLITION-LINE > 0)
+		)
+	)
 =>
 	(release-escrow carbon)
 	(research rt-kamino-refit)
@@ -68,16 +77,25 @@
 
 #load-if-defined GEONOSIANS
 
+; =====================================================
+; *** Chapter 2: GEONOSIAN ANIMAL NURSERY ***
+; =====================================================
+
 (defrule
     (current-age >= tech-level-3)
 	(building-type-count BLDG-MAIN > 1) ; wait a bit
 	(building-type-count BLDG-DROPANIM < 3)
     (can-build BLDG-DROPANIM)
+	(not (goal buildpause YES))
 =>
     (build BLDG-DROPANIM)
 )
 
-;nexu
+; =====================================================
+; *** Chapter 3: GEONOSIAN ANIMAL UNIQUE UNITS ***
+; =====================================================
+
+; Nexu
 
 (defrule
 	(current-age == tech-level-3)
@@ -88,7 +106,7 @@
 	(train SCN-TROOP-GUNNER-LINE)
 )
 
-;reek
+; Reek
 
 (defrule
 	(current-age >= tech-level-3)
@@ -100,7 +118,7 @@
 	(train SCN-TROOP-DEMOLITION-LINE)
 )
 
-;acklay
+; Acklay
 
 (defrule
 	(current-age >= tech-level-4)

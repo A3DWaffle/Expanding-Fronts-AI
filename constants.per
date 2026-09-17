@@ -17,58 +17,25 @@
 ; *** Chapter 0: SETUP ***
 ; =====================================================
 
-(defconst UNIT-MECH1-LINE 	UNIT-MECH1-LINE)
-(defconst UNIT-MECH2-LINE 	UNIT-MECH2-LINE)
-(defconst UNIT-MECH3-LINE 	UNIT-MECH3-LINE)
-; Keep MECH4 as the readability alias for the Transport Mech line.
+; Compatibility unit/building labels used by multiple production files.
 (defconst UNIT-MECH4-LINE 	UNIT-TRANSPORT-MECH-LINE)
-(defconst UNIT-FASTBIKE-LINE 	UNIT-FASTBIKE-LINE)
+(defconst UNIT-AIRLIFT-LINE UNIT-AIRTRANS-LINE)
 
-(defconst UNIT-LASER-LINE 	UNIT-LASER-LINE)
-(defconst UNIT-MISSILE-LINE 		UNIT-MISSILE-LINE)
-(defconst UNIT-MOUNTED-LINE UNIT-MOUNTED-LINE)
-(defconst UNIT-GRENADE-LINE UNIT-GRENADE-LINE)
+(defconst OBJ-LANDMAP 8018)
+(defconst OBJ-WATERMAP 8019)
+(defconst OBJ-HYBRIDMAP 8020)
+(defconst OBJ-ASTEROIDMAP 8021)
+(defconst OBJ-SUPPLEMENT-SCENARIO 3111)
 
-(defconst SIEGE-RAM-LINE 	SIEGE-RAM-LINE)
-(defconst SIEGE-ARTILLERY-LINE 		SIEGE-ARTILLERY-LINE)
-(defconst SIEGE-MISSILE-LINE 		SIEGE-MISSILE-LINE)
-
-(defconst BOAT-MISSILE-LINE		BOAT-MISSILE-LINE)
-(defconst BOAT-LASER-LINE	BOAT-LASER-LINE)
-(defconst BOAT-CUTLASER-LINE		BOAT-CUTLASER-LINE)
-(defconst BOAT-ARTILLERY-LINE	BOAT-ARTILLERY-LINE)
-(defconst BOAT-MONITOR-LINE	BOAT-MONITOR-LINE)
-
-(defconst UNIT-JEDI-LINE	UNIT-JEDI-LINE)
-(defconst UNIT-JEDIHOLO-LINE	UNIT-JEDIHOLO-LINE)
-
-; BUILDING ALIASES
-(defconst BMIL-TROOP 		BLDG-TRAINTROOPER)
-(defconst BMIL-MECH			BLDG-TRAINMECH)
-(defconst BMIL-HW 			BLDG-TRAINHEAVY)
-(defconst BMIL-SHIP 		BLDG-TRAINBOAT)
-(defconst BMIL-AIR			BLDG-TRAINAIR)
-(defconst BMIL-TEMPLE 		BLDG-TRAINJEDI)
-
-(defconst BCORE-FORT 		BLDG-GOVTCTR)
-(defconst BCORE-MAIN 		BLDG-MAIN)
-(defconst BCORE-POWER 		BLDG-POWERCORE)
-(defconst BCORE-FARM		BLDG-FARM)
-
-(defconst BECO-CARB 		BLDG-DROPCARBON)
-(defconst BECO-FOOD 		BLDG-DROPCHOW)
-(defconst BECO-NOVA 		BLDG-DROPNOVA)
-(defconst BECO-METAL 		BLDG-DROPMETAL)
-(defconst BRES-WAR			BLDG-WARCTR)
-(defconst BRES-RES			BLDG-RESCTR)
-
-(defconst BDEF-TURRET		BLDG-TURRET-LINE)
-(defconst BDEF-AA			BLDG-MISSILE-LINE)
-(defconst BDEF-SHIELD		BLDG-SHLDGEN)
-(defconst BDEF-AABAT		BLDG-AABATTERY)
 (defconst BLDG-MAIN2 621)
 (defconst BLDG-GOVTCTR2 1211)
 (defconst BLDG-SHLDGEN2 213)
+
+; Static defense aliases.
+(defconst BDEF-TURRET BLDG-TURRET-LINE)
+(defconst BDEF-AA BLDG-MISSILE-LINE)
+(defconst BDEF-SHIELD BLDG-SHLDGEN)
+(defconst BDEF-AABAT BLDG-AABATTERY)
 
 ; ============================================================================
 ; MESSAGE IDS
@@ -196,7 +163,6 @@
 ; then coming back and axing unneeded bits (thank you Waffle for sorting out Defend the Monument and Monument Race!)
 
 	(defconst resign-goal 1)
-	(defconst allow-air-trans 15)
 	(defconst allow-wall 17) 				; if walls or gates exist, disable walls
 	(defconst wonder-attempt 20) 			; Original GB goal! Still used in Defend the Monument and Wonder Rush
 		(defconst ATTACK 1)    					;kill the wonder
@@ -212,8 +178,10 @@
 	(defconst center-override 32) 			; Alternate form of gather center (Taunt 185) (still used)
 	(defconst wall-build 40) 				; Original piece of GB logic largely left untouched. Could be axed if you really wanted
 	(defconst special-map 42) 				; Original GB goal! Checks map type. 
+		(defconst LAND 0)
 		(defconst WATER 1)
 		(defconst ASTEROID 2)
+		(defconst HYBRID 3)
 		(defconst NOTWATER 4) 				; used as an override check for maps like Motherlode
 	(defconst blahblahdipolblahblah 51)		; 51-58 are used by ID (not by name) for the treaty diplomacy system. They are not constanted.
 
@@ -221,7 +189,9 @@
 	; These goals are read by multiple production files, so keep the meanings broad:
 	; - enemyairsighted feeds AA and air-response packages
 	; - enemyjedisighted feeds bounty hunter / anti-Jedi responses
+	; - enemyboatsighted feeds naval destroyer responses
 	(defconst enemyairsighted 47)  			; Combined air alert state used by AA / detect packages
+	(defconst enemyT4airsighted 59)			; Permanent memory: visible enemy air after an enemy reaches TL4
 		(defconst SOME 91)
 		(defconst MANY 92)
 		(defconst LOTS 93)
@@ -237,6 +207,12 @@
 		(defconst MECH-ALERT-P2 2)
 		(defconst MECH-ALERT-P3 3)
 		(defconst MECH-ALERT-P4 4)
+	(defconst enemyboatsighted 50)			; Combined boat alert state used by naval destroyer responses
+		(defconst BOAT-ALERT-NONE 0)
+		(defconst BOAT-ALERT-P1 1)
+		(defconst BOAT-ALERT-P2 2)
+		(defconst BOAT-ALERT-P3 3)
+		(defconst BOAT-ALERT-P4 4)
 	(defconst enemyjedisighted 48) 			; check for Jedi for BHs+Vorn
 	(defconst carbon-found 73)				; Resource detection. The only surviving piece of code MnHebi wrote (it was fundamentally broken and needed a complete rewrite)
 	(defconst nova-found 75)				;  but the goal names persisted
@@ -345,16 +321,15 @@
 		(defconst HOLDING-MEDIUM 21)			; not used
 		(defconst HOLDING-LOW 22)
 		(defconst EXHAUSTED 23) ; re-used for treaty timer - watch!
-	(defconst attacktype 136)				; Controls whether the AI uses normal attacks, TSA, or air-only attack waves
+	(defconst attacktype 136)				; Controls whether the AI uses normal attacks or TSA
 		(defconst TSA 10) 					; Town Size Attack for ground-focused armies
-		(defconst AIRWAVE 11) 				; Air-only attack group behaviour for dedicated air armies
 	(defconst attackTSAlevel 137)			; Internal level that town size is held at
 	(defconst attackTSAvar 138)				; Substitute for math
 	(defconst cheatlure 139)				; goal used to approximate lure cheats
 	(defconst lategamefish 140)				; goes alongside lategame worker, disables fishing boats on non-vent maps if pop reaches max
 	(defconst camplevel 141)				; shenanigans wrt camp max distance
 	(defconst resignreason 142)
-		(defconst HOLOFAIL 2)					; exact ID unimportant, they just need unique IDs so the message can be passed across files succesfully
+		(defconst HOLOFAIL 2)					; exact ID unimportant, they just need unique IDs so the message can be passed across files successfully
 		(defconst WALLBUILDFAIL 3)
 		(defconst WALLCHOPFAIL 4)
 		(defconst TRADEFAIL 5)
@@ -386,42 +361,55 @@
 	(defconst openingstyle 155)				; Early-match posture selected centrally in attack
 		(defconst STYLE-RUSH 10)
 		(defconst STYLE-DEFENSIVE 11)
-		(defconst STYLE-AGRESSIVE 12)
-(defconst fightertrick 156)				; Short TL3 fighter-only package for posture openings
-		(defconst FIGHTERTRICK-ACTIVE 1)
-		(defconst FIGHTERTRICK-DONE 2)
-(defconst gremlintrick 160)				; Short TL1 mounted-only package for Rush/Defensive
+		(defconst STYLE-AGGRESSIVE 12)
+	(defconst gremlintrick 160)				; Short TL1 mounted-only package for Rush/Defensive
 		(defconst GREMLINTRICK-ACTIVE 1)
 		(defconst GREMLINTRICK-DONE 2)
-(defconst support-masters 161)			; Support package flags selected by combat-arm
-(defconst support-assault-mech 162)
-(defconst support-aircraft 163)
-(defconst support-uu 164)
-(defconst support-artillery 165)
-(defconst support-grenadiers 166)
-	(defconst support-bombers 167)
+	; Support package flags selected by combat-arm and consumed by production files.
+	(defconst support-masters 161)
+	(defconst support-assault-mech 162)
+	(defconst support-aircraft 163)
+	(defconst support-uu 164)
+	(defconst support-artillery 165)
+	(defconst support-grenadiers 166)
 	(defconst support-acklay 168)
 	(defconst hunt-food-phase 169)			; Short TL1 hunt window before allowing an early second food proc
 	(defconst uu-kind 170)					; Broad civ UU category for shared Fortress tech/production gates
+	(defconst support-mounted 171)
+	(defconst support-airlift 172)
+	(defconst support-sealift 173)
+	(defconst support-sea 174)
+	(defconst opening-attack-target 175)
+	(defconst fortress-uu-core-ready 176)	; TL4 UU production opens after the selected core package reaches p1
+	(defconst supplement-scenario-setup 177)
+	(defconst supplement-neutral-stance 178)
+	(defconst buildpause 179)				; Brief anti-raid pause that suppresses refunded building attempts
+	(defconst researchbundleT2 183)			; Per-combat-arm T2 research bundle gate
+	(defconst researchbundleT3 184)			; Per-combat-arm T3 research bundle gate
+	(defconst researchbundleT4 185)			; Per-combat-arm T4 research bundle gate
+	(defconst enemyuusighted 186)			; Permanent memory: visible enemy unique unit sighted
+	(defconst t4-laser-ready 187)
+	(defconst t4-heavy-armor-ready 188)
+	(defconst t4-homing-ready 189)
+	(defconst t4-heavy-plating-ready 191)
+	(defconst t4-targeting-ready 192)
+	(defconst t4-artillery-ready 193)
+	(defconst TARGET-UNROLLED 0)
+	(defconst TARGET-ROLLED 1)
+	(defconst TARGET-WORKERS 2)
 		(defconst UU-NONE 0)
 		(defconst UU-TROOPER 1)
 		(defconst UU-MECH 2)
 		(defconst UU-AIR 3)
 		(defconst UU-SUPPORT 4)
-(defconst opening-announced 157)			; Human-visible chat for the chosen opening style
-(defconst workerpause 158)				; Brief TL1 worker throttle when food spikes too high
-(defconst gremlinstate 159)				; Tracks the three small TL1 mounted pokes for Rush/Defensive
+	(defconst passiveage 154)				; Personality-controlled flag for ages that should favor eco/tech over army mass
+	(defconst opening-announced 157)			; Human-visible chat for the chosen opening style
+	(defconst workerpause 158)				; Brief TL1 worker throttle when food spikes too high
+	(defconst gremlinstate 159)				; Tracks the three small TL1 mounted pokes for Rush/Defensive
 		(defconst GREMLIN-ZERO 0)
 		(defconst GREMLIN-ONE 1)
 		(defconst GREMLIN-TWO 2)
 		(defconst GREMLIN-DONE 3)
-
-; Fighter-trick package counts still live in the population files, but these
-; parser-visible defaults keep small posture files from breaking before the pop
-; layer is loaded. Keep values matched with military-population*.
-(defconst fightertrick-fighters 6)
-(defconst fightertrick-fighters-water 6)
-(defconst fightertrick-detect-fighters 2)
 
 ; Older animal/peripheral production file still expects these caps.
 ; Keep them as safe defaults unless/until we restore per-package values.
@@ -460,18 +448,18 @@
 (defconst t-townsize 6) 			; used for townsize checks
 (defconst t-aicheat 7)				; used for cheats
 (defconst t-huntfood 8)				; short TL1 hunt timer before allowing an early second food proc
-;(defconst t-ageup 9)					; EMPTY SLOT, FULLY DEPRECIATED
+(defconst t-buildpause 9)			; short anti-raid build/refund pause
 (defconst t-tenmin 10)				; used in a few places for a bunch of things which need to be on a 10min timer - some goals check this repeatedly to keep track of longer periods of time
 (defconst t-workerpause 11)			; TL1 worker throttle, reusing an empty legacy slot
-;(defconst t-modespecific 12)			; NO LONGER USED
-;(defconst t-atckctrl 13)				; NO LONGER USED
-;(defconst t-trreset 14)				; NO LONGER USED
+(defconst t-air-counter-memory 12)	; visible air sightings linger briefly for counter-unit production
+(defconst t-jedi-counter-memory 13)	; visible Jedi sightings linger briefly for bounty hunter production
+(defconst t-boat-counter-memory 14)	; visible boat sightings linger briefly for naval destroyer production
 (defconst t-attackgroup-alt 15)		; core of new attack system
 (defconst t-nerfs 16)				; timer for nerfs to get home safely
 (defconst t-garbage 17)				; timer to throttle garbage unit production
 (defconst t-chat-opening 18)		; used in warboat-island to stagger greeting and opening chat lines
 (defconst t-config 19)				; used to throttle chat responses in config
-(defconst t-debug 20)				; unused atm
+(defconst t-debug 20)				; debug reminder cadence used by package/status messages
 
 ; for timer rules, see the files in which they appear
 
@@ -496,6 +484,7 @@
 (defconst snc-enemy-regular-air 105)
 (defconst snc-enemy-scn-air 113)
 (defconst snc-enemy-mech-detection 223)
+(defconst snc-enemy-boat-detection 224)
 
 
 ; ============================================================================
@@ -538,6 +527,10 @@
 (defconst TL4-townsize T4-townsize)
 (defconst TL4-townsize-big T4-townsize-big)
 (defconst TL4-townsize-bigger T4-townsize-bigger)
+
+(defconst TL2-sentry-distance 14)
+(defconst TL3-sentry-distance 16)
+(defconst TL4-sentry-distance 18)
 ; so I don't have to keep typing the same number everywhere & can change it easily
 
 
@@ -558,7 +551,7 @@
 ; (and why it was easier to rewrite the thing from scratch, they did NOT write legible code)
 
 	;(defconst boat-strategy 1)
-	; Z: goal 1 is ACTUALLY used for resigning. I guess the goal did double purpose, which does technically work but I would highly not reccomend
+	; Z: goal 1 is ACTUALLY used for resigning. I guess the goal did double purpose, which does technically work but I would highly not recommend
 	;(defconst boats-needed 2) ;goal 2 0 okay on boats; 2 1 need warships! 2 2 we've won with ships
 	;(defconst military-parity 3) ;Goal  3 0 = military parity; Goal  3 1 = an enemy outnumbers us!
 	;(defconst attack-control 4) ;goal  4 = used to track attack group AI
@@ -571,7 +564,7 @@
 	; Z: These two are the relics of the original unit training system, whereby each civ was assigned a major unit type and a secondary unit type to train
 	;  While the idea was sound - allowing for different unit comps each match - the execution was incredibly lacking
 	;  Major blunders like Empire sidelining Mech, Wooks never going HW, etc, alongside nonsensical unit constants meant it never did its intended job
-	;  When I was rewriting the unit train logic, I made them call the constants no matter what this rolled, which functionally depreciated the file, although the file, combat-arm, does remain intact (just never loaded)
+	;  When I was rewriting the unit train logic, I made them call the constants no matter what this rolled, which functionally deprecated the file, although the file, combat-arm, does remain intact (just never loaded)
 	;(defconst attack-enabled 13)
 	;(defconst age-advancement 14)
 	; Z: ah, the legendary upgrade-conflict, responsible for so much stupid and incomprehensible code
@@ -612,35 +605,57 @@
 ; SHARED LOGIC
 ; ============================================================================
 
-; AIR UNIT DETECTION RESET
-
-
+; One-shot shared state initialization.
 (defrule
 	(true)
 =>
 	(set-goal enemyairsighted NO)
+	(set-goal enemyT4airsighted NO)
 	(set-goal enemyjedisighted NO)
+	(set-goal enemyuusighted NO)
+	(set-goal enemymechsighted MECH-ALERT-NONE)
+	(set-goal enemyboatsighted BOAT-ALERT-NONE)
+	(set-strategic-number snc-enemy-regular-air 0)
+	(set-strategic-number snc-enemy-scn-air 0)
+	(set-strategic-number snc-enemy-mech-detection 0)
+	(set-strategic-number snc-enemy-boat-detection 0)
+	(disable-self)
+)
+
+(defrule
+	(true)
+=>
+	(set-strategic-number sn-task-ungrouped-soldiers 0)
+	(set-strategic-number sn-gather-defense-units 1)
+	(set-strategic-number sn-gather-idle-soldiers-at-center 0)
 	(set-goal openingstyle UNDEFINED)
-	(set-goal fightertrick NO)
 	(set-goal gremlintrick NO)
+	(set-goal hunt-food-phase NO)
+	(set-goal holocroncollectionservices 0)
+	(set-goal uu-kind UU-NONE)
+	(set-goal opening-announced NO)
+	(set-goal gremlinstate GREMLIN-ZERO)
+	(disable-self)
+)
+
+(defrule
+	(true)
+=>
 	(set-goal support-masters NO)
 	(set-goal support-assault-mech NO)
 	(set-goal support-aircraft NO)
 	(set-goal support-uu NO)
 	(set-goal support-artillery NO)
 	(set-goal support-grenadiers NO)
-	(set-goal support-bombers NO)
 	(set-goal support-acklay NO)
-	(set-goal hunt-food-phase NO)
-	(set-goal holocroncollectionservices 0)
-	(set-goal uu-kind UU-NONE)
-	(set-goal opening-announced NO)
-	(set-goal gremlinstate GREMLIN-ZERO)
-	(set-goal enemymechsighted MECH-ALERT-NONE)
-	(set-strategic-number snc-enemy-regular-air 0)
-	(set-strategic-number snc-enemy-scn-air 0)
-	(set-strategic-number snc-enemy-mech-detection 0)
-	(disable-self) ; oops
+	(set-goal support-mounted NO)
+	(set-goal support-airlift NO)
+	(set-goal support-sealift NO)
+	(set-goal support-sea NO)
+	(set-goal fortress-uu-core-ready NO)
+	(set-goal supplement-scenario-setup NO)
+	(set-goal supplement-neutral-stance NO)
+	(disable-self)
 )
 
 ; CIV UU KIND
@@ -782,27 +797,122 @@
 )
 #end-if
 
+; UNIQUE UNIT DETECTION
+
+(defrule
+	(goal enemyuusighted NO)
+	(or
+		(players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 0)
+		(or
+			(players-unit-type-count any-enemy UNIT-DARKTRP-LINE > 0)
+			(or
+				(players-unit-type-count any-enemy UNIT-KNIGHT-LINE > 0)
+				(players-unit-type-count any-enemy UNIT-BERSERK-LINE > 0)
+			)
+		)
+	)
+=>
+	(set-goal enemyuusighted YES)
+)
+
+(defrule
+	(goal enemyuusighted NO)
+	(or
+		(players-unit-type-count any-enemy UNIT-SHIELD-LINE > 0)
+		(or
+			(players-unit-type-count any-enemy UNIT-DESTDROID-LINE > 0)
+			(or
+				(players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 0)
+				(players-unit-type-count any-enemy UNIT-MAGNAGUARD-LINE > 0)
+			)
+		)
+	)
+=>
+	(set-goal enemyuusighted YES)
+)
+
+(defrule
+	(goal enemyuusighted NO)
+	(or
+		(players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 0)
+		(or
+			(players-unit-type-count any-enemy UNIT-DEFILER-LINE > 0)
+			(or
+				(players-unit-type-count any-enemy UNIT-SKISPEEDER-LINE > 0)
+				(players-unit-type-count any-enemy UNIT-JETTROOPER-LINE > 0)
+			)
+		)
+	)
+=>
+	(set-goal enemyuusighted YES)
+)
+
+(defrule
+	(goal enemyuusighted NO)
+	(or
+		(players-unit-type-count any-enemy UNIT-SHADOWTROOPER-LINE > 0)
+		(or
+			(players-unit-type-count any-enemy UNIT-VWING-LINE > 0)
+			(players-unit-type-count any-enemy UNIT-GLADIATORDROID1-LINE > 0)
+		)
+	)
+=>
+	(set-goal enemyuusighted YES)
+)
+
 ; AIR DETECTION: REGULAR AIR
+
+(defrule
+	(goal enemyT4airsighted NO)
+	(players-current-age any-enemy >= tech-level-4)
+	(or
+		(players-unit-type-count any-enemy UNIT-FIGHTER-LINE > 0)
+		(or
+			(players-unit-type-count any-enemy UNIT-BOMBER-LINE > 0)
+			(or
+				(players-unit-type-count any-enemy UNIT-ATTACKER-LINE > 0)
+				(or
+					(players-unit-type-count any-enemy UNIT-INTERCEPTOR-LINE > 0)
+					(or
+						(players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 0)
+						(or
+							(players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 0)
+							(or
+								(players-unit-type-count any-enemy UNIT-VWING-LINE > 0)
+								(or
+									(players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 0)
+									(players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 0)
+								)
+							)
+						)
+					)
+				)
+			)
+		)
+	)
+=>
+	(set-goal enemyT4airsighted YES)
+)
 
 (defrule
 		(strategic-number snc-enemy-regular-air == 0)
         (or
-			(cc-players-unit-type-count any-enemy UNIT-FIGHTER-LINE > 0)
+			(players-unit-type-count any-enemy UNIT-FIGHTER-LINE > 0)
 			(or
-				(cc-players-unit-type-count any-enemy UNIT-BOMBER-LINE > 0)
+				(players-unit-type-count any-enemy UNIT-BOMBER-LINE > 0)
 				(or
-					(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE > 0)
+					(players-unit-type-count any-enemy UNIT-ATTACKER-LINE > 0)
 					(or
-						(cc-players-unit-type-count any-enemy UNIT-INTERCEPTOR-LINE > 9) ; Interceptors are kinda moot when it comes to needing AA
+						(players-unit-type-count any-enemy UNIT-INTERCEPTOR-LINE > 0)
 						(or
-							(cc-players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 0)
+							(players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 0)
 							(or
-								(cc-players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 0)
+								(players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 0)
 								(or
-									(cc-players-unit-type-count any-enemy UNIT-VWING-LINE > 0)
+									(players-unit-type-count any-enemy UNIT-VWING-LINE > 0)
 									(or
-										(cc-players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 0)
-										(cc-players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 0)
+										(players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 0)
+										(players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 0)
 									)
 								)
 							)
@@ -813,44 +923,44 @@
         )
         =>
         (set-strategic-number snc-enemy-regular-air 1)
-		;(chat-local-to-self "WAFFLE: Some Regular Enemy Air Sighted!")
+		; (chat-local-to-self "WAFFLE: Visible regular air sighted, raw regular air = 1")
 )
 
 (defrule
 		(strategic-number snc-enemy-regular-air < 2)
-		(cc-players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 0)
+		(players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 0)
         =>
         (set-strategic-number snc-enemy-regular-air 2)
-		;(chat-local-to-self "WAFFLE: Air Cruiser sighted. Escalate to GUARD")
+		; (chat-local-to-self "WAFFLE: Visible air cruiser sighted, raw regular air = 2")
 )
 
 (defrule
 		(strategic-number snc-enemy-regular-air < 3)
-		(cc-players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 1)
+		(players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 1)
         =>
         (set-strategic-number snc-enemy-regular-air 3)
-		;(chat-local-to-self "WAFFLE: Multiple Air Cruisers sighted. Escalate to DANGER")
+		; (chat-local-to-self "WAFFLE: Multiple visible air cruisers sighted, raw regular air = 3")
 )
 
 (defrule
 		(strategic-number snc-enemy-regular-air < 2)
         (or
-			(cc-players-unit-type-count any-enemy UNIT-FIGHTER-LINE > 5)
+			(players-unit-type-count any-enemy UNIT-FIGHTER-LINE > 2)
 			(or
-				(cc-players-unit-type-count any-enemy UNIT-BOMBER-LINE > 4)
+				(players-unit-type-count any-enemy UNIT-BOMBER-LINE > 2)
 				(or
-					(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE > 4)
+					(players-unit-type-count any-enemy UNIT-ATTACKER-LINE > 2)
 					(or
-						(cc-players-unit-type-count any-enemy UNIT-INTERCEPTOR-LINE > 12) 
+						(players-unit-type-count any-enemy UNIT-INTERCEPTOR-LINE > 2) 
 						(or
-							(cc-players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 3)
+							(players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 1)
 							(or
-								(cc-players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 5)
+								(players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 2)
 								(or
-									(cc-players-unit-type-count any-enemy UNIT-VWING-LINE > 4)
+									(players-unit-type-count any-enemy UNIT-VWING-LINE > 2)
 									(or
-										(cc-players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 0)
-										(cc-players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 3)
+										(players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 0)
+										(players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 1)
 									)
 								)
 							)
@@ -861,29 +971,29 @@
         )
         =>
         (set-strategic-number snc-enemy-regular-air 2)
-		;(chat-local-to-self "WAFFLE: Many Regular Enemy Air Sighted!")
+		; (chat-local-to-self "WAFFLE: Many visible regular air units sighted, raw regular air = 2")
 )
 
-; lots 1: any specific > 10
+; lots 1: any specific > 5
 (defrule
 		(strategic-number snc-enemy-regular-air < 3)
         (or
-			(cc-players-unit-type-count any-enemy UNIT-FIGHTER-LINE > 10)
+			(players-unit-type-count any-enemy UNIT-FIGHTER-LINE > 5)
 			(or
-				(cc-players-unit-type-count any-enemy UNIT-BOMBER-LINE > 10)
+				(players-unit-type-count any-enemy UNIT-BOMBER-LINE > 5)
 				(or
-					(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE > 10)
+					(players-unit-type-count any-enemy UNIT-ATTACKER-LINE > 5)
 					(or
-						(cc-players-unit-type-count any-enemy UNIT-INTERCEPTOR-LINE > 20) 
+						(players-unit-type-count any-enemy UNIT-INTERCEPTOR-LINE > 5) 
 						(or
-							(cc-players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 8)
+							(players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 4)
 							(or
-								(cc-players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 10)
+								(players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 5)
 								(or
-									(cc-players-unit-type-count any-enemy UNIT-VWING-LINE > 10)
+									(players-unit-type-count any-enemy UNIT-VWING-LINE > 5)
 									(or
-										(cc-players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 2)
-										(cc-players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 8)
+										(players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 1)
+										(players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 4)
 									)
 								)
 							)
@@ -894,47 +1004,129 @@
         )
         =>
         (set-strategic-number snc-enemy-regular-air 3)
-		;(chat-local-to-self "WAFFLE: Lots Regular Enemy Air Sighted, type 1")
+		; (chat-local-to-self "WAFFLE: Lots visible regular air sighted, raw regular air = 3 type 1")
 )
 
-; lots 2: multiple types > 5
+; lots 2: multiple types > 2
 (defrule
 	(strategic-number snc-enemy-regular-air < 3)
 	(or
 		(and
-			(cc-players-unit-type-count any-enemy UNIT-FIGHTER-LINE >= 6)
-			(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE >= 6)
+			(players-unit-type-count any-enemy UNIT-FIGHTER-LINE >= 3)
+			(players-unit-type-count any-enemy UNIT-ATTACKER-LINE >= 3)
 		)
 		(and
-			(cc-players-unit-type-count any-enemy UNIT-BOMBER-LINE >= 5)
-			(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE >= 7)
+			(players-unit-type-count any-enemy UNIT-BOMBER-LINE >= 3)
+			(players-unit-type-count any-enemy UNIT-ATTACKER-LINE >= 4)
 		)
 	)
 =>
 	(set-strategic-number snc-enemy-regular-air 3)
-	;(chat-local-to-self "WAFFLE: Lots Regular Enemy Air Sighted, type 2")
+	; (chat-local-to-self "WAFFLE: Multiple visible regular air types sighted, raw regular air = 3 type 2")
+)
+
+; Known enemy air pressure. Visible air rules above are still the fast trigger, but
+; this prevents the alert from staying low when a large air mass is out of sight.
+(defrule
+	(strategic-number snc-enemy-regular-air < 2)
+	(or
+		(cc-players-unit-type-count any-enemy UNIT-FIGHTER-LINE > 2)
+		(or
+			(cc-players-unit-type-count any-enemy UNIT-BOMBER-LINE > 2)
+			(or
+				(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE > 2)
+				(or
+					(cc-players-unit-type-count any-enemy UNIT-INTERCEPTOR-LINE > 2)
+					(or
+						(cc-players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 1)
+						(or
+							(cc-players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 2)
+							(or
+								(cc-players-unit-type-count any-enemy UNIT-VWING-LINE > 2)
+								(or
+									(cc-players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 0)
+									(cc-players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 1)
+								)
+							)
+						)
+					)
+				)
+			)
+		)
+	)
+=>
+	(set-strategic-number snc-enemy-regular-air 2)
+)
+
+(defrule
+	(strategic-number snc-enemy-regular-air < 3)
+	(or
+		(cc-players-unit-type-count any-enemy UNIT-FIGHTER-LINE > 5)
+		(or
+			(cc-players-unit-type-count any-enemy UNIT-BOMBER-LINE > 5)
+			(or
+				(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE > 5)
+				(or
+					(cc-players-unit-type-count any-enemy UNIT-INTERCEPTOR-LINE > 5)
+					(or
+						(cc-players-unit-type-count any-enemy UNIT-GEOFLYR-LINE > 4)
+						(or
+							(cc-players-unit-type-count any-enemy UNIT-JEDIFGT-LINE > 5)
+							(or
+								(cc-players-unit-type-count any-enemy UNIT-VWING-LINE > 5)
+								(or
+									(cc-players-unit-type-count any-enemy UNIT-AIRCRUISER-LINE > 1)
+									(cc-players-unit-type-count any-enemy UNIT-AIRSPEEDER-LINE > 4)
+								)
+							)
+						)
+					)
+				)
+			)
+		)
+	)
+=>
+	(set-strategic-number snc-enemy-regular-air 3)
+)
+
+; Mixed known air types should also force danger.
+(defrule
+	(strategic-number snc-enemy-regular-air < 3)
+	(or
+		(and
+			(cc-players-unit-type-count any-enemy UNIT-FIGHTER-LINE >= 3)
+			(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE >= 3)
+		)
+		(and
+			(cc-players-unit-type-count any-enemy UNIT-BOMBER-LINE >= 3)
+			(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE >= 4)
+		)
+	)
+=>
+	(set-strategic-number snc-enemy-regular-air 3)
 )
 
 ; wind down from LOTS to SOME (MANY is skipped, as you will likely want to maintain high AA to completely get rid of it)
 (defrule
+	(false)
 	(strategic-number snc-enemy-regular-air == 3)
 	(and
-			(cc-players-unit-type-count every-enemy UNIT-FIGHTER-LINE <= 5)
+			(players-unit-type-count every-enemy UNIT-FIGHTER-LINE <= 5)
 			(and
-				(cc-players-unit-type-count every-enemy UNIT-BOMBER-LINE <= 4)
+				(players-unit-type-count every-enemy UNIT-BOMBER-LINE <= 4)
 				(and
-					(cc-players-unit-type-count every-enemy UNIT-ATTACKER-LINE <= 4)
+					(players-unit-type-count every-enemy UNIT-ATTACKER-LINE <= 4)
 					(and
-						(cc-players-unit-type-count every-enemy UNIT-INTERCEPTOR-LINE <= 12) 
+						(players-unit-type-count every-enemy UNIT-INTERCEPTOR-LINE <= 12) 
 						(and
-							(cc-players-unit-type-count every-enemy UNIT-GEOFLYR-LINE <= 3)
+							(players-unit-type-count every-enemy UNIT-GEOFLYR-LINE <= 3)
 							(and
-								(cc-players-unit-type-count every-enemy UNIT-JEDIFGT-LINE <= 5)
+								(players-unit-type-count every-enemy UNIT-JEDIFGT-LINE <= 5)
 								(and
-									(cc-players-unit-type-count every-enemy UNIT-VWING-LINE <= 4)
+									(players-unit-type-count every-enemy UNIT-VWING-LINE <= 4)
 									(and
-										(cc-players-unit-type-count every-enemy UNIT-AIRCRUISER-LINE == 0)
-										(cc-players-unit-type-count every-enemy UNIT-AIRSPEEDER-LINE < 3)
+										(players-unit-type-count every-enemy UNIT-AIRCRUISER-LINE == 0)
+										(players-unit-type-count every-enemy UNIT-AIRSPEEDER-LINE < 3)
 									)
 								)
 							)
@@ -953,24 +1145,25 @@
 
 
 (defrule
+	(false)
 	(not (strategic-number snc-enemy-regular-air == 0))
 	(and
-		(cc-players-unit-type-count every-enemy UNIT-FIGHTER-LINE == 0)
+		(players-unit-type-count every-enemy UNIT-FIGHTER-LINE == 0)
 		(and
-			(cc-players-unit-type-count every-enemy UNIT-BOMBER-LINE == 0)
+			(players-unit-type-count every-enemy UNIT-BOMBER-LINE == 0)
 			(and
-				(cc-players-unit-type-count every-enemy UNIT-ATTACKER-LINE == 0)
+				(players-unit-type-count every-enemy UNIT-ATTACKER-LINE == 0)
 				(and
-					(cc-players-unit-type-count every-enemy UNIT-INTERCEPTOR-LINE <= 9) 
+					(players-unit-type-count every-enemy UNIT-INTERCEPTOR-LINE <= 9) 
 					(and
-						(cc-players-unit-type-count every-enemy UNIT-GEOFLYR-LINE == 0)
+						(players-unit-type-count every-enemy UNIT-GEOFLYR-LINE == 0)
 						(and
-							(cc-players-unit-type-count every-enemy UNIT-JEDIFGT-LINE == 0)
+							(players-unit-type-count every-enemy UNIT-JEDIFGT-LINE == 0)
 							(and
-								(cc-players-unit-type-count every-enemy UNIT-VWING-LINE == 0)
+								(players-unit-type-count every-enemy UNIT-VWING-LINE == 0)
 								(and
-									(cc-players-unit-type-count every-enemy UNIT-AIRCRUISER-LINE == 0)
-									(cc-players-unit-type-count every-enemy UNIT-AIRSPEEDER-LINE == 0)
+									(players-unit-type-count every-enemy UNIT-AIRCRUISER-LINE == 0)
+									(players-unit-type-count every-enemy UNIT-AIRSPEEDER-LINE == 0)
 								)
 							)
 						)
@@ -988,16 +1181,16 @@
 (defrule
 	(strategic-number snc-enemy-scn-air == 0)
 	(or
-		(cc-players-unit-type-count any-enemy SCN-AIR-FIGHTER-LINE > 0)
+		(players-unit-type-count any-enemy SCN-AIR-FIGHTER-LINE > 0)
 		(or
-			(cc-players-unit-type-count any-enemy SCN-AIR-BOMBER-LINE > 0)
+			(players-unit-type-count any-enemy SCN-AIR-BOMBER-LINE > 0)
 			(or
-				(cc-players-unit-type-count any-enemy SCN-AIR-ATTACKER-LINE > 0)
+				(players-unit-type-count any-enemy SCN-AIR-ATTACKER-LINE > 0)
 				(or
-					(cc-players-unit-type-count any-enemy SCN-AIR-INTERCEPTOR-LINE > 6) 
+					(players-unit-type-count any-enemy SCN-AIR-INTERCEPTOR-LINE > 0) 
 					(or
-						(cc-players-unit-type-count any-enemy SCN-SPACE-LINE > 0)
-						(cc-players-unit-type-count any-enemy SCN-AIR-FORTRESS-LINE > 0)
+						(players-unit-type-count any-enemy SCN-SPACE-LINE > 0)
+						(players-unit-type-count any-enemy SCN-AIR-FORTRESS-LINE > 0)
 					)		
 				)
 			)
@@ -1005,22 +1198,22 @@
 	)
 =>
 	(set-strategic-number snc-enemy-scn-air 1)
-	;(chat-local-to-self "WAFFLE: Some Enemy Scenario Air Sighted")
+	; (chat-local-to-self "WAFFLE: Visible scenario air sighted, raw scenario air = 1")
 )
 
 (defrule
 	(strategic-number snc-enemy-scn-air < 2)
 	(or
-		(cc-players-unit-type-count any-enemy SCN-AIR-FIGHTER-LINE > 5)
+		(players-unit-type-count any-enemy SCN-AIR-FIGHTER-LINE > 2)
 		(or
-			(cc-players-unit-type-count any-enemy SCN-AIR-BOMBER-LINE > 4)
+			(players-unit-type-count any-enemy SCN-AIR-BOMBER-LINE > 2)
 			(or
-				(cc-players-unit-type-count any-enemy SCN-AIR-ATTACKER-LINE > 4)
+				(players-unit-type-count any-enemy SCN-AIR-ATTACKER-LINE > 2)
 				(or
-					(cc-players-unit-type-count any-enemy SCN-AIR-INTERCEPTOR-LINE > 12) 
+					(players-unit-type-count any-enemy SCN-AIR-INTERCEPTOR-LINE > 2) 
 					(or
-						(cc-players-unit-type-count any-enemy SCN-SPACE-LINE > 0)
-						(cc-players-unit-type-count any-enemy SCN-AIR-FORTRESS-LINE > 3)
+						(players-unit-type-count any-enemy SCN-SPACE-LINE > 0)
+						(players-unit-type-count any-enemy SCN-AIR-FORTRESS-LINE > 1)
 					)
 				)
 			)
@@ -1028,22 +1221,22 @@
 	)
 =>
 	(set-strategic-number snc-enemy-scn-air 2)
-	;(chat-local-to-self "WAFFLE: Many Scenario Enemy Air Sighted!")
+	; (chat-local-to-self "WAFFLE: Many visible scenario air units sighted, raw scenario air = 2")
 )
 
 (defrule
 	(strategic-number snc-enemy-scn-air < 3)
 	(or
-		(cc-players-unit-type-count any-enemy SCN-AIR-FIGHTER-LINE > 10)
+		(players-unit-type-count any-enemy SCN-AIR-FIGHTER-LINE > 5)
 		(or
-			(cc-players-unit-type-count any-enemy SCN-AIR-BOMBER-LINE > 10)
+			(players-unit-type-count any-enemy SCN-AIR-BOMBER-LINE > 5)
 			(or
-				(cc-players-unit-type-count any-enemy SCN-AIR-ATTACKER-LINE  > 10)
+				(players-unit-type-count any-enemy SCN-AIR-ATTACKER-LINE  > 5)
 				(or
-					(cc-players-unit-type-count any-enemy SCN-AIR-INTERCEPTOR-LINE  > 20) 
+					(players-unit-type-count any-enemy SCN-AIR-INTERCEPTOR-LINE  > 5) 
 					(or
-						(cc-players-unit-type-count any-enemy SCN-SPACE-LINE > 1)
-						(cc-players-unit-type-count any-enemy SCN-AIR-FORTRESS-LINE > 8)
+						(players-unit-type-count any-enemy SCN-SPACE-LINE > 1)
+						(players-unit-type-count any-enemy SCN-AIR-FORTRESS-LINE > 4)
 					)
 				)
 			)
@@ -1051,23 +1244,69 @@
 	)
 =>
 	(set-strategic-number snc-enemy-scn-air 3)
-	;(chat-local-to-self "WAFFLE: Lots Scenario Enemy Air Sighted") ; no lots type 1 or 2 as that just isn't needed for regular C
+	; (chat-local-to-self "WAFFLE: Lots visible scenario air sighted, raw scenario air = 3") ; no lots type 1 or 2 as that just isn't needed for regular C
+)
+
+; Known enemy scenario air pressure, for the same reason as regular air above.
+(defrule
+	(strategic-number snc-enemy-scn-air < 2)
+	(or
+		(cc-players-unit-type-count any-enemy SCN-AIR-FIGHTER-LINE > 2)
+		(or
+			(cc-players-unit-type-count any-enemy SCN-AIR-BOMBER-LINE > 2)
+			(or
+				(cc-players-unit-type-count any-enemy SCN-AIR-ATTACKER-LINE > 2)
+				(or
+					(cc-players-unit-type-count any-enemy SCN-AIR-INTERCEPTOR-LINE > 2)
+					(or
+						(cc-players-unit-type-count any-enemy SCN-SPACE-LINE > 0)
+						(cc-players-unit-type-count any-enemy SCN-AIR-FORTRESS-LINE > 1)
+					)
+				)
+			)
+		)
+	)
+=>
+	(set-strategic-number snc-enemy-scn-air 2)
+)
+
+(defrule
+	(strategic-number snc-enemy-scn-air < 3)
+	(or
+		(cc-players-unit-type-count any-enemy SCN-AIR-FIGHTER-LINE > 5)
+		(or
+			(cc-players-unit-type-count any-enemy SCN-AIR-BOMBER-LINE > 5)
+			(or
+				(cc-players-unit-type-count any-enemy SCN-AIR-ATTACKER-LINE > 5)
+				(or
+					(cc-players-unit-type-count any-enemy SCN-AIR-INTERCEPTOR-LINE > 5)
+					(or
+						(cc-players-unit-type-count any-enemy SCN-SPACE-LINE > 1)
+						(cc-players-unit-type-count any-enemy SCN-AIR-FORTRESS-LINE > 4)
+					)
+				)
+			)
+		)
+	)
+=>
+	(set-strategic-number snc-enemy-scn-air 3)
 )
 
 ; wind down from LOTS to SOME (MANY is skipped, as you will likely want to maintain high AA to completely get rid of it)
 (defrule
+	(false)
 	(strategic-number snc-enemy-scn-air == 3)
 	(and
-		(cc-players-unit-type-count every-enemy SCN-AIR-FIGHTER-LINE <= 5)
+		(players-unit-type-count every-enemy SCN-AIR-FIGHTER-LINE <= 5)
 		(and
-			(cc-players-unit-type-count every-enemy SCN-AIR-BOMBER-LINE <= 4)
+			(players-unit-type-count every-enemy SCN-AIR-BOMBER-LINE <= 4)
 			(and
-				(cc-players-unit-type-count every-enemy SCN-AIR-ATTACKER-LINE <= 4)
+				(players-unit-type-count every-enemy SCN-AIR-ATTACKER-LINE <= 4)
 				(and
-					(cc-players-unit-type-count every-enemy SCN-AIR-INTERCEPTOR-LINE <= 12) 
+					(players-unit-type-count every-enemy SCN-AIR-INTERCEPTOR-LINE <= 12) 
 					(and
-						(cc-players-unit-type-count every-enemy SCN-SPACE-LINE == 0)
-						(cc-players-unit-type-count every-enemy SCN-AIR-FORTRESS-LINE <= 3)
+						(players-unit-type-count every-enemy SCN-SPACE-LINE == 0)
+						(players-unit-type-count every-enemy SCN-AIR-FORTRESS-LINE <= 3)
 					)
 					
 				)
@@ -1081,18 +1320,19 @@
 
 
 (defrule
+	(false)
 	(not (strategic-number snc-enemy-scn-air == 0))
 	(and
-		(cc-players-unit-type-count every-enemy SCN-AIR-FIGHTER-LINE == 0)
+		(players-unit-type-count every-enemy SCN-AIR-FIGHTER-LINE == 0)
 		(and
-			(cc-players-unit-type-count every-enemy SCN-AIR-BOMBER-LINE == 0)
+			(players-unit-type-count every-enemy SCN-AIR-BOMBER-LINE == 0)
 			(and
-				(cc-players-unit-type-count every-enemy SCN-AIR-ATTACKER-LINE == 0)
+				(players-unit-type-count every-enemy SCN-AIR-ATTACKER-LINE == 0)
 				(and
-					(cc-players-unit-type-count every-enemy SCN-AIR-INTERCEPTOR-LINE <= 6) 
+					(players-unit-type-count every-enemy SCN-AIR-INTERCEPTOR-LINE <= 6) 
 					(and
-						(cc-players-unit-type-count every-enemy SCN-SPACE-LINE == 0)
-						(cc-players-unit-type-count every-enemy SCN-AIR-FORTRESS-LINE == 0)
+						(players-unit-type-count every-enemy SCN-SPACE-LINE == 0)
+						(players-unit-type-count every-enemy SCN-AIR-FORTRESS-LINE == 0)
 					)
 				)
 			)
@@ -1111,7 +1351,7 @@
 	(not (goal enemyairsighted AIR-ALERT-NONE))
 =>
 	(set-goal enemyairsighted AIR-ALERT-NONE)
-	(chat-local-to-self "WAFFLE: Combining air, it's AIR-ALERT-NONE")
+	; (chat-to-all "WAFFLE: AA level AIR-ALERT-NONE")
 )
 
 (defrule
@@ -1129,7 +1369,9 @@
 	(not (goal enemyairsighted AIR-ALERT-LOW))
 =>
 	(set-goal enemyairsighted AIR-ALERT-LOW)
-	(chat-local-to-self "WAFFLE: Combining air, it's AIR-ALERT-LOW I")
+	(disable-timer t-air-counter-memory)
+	(enable-timer t-air-counter-memory 300)
+	; (chat-to-all "WAFFLE: AA level AIR-ALERT-LOW")
 )
 
 (defrule
@@ -1140,7 +1382,9 @@
 	(not (goal enemyairsighted AIR-ALERT-LOW))
 =>
 	(set-goal enemyairsighted AIR-ALERT-LOW)
-	(chat-local-to-self "WAFFLE: Combining air, it's AIR-ALERT-LOW II")
+	(disable-timer t-air-counter-memory)
+	(enable-timer t-air-counter-memory 300)
+	; (chat-to-all "WAFFLE: AA level AIR-ALERT-LOW")
 )
 
 (defrule
@@ -1157,7 +1401,9 @@
 	(not (goal enemyairsighted AIR-ALERT-GUARD))
 =>
 	(set-goal enemyairsighted AIR-ALERT-GUARD)
-	(chat-local-to-self "WAFFLE: Combining air, it's AIR-ALERT-GUARD")
+	(disable-timer t-air-counter-memory)
+	(enable-timer t-air-counter-memory 300)
+	; (chat-to-all "WAFFLE: AA level AIR-ALERT-GUARD")
 )
 
 (defrule
@@ -1168,7 +1414,9 @@
 	(not (goal enemyairsighted AIR-ALERT-DANGER))
 =>
 	(set-goal enemyairsighted AIR-ALERT-DANGER)
-	(chat-local-to-self "WAFFLE: Combining air, it's AIR-ALERT-DANGER I")
+	(disable-timer t-air-counter-memory)
+	(enable-timer t-air-counter-memory 300)
+	; (chat-to-all "WAFFLE: AA level AIR-ALERT-DANGER")
 )
 (defrule
 	(and
@@ -1178,7 +1426,168 @@
 	(not (goal enemyairsighted AIR-ALERT-DANGER))
 =>
 	(set-goal enemyairsighted AIR-ALERT-DANGER)
-	(chat-local-to-self "WAFFLE: Combining air, it's AIR-ALERT-DANGER II")
+	(disable-timer t-air-counter-memory)
+	(enable-timer t-air-counter-memory 300)
+	; (chat-to-all "WAFFLE: AA level AIR-ALERT-DANGER")
+)
+
+(defrule
+	(timer-triggered t-air-counter-memory)
+=>
+	(disable-timer t-air-counter-memory)
+	(set-strategic-number snc-enemy-regular-air 0)
+	(set-strategic-number snc-enemy-scn-air 0)
+	(set-goal enemyairsighted AIR-ALERT-NONE)
+	; (chat-to-all "WAFFLE: AA level memory expired, clearing AIR-ALERT")
+)
+
+(defrule
+	(timer-triggered t-jedi-counter-memory)
+=>
+	(disable-timer t-jedi-counter-memory)
+	(set-goal enemyjedisighted NO)
+	; (chat-local-to-self "WAFFLE: Jedi counter memory expired, clearing bounty hunter response")
+)
+
+; BOAT DETECTION: VISIBLE COMBAT BOATS
+
+(defrule
+	(strategic-number snc-enemy-boat-detection == 0)
+	(or
+		(players-unit-type-count any-enemy BOAT-LASER-LINE > 0)
+		(or
+			(players-unit-type-count any-enemy BOAT-CUTLASER-LINE > 0)
+			(or
+				(players-unit-type-count any-enemy BOAT-ARTILLERY-LINE > 0)
+				(or
+					(players-unit-type-count any-enemy BOAT-MISSILE-LINE > 0)
+					(players-unit-type-count any-enemy BOAT-MONITOR-LINE > 0)
+				)
+			)
+		)
+	)
+=>
+	(set-strategic-number snc-enemy-boat-detection 1)
+	; (chat-to-all "WAFFLE: Visible enemy combat boat sighted, raw boat alert = 1")
+)
+
+(defrule
+	(strategic-number snc-enemy-boat-detection < 2)
+	(or
+		(players-unit-type-count any-enemy BOAT-LASER-LINE > 5)
+		(or
+			(players-unit-type-count any-enemy BOAT-CUTLASER-LINE > 5)
+			(or
+				(players-unit-type-count any-enemy BOAT-ARTILLERY-LINE > 5)
+				(or
+					(players-unit-type-count any-enemy BOAT-MISSILE-LINE > 5)
+					(players-unit-type-count any-enemy BOAT-MONITOR-LINE > 5)
+				)
+			)
+		)
+	)
+=>
+	(set-strategic-number snc-enemy-boat-detection 2)
+	; (chat-to-all "WAFFLE: Many visible enemy combat boats sighted, raw boat alert = 2")
+)
+
+(defrule
+	(strategic-number snc-enemy-boat-detection < 3)
+	(or
+		(players-unit-type-count any-enemy BOAT-LASER-LINE > 10)
+		(or
+			(players-unit-type-count any-enemy BOAT-CUTLASER-LINE > 10)
+			(or
+				(players-unit-type-count any-enemy BOAT-ARTILLERY-LINE > 10)
+				(or
+					(players-unit-type-count any-enemy BOAT-MISSILE-LINE > 10)
+					(players-unit-type-count any-enemy BOAT-MONITOR-LINE > 10)
+				)
+			)
+		)
+	)
+=>
+	(set-strategic-number snc-enemy-boat-detection 3)
+	; (chat-to-all "WAFFLE: Lots visible enemy combat boats sighted, raw boat alert = 3")
+)
+
+(defrule
+	(strategic-number snc-enemy-boat-detection < 4)
+	(or
+		(players-unit-type-count any-enemy BOAT-LASER-LINE > 20)
+		(or
+			(players-unit-type-count any-enemy BOAT-CUTLASER-LINE > 20)
+			(or
+				(players-unit-type-count any-enemy BOAT-ARTILLERY-LINE > 20)
+				(or
+					(players-unit-type-count any-enemy BOAT-MISSILE-LINE > 20)
+					(players-unit-type-count any-enemy BOAT-MONITOR-LINE > 20)
+				)
+			)
+		)
+	)
+=>
+	(set-strategic-number snc-enemy-boat-detection 4)
+	; (chat-to-all "WAFFLE: Massive visible enemy combat fleet sighted, raw boat alert = 4")
+)
+
+; BOAT DETECTION: COMBINED ALERT STATE
+
+(defrule
+	(strategic-number snc-enemy-boat-detection == 0)
+	(not (goal enemyboatsighted BOAT-ALERT-NONE))
+=>
+	(set-goal enemyboatsighted BOAT-ALERT-NONE)
+	; (chat-to-all "WAFFLE: Combining boats, it's BOAT-ALERT-NONE")
+)
+
+(defrule
+	(strategic-number snc-enemy-boat-detection == 1)
+	(not (goal enemyboatsighted BOAT-ALERT-P1))
+=>
+	(set-goal enemyboatsighted BOAT-ALERT-P1)
+	(disable-timer t-boat-counter-memory)
+	(enable-timer t-boat-counter-memory 300)
+	; (chat-to-all "WAFFLE: Combining boats, it's BOAT-ALERT-P1")
+)
+
+(defrule
+	(strategic-number snc-enemy-boat-detection == 2)
+	(not (goal enemyboatsighted BOAT-ALERT-P2))
+=>
+	(set-goal enemyboatsighted BOAT-ALERT-P2)
+	(disable-timer t-boat-counter-memory)
+	(enable-timer t-boat-counter-memory 300)
+	; (chat-to-all "WAFFLE: Combining boats, it's BOAT-ALERT-P2")
+)
+
+(defrule
+	(strategic-number snc-enemy-boat-detection == 3)
+	(not (goal enemyboatsighted BOAT-ALERT-P3))
+=>
+	(set-goal enemyboatsighted BOAT-ALERT-P3)
+	(disable-timer t-boat-counter-memory)
+	(enable-timer t-boat-counter-memory 300)
+	; (chat-to-all "WAFFLE: Combining boats, it's BOAT-ALERT-P3")
+)
+
+(defrule
+	(strategic-number snc-enemy-boat-detection == 4)
+	(not (goal enemyboatsighted BOAT-ALERT-P4))
+=>
+	(set-goal enemyboatsighted BOAT-ALERT-P4)
+	(disable-timer t-boat-counter-memory)
+	(enable-timer t-boat-counter-memory 300)
+	; (chat-to-all "WAFFLE: Combining boats, it's BOAT-ALERT-P4")
+)
+
+(defrule
+	(timer-triggered t-boat-counter-memory)
+=>
+	(disable-timer t-boat-counter-memory)
+	(set-strategic-number snc-enemy-boat-detection 0)
+	(set-goal enemyboatsighted BOAT-ALERT-NONE)
+	; (chat-to-all "WAFFLE: Boat counter memory expired, clearing naval destroyer response")
 )
 
 ; MECH DETECTION: REGULAR MECH
@@ -1461,28 +1870,32 @@
 (defrule
 	(goal enemyjedisighted NO)
 	(or
-	(cc-players-unit-type-count any-enemy UNIT-JEDI-LINE > 2) ; more than two for holocron collection duty indicates something's up
+	(players-unit-type-count any-enemy UNIT-JEDI-LINE > 2) ; more than two for holocron collection duty indicates something's up
 		(or
-			(cc-players-unit-type-count any-enemy UNIT-MASTER-LINE > 0)
+			(players-unit-type-count any-enemy UNIT-MASTER-LINE > 0)
 			(or
-				(cc-players-unit-type-count any-enemy UNIT-SHADOWTROOPER-LINE > 0)
-				(cc-players-unit-type-count any-enemy UU-JEDIALT-LINE > 2) ; 1-2 of these ain't a biggie
+				(players-unit-type-count any-enemy UNIT-SHADOWTROOPER-LINE > 0)
+				(players-unit-type-count any-enemy UU-JEDIALT-LINE > 2) ; 1-2 of these ain't a biggie
 			)
 		)
 	)
 =>
 	(set-goal enemyjedisighted YES)
+	(disable-timer t-jedi-counter-memory)
+	(enable-timer t-jedi-counter-memory 300)
+	; (chat-local-to-self "WAFFLE: Visible Jedi threat sighted, enabling bounty hunter response")
 )
 
 (defrule
+	(false)
 	(goal enemyjedisighted YES)
 	(and
-	(cc-players-unit-type-count every-enemy UNIT-JEDI-LINE <= 2)
+	(players-unit-type-count every-enemy UNIT-JEDI-LINE <= 2)
 		(and
-			(cc-players-unit-type-count every-enemy UNIT-MASTER-LINE <= 0)
+			(players-unit-type-count every-enemy UNIT-MASTER-LINE <= 0)
 			(and
-				(cc-players-unit-type-count every-enemy UNIT-SHADOWTROOPER-LINE <= 0)
-				(cc-players-unit-type-count every-enemy UU-JEDIALT-LINE <= 2)
+				(players-unit-type-count every-enemy UNIT-SHADOWTROOPER-LINE <= 0)
+				(players-unit-type-count every-enemy UU-JEDIALT-LINE <= 2)
 			)
 		)
 	)
@@ -1521,6 +1934,7 @@
 	(goal tryingtobuild MECH)
 	(can-build-with-escrow BLDG-TRAINMECH)
 	(metal-amount > 26)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINMECH)
@@ -1531,6 +1945,7 @@
 	(goal tryingtobuild HVYWEAP)
 	(can-build-with-escrow BLDG-TRAINHEAVY)
 	(metal-amount > 26)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINHEAVY)
@@ -1541,6 +1956,7 @@
 	(goal tryingtobuild AIRBASE)
 	(can-build-with-escrow BLDG-TRAINAIR)
 	(metal-amount > 26)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINAIR)
@@ -1629,6 +2045,15 @@
 	(set-goal resource-search SEARCH) ; see nova for more information
 )
 
+; Start holocron collection service attempts after the early TL3 spike has had time to breathe.
+(defrule
+	(current-age >= tech-level-3)
+	(game-time > 1500)
+	(goal holocroncollectionservices 0)
+=>
+	(set-goal holocroncollectionservices 2)
+)
+
 ; allow training a holocron collector every < 30min (YMMV depending on how far tenmin is through when holocron collector trained)
 (defrule
 	(timer-triggered t-tenmin)
@@ -1694,4 +2119,3 @@
 	(disable-timer t-tenmin)
 	(enable-timer t-tenmin 600) ; reset
 )
-

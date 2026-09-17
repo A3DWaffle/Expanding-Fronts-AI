@@ -17,10 +17,29 @@
 ; *** Chapter 0: SETUP ***
 ; =====================================================
 
+; This SN causes idle military to spread across the town and is unstable in MP.
+; Keep it locked off except for true water/sealift, where the engine needs idle
+; ground units available for transport assignment.
 (defrule
-	(strategic-number sn-task-ungrouped-soldiers == 1)
+	(not (strategic-number sn-task-ungrouped-soldiers == 0))
+	(not (goal special-map WATER))
+=>
+	; (chat-local-to-self "WAFFLE: sn-task-ungrouped-soldiers tried to enable. Forcing it back to 0")
+	(disable-self)
+)
+
+(defrule
+	(not (strategic-number sn-task-ungrouped-soldiers == 0))
+	(not (goal special-map WATER))
 =>
 	(set-strategic-number sn-task-ungrouped-soldiers 0)
+)
+
+(defrule
+	(strategic-number sn-gather-idle-soldiers-at-center == 0)
+	(not (strategic-number sn-gather-defense-units == 1))
+=>
+	(set-strategic-number sn-gather-defense-units 1)
 )
 
 ; stuff about moving to center has been moved elsewhere
@@ -118,10 +137,11 @@
 	(set-strategic-number sn-coop-share-information 1) ; TRYING THIS 
 	(set-strategic-number sn-coop-share-attacking 0) ; apparently this is a thing; documentation suggests to set to 0
 	(set-strategic-number sn-task-ungrouped-soldiers 0)
+	(set-strategic-number sn-gather-defense-units 1)
+	(set-strategic-number sn-gather-idle-soldiers-at-center 0)
 
 	(set-strategic-number sn-attack-intelligence 1)
-;       (set-strategic-number sn-gather-defense-units 1)
-	(set-strategic-number sn-defense-distance 40)
+	(set-strategic-number sn-defense-distance 12)
 
 	(set-strategic-number sn-ignore-attack-group-under-attack 0)
 	(set-strategic-number sn-enemy-sighted-response-distance 10)
@@ -135,7 +155,8 @@
 	(current-age >= tech-level-2)
 =>
 	(set-strategic-number sn-group-form-distance 20)
-	(set-strategic-number sn-enemy-sighted-response-distance 20)
+	(set-strategic-number sn-defense-distance 14)
+	(set-strategic-number sn-enemy-sighted-response-distance 15)
 	(set-strategic-number sn-ignore-attack-group-under-attack 0)
 
 	(disable-self)
@@ -148,7 +169,8 @@
 	(current-age >= tech-level-3)
 =>
 	(set-strategic-number sn-group-form-distance 20) ; 30 is maximum apparently
-	(set-strategic-number sn-enemy-sighted-response-distance 30) ; 50 is maximum apparently
+	(set-strategic-number sn-defense-distance 16)
+	(set-strategic-number sn-enemy-sighted-response-distance 20) ; 50 is maximum apparently
 
 	(disable-self)
 )
@@ -171,7 +193,8 @@
 	(current-age == tech-level-4)
 =>
 	(set-strategic-number sn-group-form-distance 25)
-	(set-strategic-number sn-enemy-sighted-response-distance 30)
+	(set-strategic-number sn-defense-distance 18)
+	(set-strategic-number sn-enemy-sighted-response-distance 20)
 
 	(disable-self)
 )
@@ -263,7 +286,6 @@
 	(players-building-type-count any-enemy BLDG-MAIN > 0) ; found enemy CC
 =>
 	(set-goal scouting YES) ; normal behaviour
-	(chat-to-all "WAFFLE: Spotted enemy CC")
 	(disable-self)
 )
 
@@ -326,7 +348,7 @@
 			(goal scouting PULSEYESA)			; ditto
 		)
 	)
-	(not (strategic-number sn-number-explore-groups == 1))
+	(not (strategic-number sn-number-explore-groups == 2))
 	(not (player-in-game any-ally))
 	(current-age >= tech-level-3)
 =>
@@ -438,12 +460,3 @@
 	(set-strategic-number sn-maximum-explore-group-size 1)
 	(disable-self)
 )
-
-
-
-
-
-
-
-
-

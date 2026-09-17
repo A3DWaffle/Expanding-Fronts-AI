@@ -20,6 +20,9 @@
 (defrule
 	(true)
 =>
+	(set-goal tryingtobuild NULL)
+	(set-goal get-mad NO)
+	(set-goal buildpause NO)
 	(set-shared-goal age-match-human NO)
 	(set-shared-goal treatytimer 0)
 	(set-shared-goal customdifficulty NULL)
@@ -39,10 +42,10 @@
 ; Had to just rewrite these rules from sn-gather
 (defrule
 	(current-age == tech-level-1)
-	(building-type-count-total BCORE-MAIN > 0)
-	(building-type-count-total BCORE-POWER > 0)
-	(building-type-count-total BECO-FOOD > 0)		; All relevant T1 buildings done
-	(building-type-count-total BECO-CARB > 0)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-DROPCHOW > 0)		; All relevant T1 buildings done
+	(building-type-count-total BLDG-DROPCARBON > 0)
 	(not (or
 		(goal savetheanimals YES)
 		(goal savetheanimals WAITING)
@@ -56,10 +59,10 @@
 
 (defrule
 	(current-age == tech-level-1)
-	(building-type-count-total BCORE-MAIN > 0)
-	(building-type-count-total BCORE-POWER > 0)
-	(building-type-count-total BECO-FOOD > 0)
-	(building-type-count-total BECO-CARB > 0)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
 	(not (or
 		(goal savetheanimals YES)
 		(goal savetheanimals WAITING)
@@ -89,7 +92,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(game-time > latestart-nerf-timeout)
-	(building-type-count-total BCORE-MAIN >= 2)
+	(building-type-count-total BLDG-MAIN >= 2)
 =>
 	(set-strategic-number sn-metal-gatherer-percentage 10)
 	(disable-self)
@@ -162,6 +165,7 @@
 
 (defrule
         (can-build-with-escrow BLDG-MONUMENT)
+	(not (goal buildpause YES))
 =>
         (release-escrow carbon)
         (release-escrow nova)
@@ -376,6 +380,7 @@
 	(building-type-count-total BLDG-DROPCHOW > 0)
 	(building-type-count-total BLDG-TRAINBOAT == 0)
 	(can-build-with-escrow BLDG-TRAINBOAT)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
@@ -390,6 +395,7 @@
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(building-type-count-total BLDG-TRAINBOAT < 2)
 	(can-build BLDG-TRAINBOAT)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-TRAINBOAT)
 	(set-goal resourcerefund cshipyard)
@@ -401,6 +407,7 @@
 	(building-type-count-total BLDG-DROPCARBON > 0)
 	(building-type-count-total BLDG-TRAINBOAT < 2)
 	(can-build-with-escrow BLDG-TRAINBOAT)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
@@ -415,6 +422,7 @@
 	(goal special-map WATER)
 	(building-type-count-total BLDG-TRAINBOAT < 4)
 	(can-build-with-escrow BLDG-TRAINBOAT)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
@@ -436,6 +444,7 @@
 	(goal special-map WATER)
 	(building-type-count-total BLDG-TRAINBOAT < 5)
 	(can-build-with-escrow BLDG-TRAINBOAT)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
@@ -825,6 +834,7 @@
 	(game-time > raiders-timeout) ; raiders starts are very odd and this does not often work properly
 	(building-type-count-total BLDG-MAIN == 0)
 	(can-build-with-escrow BLDG-MAIN)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(release-escrow metal)
@@ -842,6 +852,7 @@
 	)
 	
 	(can-build-with-escrow BLDG-MAIN)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(release-escrow metal)
@@ -856,6 +867,7 @@
 		(cc-players-building-type-count any-ally BLDG-MAIN  >= 3)
 	)
 	(can-build-with-escrow BLDG-MAIN)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(release-escrow metal)
@@ -870,6 +882,7 @@
 	(current-age == tech-level-3)
 	(building-type-count-total BLDG-MAIN < TL3-CCs)
 	(can-build-with-escrow BLDG-MAIN)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(release-escrow metal)
@@ -882,6 +895,7 @@
 	(building-type-count-total BLDG-MAIN < TL4-CCs)
 	(can-build-with-escrow BLDG-MAIN)
 	(metal-amount > 110) ; try to not release escrow in T4
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-MAIN)
@@ -894,8 +908,10 @@
 	(building-type-count BLDG-MAIN > 0)
 	(housing-headroom < 5)			; "do we need a house" check
 	(population-headroom > 0)		; check for if you still have headroom against the pop limit
-	(can-build BLDG-PREFAB)
+	(can-build-with-escrow BLDG-PREFAB)
+	(not (goal buildpause YES))
 =>
+	(release-escrow carbon)
 	(build BLDG-PREFAB)
 )
 
@@ -904,8 +920,10 @@
 	(current-age == tech-level-2)
 	(housing-headroom < 10)	
 	(population-headroom > 0)
-	(can-build BLDG-PREFAB)
+	(can-build-with-escrow BLDG-PREFAB)
+	(not (goal buildpause YES))
 =>
+	(release-escrow carbon)
 	(build BLDG-PREFAB)
 )
 
@@ -914,8 +932,21 @@
 	(current-age >= tech-level-3)
 	(housing-headroom < 15) ; build lots of extra prefabs to prevent production from being capped
 	(population-headroom > 0)
-	(can-build BLDG-PREFAB)
+	(can-build-with-escrow BLDG-PREFAB)
+	(not (goal buildpause YES))
 =>
+	(release-escrow carbon)
+	(build BLDG-PREFAB)
+)
+
+; Recovery path: if housing was destroyed and current pop exceeds housing,
+; the normal population-headroom/buildpause gates can block rebuilding.
+(defrule
+	(building-type-count BLDG-MAIN > 0)
+	(housing-headroom < 1)
+	(can-build-with-escrow BLDG-PREFAB)
+=>
+	(release-escrow carbon)
 	(build BLDG-PREFAB)
 )
 
@@ -931,12 +962,15 @@
 (defrule
 	(current-age == tech-level-1)
 	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
 	(not (goal savetheanimals YES)) ; do not waste carbon on farms when nursery is needed
 	(idle-farm-count < 1)
 	(can-build BLDG-FARM)
 	(not (goal berries-present YES))
 	(not (goal berries-present PLENTY))
 	(goal allowfarm YES)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-FARM)
 )
@@ -944,6 +978,8 @@
 (defrule
 	(current-age == tech-level-1)
 	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
 	(not (goal savetheanimals YES)) ; do not waste carbon on farms when nursery is needed
 	(idle-farm-count < 1)
 	(can-build BLDG-FARM)
@@ -953,17 +989,21 @@
 	)
 	(sheep-and-forage-too-far)
 	(goal allowfarm YES)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-FARM)
 )
 
 (defrule
 	(current-age == tech-level-1)
-	(building-type-count-total BECO-CARB > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
 	(idle-farm-count < 3)    ; build 3 spare farms by the
 	(current-age-time > 420) ; 7min mark
 	(can-build BLDG-FARM)    ; was a savetheanimals check here too but honestly at the 8min mark I'd rather they get farms up
 	(goal allowfarm YES)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-FARM)
 )
@@ -973,6 +1013,7 @@
 	(idle-farm-count < 5) ; maintain 4 spare farms
 	(can-build BLDG-FARM)
 	(goal allowfarm YES)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-FARM)
 )
@@ -982,6 +1023,7 @@
 	(idle-farm-count < 10) ; maintain 9
 	(can-build BLDG-FARM)
 	(goal allowfarm YES)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-FARM)
 )
@@ -991,6 +1033,7 @@
 	(idle-farm-count < 15) ; maintain LOTS
 	(can-build BLDG-FARM)
 	(goal allowfarm YES)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-FARM)
 )
@@ -1000,6 +1043,7 @@
 	(building-type-count-total BLDG-FARM < 15) ; always have 15 on hand regardless of idle count
 	(can-build BLDG-FARM)
 	(goal allowfarm YES)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-FARM)
 )
@@ -1041,22 +1085,22 @@
 ; --- 6d: Power Core ---
 
 (defrule
-	(building-type-count-total BMIL-SHIP <= 1)
+	(building-type-count-total BLDG-TRAINBOAT <= 1)
 	(not (strategic-number sn-max-unpowered-buildings == 1))
 =>
 	(set-strategic-number sn-max-unpowered-buildings 1) ; This variable had ranges between 0 and 2, but it triggers on 1 higher (so a value of 1 means it fires if 2 buildings are unpowered)
 )
 
 (defrule
-	(building-type-count-total BMIL-SHIP > 1) 
-	(building-type-count-total BMIL-SHIP <= 3) ; 2 or 3 shipyards
+	(building-type-count-total BLDG-TRAINBOAT > 1) 
+	(building-type-count-total BLDG-TRAINBOAT <= 3) ; 2 or 3 shipyards
 	(not (strategic-number sn-max-unpowered-buildings == 2))
 =>
 	(set-strategic-number sn-max-unpowered-buildings 2) ; so two buildings being unpowered is fine - one random building and one shipyard (hopefully), any more means power core
 )
 
 (defrule
-	(building-type-count-total BMIL-SHIP >= 4)
+	(building-type-count-total BLDG-TRAINBOAT >= 4)
 	(not (strategic-number sn-max-unpowered-buildings == 3))
 =>
 	(set-strategic-number sn-max-unpowered-buildings 3) ; three buildings being unpowered is fine, two shipyards and one other random building
@@ -1067,6 +1111,7 @@
 	(building-type-count-total BLDG-DROPCARBON > 0)
 	(building-type-count BLDG-MAIN > 0)
 	(can-build BLDG-POWERCORE)
+	(not (goal buildpause YES))
 	=>
 	(build BLDG-POWERCORE)
 	(set-goal resourcerefund cpowercore) ; carbon cheat that refunds based on difficulty
@@ -1092,6 +1137,7 @@
 			)
 		)
 	)
+	(not (goal buildpause YES))
 	=>
 	(release-escrow carbon)
 	(set-goal resourcerefund cpowercore) 
@@ -1102,7 +1148,8 @@
 (defrule
 	(goal resourcerefund cpowercore)
 =>
-	(chat-local-to-self "WAFFLE: Releasing escrow for power core") ; see cheats file for, well, the cheat
+	; (chat-local-to-self "WAFFLE: Releasing escrow for power core") ; see cheats file for, well, the cheat
+	(disable-self)
 )
 
 ; --- 6e: Food Ctr ---
@@ -1117,6 +1164,7 @@
 	(building-type-count-total BLDG-DROPCHOW == 0)
 	(not (goal savetheanimals YES))
 	(can-build BLDG-DROPCHOW)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPCHOW)
 )
@@ -1130,6 +1178,7 @@
 		(not (goal savetheanimals YES))
 		(game-time > 240) ; abort timeout for animals
 	)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPCHOW)
 )
@@ -1149,6 +1198,7 @@
 	(not (town-under-attack))
 	(can-build BLDG-DROPCHOW)
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPCHOW)
 )
@@ -1160,6 +1210,7 @@
 	(can-build BLDG-DROPCHOW)
 	(not (town-under-attack))
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPCHOW)
 )
@@ -1171,6 +1222,7 @@
 	(can-build BLDG-DROPCHOW)
 	(not (town-under-attack))
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPCHOW)
 )
@@ -1184,6 +1236,7 @@
 	(goal berries-present PLENTY)
 	(can-build BLDG-DROPCHOW)
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPCHOW)
 )
@@ -1199,6 +1252,7 @@
 	(goal berries-present PLENTY)
 	(can-build BLDG-DROPCHOW)
 	(building-type-count BLDG-MAIN > 0)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPCHOW)
 )
@@ -1251,6 +1305,7 @@
 	(can-build BLDG-DROPCARBON)
 	(not (goal savetheanimals YES)) ; wanna get those nerfs housed ASAP
 	(game-time > 60) ; do not do immediately
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPCARBON)
 )
@@ -1260,6 +1315,7 @@
 	(game-time > 180)
 	(building-type-count-total BLDG-DROPCARBON == 0)
 	(can-build BLDG-DROPCARBON)
+	(not (goal buildpause YES))
 	=>
 	(build BLDG-DROPCARBON)
 )
@@ -1271,6 +1327,7 @@
 	(building-type-count BLDG-DROPCARBON < 12) ; cap of 12, but these can and should be deleted
 	(game-time > 180) ; 3min
 	(can-build-with-escrow BLDG-DROPCARBON)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
         (build BLDG-DROPCARBON)
@@ -1297,6 +1354,7 @@
 	(building-type-count-total BLDG-DROPNOVA < 1) 
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-DROPNOVA)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-DROPNOVA)
@@ -1312,6 +1370,7 @@
 	)
 	(building-type-count-total BLDG-DROPNOVA < 2) ; Forcibly build 2 nova procs in T2 for near and far nova
 	(can-build BLDG-DROPNOVA)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPNOVA)
 )
@@ -1365,6 +1424,7 @@
 	(building-type-count-total BLDG-MAIN > 0)
 	(dropsite-min-distance nova > 7)
 	(can-build BLDG-DROPNOVA)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPNOVA)
 )
@@ -1383,6 +1443,7 @@
 	)
 	;(dropsite-min-distance metal > 4)
 	(can-build BLDG-DROPMETAL)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPMETAL)
 )
@@ -1428,6 +1489,7 @@
 	(building-type-count-total BLDG-MAIN > 0)
 	(dropsite-min-distance metal > 7)
 	(can-build BLDG-DROPMETAL)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-DROPMETAL)
 )
@@ -1517,7 +1579,7 @@
 	(goal resource-search SEARCH) ; essentially the timer going off
 =>
 	(set-goal nova-found NO)
-	(chat-local-to-self "WAFFLE: No nova.")
+	; (chat-local-to-self "WAFFLE: No nova.")
 )
 
 ; rule 2: if timer triggered and we have no nova miners, maybe there's no nova left on the map.
@@ -1531,7 +1593,7 @@
 	(goal resource-search SEARCH) ; essentially the timer going off
 =>
 	(set-goal nova-found MAYBENOT)
-	(chat-local-to-self "WAFFLE: maybe no nova?")
+	; (chat-local-to-self "WAFFLE: maybe no nova?")
 )
 
 ; --- 7c: Ore Miners ---
@@ -1563,7 +1625,7 @@
     (goal resource-search SEARCH) ; essentially the timer going off
 =>
     (set-goal ore-found NO)
-    (chat-local-to-self "WAFFLE: No ore.")
+    ; (chat-local-to-self "WAFFLE: No ore.")
 )
 
 ; rule 2: if timer triggered and we have no nova miners, maybe there's no nova left on the map.
@@ -1577,7 +1639,7 @@
     (goal resource-search SEARCH) ; essentially the timer going off
 =>
     (set-goal ore-found MAYBENOT)
-    (chat-local-to-self "WAFFLE: maybe no ore?")
+    ; (chat-local-to-self "WAFFLE: maybe no ore?")
 )
 
 ; --- 7d: Tidy Up ---
@@ -1763,6 +1825,8 @@
         (set-strategic-number sn-holocron-defend-priority 0)
 
         (set-strategic-number sn-cap-civilian-builders 250)
+        (set-strategic-number sn-percent-civilian-builders 15)
+        (set-strategic-number sn-percent-civilian-gatherers 85)
         (set-strategic-number sn-minimum-civilian-explorers 0)
 
         (set-strategic-number sn-cap-civilian-explorers 0)
@@ -1855,6 +1919,7 @@
     (building-type-count-total BLDG-TRAINTROOPER == 0)
     (can-build-with-escrow BLDG-TRAINTROOPER)
 	(current-age-time > 120) ; give it a slight delay
+	(not (goal buildpause YES))
 =>
     (release-escrow carbon)
     (build BLDG-TRAINTROOPER)
@@ -1908,6 +1973,7 @@
 (defrule
         (building-type-count-total BLDG-SPACEPORT == 0)
         (can-build-with-escrow BLDG-SPACEPORT)
+	(not (goal buildpause YES))
 =>
         (release-escrow carbon)
         (build BLDG-SPACEPORT)
@@ -1917,6 +1983,7 @@
         (building-type-count-total BLDG-SPACEPORT > 0)
         (building-type-count-total BLDG-TRAINJEDI == 0)
         (can-build-with-escrow BLDG-TRAINJEDI)
+	(not (goal buildpause YES))
 =>
         (release-escrow carbon)
         (build BLDG-TRAINJEDI)
@@ -1924,10 +1991,8 @@
 
 (defrule
 	(not (civ-selected BLACKSUN))
-	(and
-		(unit-type-count-total UNIT-JEDIHOLO-LINE == 0)
-		(unit-type-count-total UNIT-JEDI-LINE == 0)
-	)
+	(unit-type-count-total UNIT-JEDIHOLO-LINE == 0)
+	(unit-type-count-total UNIT-JEDI-LINE == 0)
 	(can-train UNIT-JEDI-LINE)
 	=>
 	(train UNIT-JEDI-LINE)
@@ -1962,10 +2027,8 @@
 
 (defrule
 	(not (civ-selected BLACKSUN))
-	(and
-		(unit-type-count-total UNIT-JEDIHOLO-LINE == 0)
-		(unit-type-count-total UNIT-JEDI-LINE == 0)
-	)
+	(unit-type-count-total UNIT-JEDIHOLO-LINE == 0)
+	(unit-type-count-total UNIT-JEDI-LINE == 0)
 	(can-train-with-escrow UNIT-JEDI-LINE)
 	(not (can-train UNIT-JEDI-LINE))
 	=>
@@ -2005,6 +2068,7 @@
 (defrule
         (building-type-count-total BLDG-RESCTR == 0)
         (can-build-with-escrow BLDG-RESCTR)
+	(not (goal buildpause YES))
 =>
         (release-escrow carbon)
         (build BLDG-RESCTR)
@@ -2013,6 +2077,7 @@
 (defrule
         (building-type-count-total BLDG-TRAINAIR == 0)
         (can-build-with-escrow BLDG-TRAINAIR)
+	(not (goal buildpause YES))
 =>
         (release-escrow carbon)
         (build BLDG-TRAINAIR)
@@ -2236,7 +2301,7 @@
 	(strategic-number snc-lure-amount > 0)
 	(goal allowgarbage LOWLUREFOOD)
 =>
-	(chat-local-to-self "WAFFLE: T1 Lure Cheat activate. Low food")
+	; (chat-local-to-self "WAFFLE: T1 Lure Cheat activate. Low food")
 	(cc-add-resource food 100)
 	(set-goal cheatlure SUBTRACT)
 )
@@ -2247,7 +2312,7 @@
 	(strategic-number snc-lure-amount > 0)
 	(not (goal allowgarbage LOWLUREFOOD))
 =>
-	(chat-local-to-self "WAFFLE: T1 Lure Cheat activate. Normal food")
+	; (chat-local-to-self "WAFFLE: T1 Lure Cheat activate. Normal food")
 	(cc-add-resource food 200)
 	(set-goal cheatlure SUBTRACT)
 )
@@ -2300,7 +2365,7 @@
 =>
 	(cc-add-resource carbon 10) 
 	(cc-add-resource food 50)
-	(chat-local-to-self "WAFFLE: Enemy in T2 or timer, panic res")
+	; (chat-local-to-self "WAFFLE: Enemy in T2 or timer, panic res")
 ) 
 
 
@@ -2494,7 +2559,7 @@
 	(strategic-number snc-lure-amount > 0)
 	(goal allowgarbage LOWLUREFOOD)
 =>
-	(chat-local-to-self "WAFFLE: T1 Lure Cheat activate. Low food")
+	; (chat-local-to-self "WAFFLE: T1 Lure Cheat activate. Low food")
 	(cc-add-resource food 200)
 	(set-goal cheatlure SUBTRACT)
 )
@@ -2505,7 +2570,7 @@
 	(strategic-number snc-lure-amount > 0)
 	(not (goal allowgarbage LOWLUREFOOD))
 =>
-	(chat-local-to-self "WAFFLE: T1 Lure Cheat activate. Normal food")
+	; (chat-local-to-self "WAFFLE: T1 Lure Cheat activate. Normal food")
 	(cc-add-resource food 300)
 	(set-goal cheatlure SUBTRACT)
 )
@@ -2558,7 +2623,7 @@
 =>
 	(cc-add-resource carbon 10) 
 	(cc-add-resource food 50)
-	(chat-local-to-self "WAFFLE: Enemy in T2 or timer, panic res")
+	; (chat-local-to-self "WAFFLE: Enemy in T2 or timer, panic res")
 ) 
 
 
@@ -2737,7 +2802,7 @@
 =>
 	(disable-timer t-aicheat)
 	(enable-timer t-aicheat 180) ; 180s for now, can change as need be
-	(chat-local-to-self "WAFFLE: Timer cheat rollover. Expect free money.")
+	; (chat-local-to-self "WAFFLE: Timer cheat rollover. Expect free money.")
 )
 
 
@@ -3067,6 +3132,10 @@
 (defrule
 	(goal get-mad DOOMSDAY)
 	(military-population > 10)
+	(or
+		(shared-goal treatytimer 0)
+		(shared-goal treatytimer 1)
+	)
 =>
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 60) ; 1min
@@ -3076,6 +3145,10 @@
 
 (defrule
 	(timer-triggered t-attackgroup-alt)
+	(or
+		(shared-goal treatytimer 0)
+		(shared-goal treatytimer 1)
+	)
 =>
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 60) ; 1min
@@ -3086,6 +3159,10 @@
 (defrule
 	(goal get-mad DOOMSDAY)
 	(cc-players-building-type-count any-human BLDG-MONUMENT > 0)
+	(or
+		(shared-goal treatytimer 0)
+		(shared-goal treatytimer 1)
+	)
 =>
 	(set-goal aready YES)
 	(disable-self)
@@ -3098,56 +3175,62 @@
 (defrule
 	(goal get-mad DOOMSDAY)
 	(current-age >= tech-level-3)
-	(can-build-with-escrow BMIL-TROOP)
-	(building-type-count-total BMIL-TROOP < 4)
+	(can-build-with-escrow BLDG-TRAINTROOPER)
+	(building-type-count-total BLDG-TRAINTROOPER < 4)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
-	(build BMIL-TROOP)
+	(build BLDG-TRAINTROOPER)
 )
 
 (defrule
 	(goal get-mad DOOMSDAY)
 	(current-age >= tech-level-3)
-	(can-build-with-escrow BMIL-MECH)
-	(building-type-count-total BMIL-MECH < 4)
+	(can-build-with-escrow BLDG-TRAINMECH)
+	(building-type-count-total BLDG-TRAINMECH < 4)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
-	(build BMIL-MECH)
+	(build BLDG-TRAINMECH)
 )
 (defrule
 	(goal get-mad DOOMSDAY)
 	(current-age >= tech-level-3)
-	(can-build-with-escrow BMIL-HW)
-	(building-type-count-total BMIL-HW < 4)
+	(can-build-with-escrow BLDG-TRAINHEAVY)
+	(building-type-count-total BLDG-TRAINHEAVY < 4)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
-	(build BMIL-HW)
+	(build BLDG-TRAINHEAVY)
 )
 (defrule
 	(goal get-mad DOOMSDAY)
 	(current-age >= tech-level-3)
-	(can-build-with-escrow BMIL-AIR)
-	(building-type-count-total BMIL-AIR < 4)
+	(can-build-with-escrow BLDG-TRAINAIR)
+	(building-type-count-total BLDG-TRAINAIR < 4)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
-	(build BMIL-AIR)
+	(build BLDG-TRAINAIR)
 )
 (defrule
 	(goal get-mad DOOMSDAY)
 	(current-age >= tech-level-3)
-	(can-build BCORE-FORT)
-	(building-type-count-total BCORE-FORT < 4)
+	(can-build BLDG-GOVTCTR)
+	(building-type-count-total BLDG-GOVTCTR < 4)
+	(not (goal buildpause YES))
 =>
-	(build BCORE-FORT)
+	(build BLDG-GOVTCTR)
 )
 (defrule
 	(goal get-mad DOOMSDAY)
 	(current-age >= tech-level-3)
-	(can-build-with-escrow BRES-WAR)
-	(building-type-count-total BRES-WAR < 2)
+	(can-build-with-escrow BLDG-WARCTR)
+	(building-type-count-total BLDG-WARCTR < 2)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
-	(build BRES-WAR)
+	(build BLDG-WARCTR)
 )
 
 ; ---------------------
@@ -3266,6 +3349,7 @@
 (defrule
     ; Anti-Air Retrofit
 	(can-research-with-escrow rt-aaretrofit)
+	(current-age >= tech-level-4)
 	(goal get-mad DOOMSDAY)
 =>
 	(release-escrow metal)
@@ -3534,6 +3618,7 @@
 (defrule
     ; WK Forest Vision
 	(can-research-with-escrow rt-forest-vision)
+	(current-age >= tech-level-4)
 	(goal get-mad DOOMSDAY)
 =>
 	(release-escrow food)
@@ -3544,6 +3629,7 @@
 (defrule
     ; GO Geonosian Engineers
 	(can-research-with-escrow rt-geoengnr)
+	(current-age >= tech-level-4)
 	(goal get-mad DOOMSDAY)
 	=>
 	(release-escrow food)
@@ -3554,6 +3640,7 @@
 (defrule
     ; GO Hailfire Rocket Pods
 	(can-research-with-escrow rt-hailfire-missiles)
+	(current-age >= tech-level-4)
 	(goal get-mad DOOMSDAY)
 =>
 	(release-escrow carbon)
@@ -3741,6 +3828,7 @@
 
 (defrule
 	(can-research-with-escrow ut-artillery-2) ; hvy arty
+	(current-age >= tech-level-4)
 	(unit-type-count-total SIEGE-ARTILLERY-LINE > 0)
 	(goal get-mad DOOMSDAY)
 =>
@@ -3751,6 +3839,7 @@
 
 (defrule
 	(can-research-with-escrow ut-ram-2) ; hvy pummel
+	(current-age >= tech-level-4)
 	(unit-type-count-total SIEGE-RAM-LINE > 0)
 	(goal get-mad DOOMSDAY)
 =>
@@ -3761,6 +3850,7 @@
 
 (defrule
 	(can-research-with-escrow ut-missile-launcher-2) ; hvy aa
+	(current-age >= tech-level-4)
 	(goal get-mad DOOMSDAY)
 =>
 	(release-escrow food)
@@ -3779,13 +3869,18 @@
 	(goal get-mad DOOMSDAY)
 	(unit-type-count-total UNIT-MISSILE-LINE  < TL4-aa-trooper-arm-air-alert-low-p1)
 	(can-train UNIT-MISSILE-LINE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(not (goal support-aircraft YES))
 =>
 	(train UNIT-MISSILE-LINE)
 )
 
 (defrule
 	(goal get-mad DOOMSDAY)
-	(unit-type-count-total UNIT-MECH3-LINE < TL4-trooper-arm)
+	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm)
 	(can-train UNIT-LASER-LINE)
 =>
 	(train UNIT-LASER-LINE)
@@ -3793,7 +3888,7 @@
 
 (defrule
 	(goal get-mad DOOMSDAY)
-	(unit-type-count-total UNIT-MECH3-LINE < TL3-mounted-core)
+	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core)
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -3801,7 +3896,7 @@
 
 (defrule
 	(goal get-mad DOOMSDAY)
-	(unit-type-count-total UNIT-MECH3-LINE < TL4-grenade-arm)
+	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm)
 	(can-train UNIT-GRENADE-LINE)
 =>
 	(train UNIT-GRENADE-LINE)
@@ -3837,13 +3932,14 @@
 	(goal get-mad DOOMSDAY)
 	(unit-type-count-total SIEGE-MISSILE-LINE < TL4-aa-mobile-detect-air-alert-low-p1)
 	(can-train SIEGE-MISSILE-LINE)
+	(not (goal support-aircraft YES))
 =>
 	(train SIEGE-MISSILE-LINE)
 )
 
 (defrule
 	(goal get-mad DOOMSDAY)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE < TL4-ram-arm)
+	(unit-type-count-total SIEGE-RAM-LINE < TL4-ram-arm)
 	(can-train SIEGE-RAM-LINE)
 =>
 	(train SIEGE-RAM-LINE)

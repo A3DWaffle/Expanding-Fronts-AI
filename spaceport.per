@@ -17,13 +17,18 @@
 ; *** Chapter 0: SETUP ***
 ; =====================================================
 
+; =====================================================
+; *** Chapter 1: BUILDINGS ***
+; =====================================================
+
 (defrule
-        (current-age >= tech-level-2)
-        (building-type-count-total BLDG-SPACEPORT == 0)
-        (can-build-with-escrow BLDG-SPACEPORT)
+    (current-age >= tech-level-2)
+    (building-type-count-total BLDG-SPACEPORT == 0)
+    (can-build-with-escrow BLDG-SPACEPORT)
+	(not (goal buildpause YES))
 =>
-        (release-escrow carbon)
-        (build BLDG-SPACEPORT)
+    (release-escrow carbon)
+    (build BLDG-SPACEPORT)
 )
 
 (defrule
@@ -33,11 +38,15 @@
 	(disable-self)
 )
 
+; =====================================================
+; *** Chapter 2: TRADE ***
+; =====================================================
+
 ; these are in their own unitlines now to stop RS / BS from spamming them 
 (defrule
         (goal tradestatus ALLOW)
         (building-type-count BLDG-SPACEPORT > 0)
-        (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)
+        (players-building-type-count any-ally BLDG-SPACEPORT > 0)
         (unit-type-count-total UNIT-CARGO-GROUND-LINE <= TL4-max-cargo-ground)
         (can-train UNIT-CARGO-GROUND-LINE)
 		(or
@@ -51,7 +60,7 @@
 (defrule
         (goal tradestatus ALLOW)
         (building-type-count BLDG-SPACEPORT > 0)
-        (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)
+        (players-building-type-count any-ally BLDG-SPACEPORT > 0)
         (unit-type-count-total UNIT-CARGO-AIR-LINE <= TL4-max-cargo-air)
         (can-train UNIT-CARGO-AIR-LINE)
 		(nova-amount < 1000)
@@ -65,7 +74,7 @@
 (defrule
         (goal tradestatus ALLOW)
         (building-type-count BLDG-SPACEPORT > 0)
-        (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)
+        (players-building-type-count any-ally BLDG-SPACEPORT > 0)
         (unit-type-count-total UNIT-CARGO-AIR-LINE <= late-max-cargo-air) ; higher amount
         (can-train UNIT-CARGO-AIR-LINE)
 		(population > stop-junk-threshold-lower)
@@ -107,7 +116,6 @@
 	(sell-commodity metal)
 )
 
-
 (defrule
 	(nova-amount > 3000)
 	(food-amount < 300)
@@ -136,26 +144,6 @@
 =>
 	(buy-commodity food)
 )
-
-; Defensive opener: if the TL3 timing is real but nova is the only missing
-; piece, very carefully cash in a little ore. This is intentionally stingy.
-(defrule
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(goal agingup NO)
-	(research-available tech-level-3)
-	(not (can-research-with-escrow tech-level-3))
-	(current-age-time > 120)
-	(food-amount > 800)
-	(carbon-amount > 250)
-	(nova-amount < 150)
-	(metal-amount > 600)
-	(can-sell-commodity metal)
-=>
-	(sell-commodity metal)
-)
-
-
 
 ; MEDIUM TRADING
 ; for when you're rich, but not rich rich
@@ -213,6 +201,59 @@
 ; and then buy whatever it needs with said nova if it has silly nova to spare
 ; (eg: trade, holocron)
 
+; Stockpile parity sells. These are intentionally late, high-threshold, and
+; price-gated so they smooth out absurd banks without reviving old spammy trade.
+
+(defrule
+	(current-age == tech-level-4)
+	(carbon-amount > 10000)
+	(or
+		(nova-amount < 2500)
+		(metal-amount < 800)
+	)
+	(commodity-selling-price carbon >= 70)
+	(can-sell-commodity carbon)
+=>
+	(sell-commodity carbon)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(carbon-amount > 7000)
+	(or
+		(nova-amount < 1800)
+		(metal-amount < 500)
+	)
+	(commodity-selling-price carbon >= 80)
+	(can-sell-commodity carbon)
+=>
+	(sell-commodity carbon)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(food-amount > 5000)
+	(or
+		(nova-amount < 1800)
+		(metal-amount < 500)
+	)
+	(commodity-selling-price food >= 80)
+	(can-sell-commodity food)
+=>
+	(sell-commodity food)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(food-amount > 3500)
+	(carbon-amount > 3500)
+	(nova-amount < 1200)
+	(commodity-selling-price food >= 90)
+	(can-sell-commodity food)
+=>
+	(sell-commodity food)
+)
+
 (defrule
 	(carbon-amount > 3000)
 	(carbon-amount > 5000)
@@ -240,6 +281,31 @@
 	(sell-commodity metal)
 )
 
+
+; TL4 food parity buys. These are deliberately narrower than selling: only buy
+; food when nova is available, carbon is already healthy, and the price is sane.
+
+(defrule
+	(current-age == tech-level-4)
+	(food-amount < 700)
+	(carbon-amount > 3000)
+	(nova-amount > 1500)
+	(commodity-buying-price food < 160)
+	(can-buy-commodity food)
+=>
+	(buy-commodity food)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(food-amount < 300)
+	(carbon-amount > 2000)
+	(nova-amount > 800)
+	(commodity-buying-price food < 220)
+	(can-buy-commodity food)
+=>
+	(buy-commodity food)
+)
 
 
 ; there is also a trade rule in escrow for ore, well there was till I merged it with this one here
@@ -287,7 +353,9 @@
 
 ; clobbered OG trade rules
 
-; TRIBUTE
+; =====================================================
+; *** Chapter 3: TRIBUTE ***
+; =====================================================
 
 ; DENY WHEN ON MONUMENT RACE
 
@@ -494,7 +562,7 @@
 	(food-amount > 1000)
 =>
 	(tribute-to-player this-any-computer-ally food 500)
-	(chat-local-to-self "WAFFLE: Giving food to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving food to ally AI")
 )
 (defrule
 	(taunt-detected any-computer-ally 3)
@@ -503,7 +571,7 @@
 	(food-amount > 500)
 =>
 	(tribute-to-player this-any-computer-ally food 200)
-	(chat-local-to-self "WAFFLE: Giving food to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving food to ally AI")
 )
 (defrule
 	(taunt-detected any-computer-ally 3)
@@ -512,7 +580,7 @@
 	(food-amount > 200)
 =>
 	(tribute-to-player this-any-computer-ally food 100)
-	(chat-local-to-self "WAFFLE: Giving food to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving food to ally AI")
 )
 
 ; TAUNT CLEAR
@@ -542,7 +610,7 @@
 	(carbon-amount > 1000)
 =>
 	(tribute-to-player this-any-computer-ally carbon 500)
-	(chat-local-to-self "WAFFLE: Giving carbon to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving carbon to ally AI")
 )
 (defrule
 	(taunt-detected any-computer-ally 4)
@@ -551,7 +619,7 @@
 	(carbon-amount > 500)
 =>
 	(tribute-to-player this-any-computer-ally carbon 200)
-	(chat-local-to-self "WAFFLE: Giving carbon to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving carbon to ally AI")
 )
 (defrule
 	(taunt-detected any-computer-ally 4)
@@ -560,7 +628,7 @@
 	(carbon-amount > 250)
 =>
 	(tribute-to-player this-any-computer-ally carbon 100)
-	(chat-local-to-self "WAFFLE: Giving carbon to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving carbon to ally AI")
 )
 
 ; TAUNT CLEAR
@@ -589,7 +657,7 @@
 	(nova-amount > 1000)
 =>
 	(tribute-to-player this-any-computer-ally nova 500)
-	(chat-local-to-self "WAFFLE: Giving nova to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving nova to ally AI")
 )
 (defrule
 	(taunt-detected any-computer-ally 5)
@@ -598,7 +666,7 @@
 	(nova-amount > 500)
 =>
 	(tribute-to-player this-any-computer-ally nova 200)
-	(chat-local-to-self "WAFFLE: Giving nova to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving nova to ally AI")
 )
 (defrule
 	(taunt-detected any-computer-ally 5)
@@ -607,7 +675,7 @@
 	(nova-amount > 200)
 =>
 	(tribute-to-player this-any-computer-ally nova 100)
-	(chat-local-to-self "WAFFLE: Giving nova to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving nova to ally AI")
 )
 
 ; TAUNT CLEAR
@@ -635,7 +703,7 @@
 	(metal-amount > 200)
 =>
 	(tribute-to-player this-any-computer-ally metal 100)
-	(chat-local-to-self "WAFFLE: Giving ore to ally AI")
+	; (chat-local-to-self "WAFFLE: Giving ore to ally AI")
 )
 ; TAUNT CLEAR
 (defrule
@@ -742,85 +810,140 @@
 )
 
 ; =====================================================
-; CHAPTER X: CIV SPACEPORT TECH CATCHUP
+; *** Chapter 4: TECHS ***
 ; =====================================================
 
 (defrule
+	; Holonet Transceiver
+	(current-age >= tech-level-2)
+	(player-in-game any-ally)
+	(research-completed rt-upgraded-motivator)
+	(can-research-with-escrow rt-holonet)
+=>
+	(release-escrow nova)
+	(research rt-holonet)
+)
+
+(defrule
+	; Hutt Endorsement
+	(player-in-game any-ally)
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-hutt-endorsement)
+	(goal importantT4research DONE)
+	(military-population >= MIL_POP_B)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-hutt-endorsement)
+)
+
+(defrule
+	; Galactic Banking
+	(player-in-game any-ally)
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-galactic-banking)
+	(goal importantT4research DONE)
+	(military-population >= MIL_POP_B)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-galactic-banking)
+)
+
+(defrule
+	; Galactic Trade Commission
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-galactic-trade-comm)
+=>      
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-galactic-trade-comm)
+)
+
+(defrule
 	; TF Neimoidian Endorsement
+	(current-age >= tech-level-2)
 	(can-research-with-escrow rt-neimoidian-endorse)
 =>
 	(release-escrow food)
-	(release-escrow carbon)
-	(release-escrow metal)
 	(release-escrow nova)
 	(research rt-neimoidian-endorse)
 )
 
 (defrule
 	; TF Insider Trading
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-insider-trading)
 =>
 	(release-escrow food)
-	(release-escrow carbon)
-	(release-escrow metal)
 	(release-escrow nova)
 	(research rt-insider-trading)
 )
 
 (defrule
-	; GE Altered Bargains
-	(can-research-with-escrow rt-altered-bargains)
-=>
-	(release-escrow food)
-	(release-escrow carbon)
-	(release-escrow metal)
-	(release-escrow nova)
-	(research rt-altered-bargains)
-)
-
-(defrule
 	; TF Market Control
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-market-control)
 =>
 	(release-escrow food)
-	(release-escrow carbon)
-	(release-escrow metal)
 	(release-escrow nova)
 	(research rt-market-control)
 )
 
 (defrule
-	; CF Confederacy Alliance
-	(can-research-with-escrow rt-confalli)
-	(goal tradestatus ALLOW)
+	; GE Altered Bargains
+	(goal get-mad DOOMSDAY)
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-altered-bargains)
 =>
 	(release-escrow food)
-	(release-escrow carbon)
-	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-altered-bargains)
+)
+
+(defrule
+	; CF Confederacy Alliance
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-confalli)
+	(player-in-game any-ally)
+=>
+	(release-escrow food)
 	(release-escrow nova)
 	(research rt-confalli)
 )
 
 (defrule
 	; ZC Piracy
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-piracy)
-	(goal tradestatus ALLOW)
+	(player-in-game any-ally)
+	(goal importantT3research DONE)
 =>
-	(release-escrow food)
 	(release-escrow carbon)
-	(release-escrow metal)
 	(release-escrow nova)
 	(research rt-piracy)
 )
 
+(defrule        
+	; RS Supply Lines
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-supplylines)
+	(player-in-game any-ally)
+	(goal importantT4research DONE)
+=>
+	(release-escrow metal)
+	(release-escrow nova)
+	(research rt-supplylines)
+)
+
 (defrule
 	; BS Cloaked Smuggling
+	(current-age == tech-level-4)
 	(can-research-with-escrow rt-cloakedsmug)
-	(goal tradestatus ALLOW)
+	(player-in-game any-ally) 
+	(goal importantT4research DONE)
 =>
 	(release-escrow food)
-	(release-escrow carbon)
-	(release-escrow metal)
 	(release-escrow nova)
 	(research rt-cloakedsmug)
 )

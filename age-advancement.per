@@ -44,6 +44,9 @@
 (defrule
 	(can-research-with-escrow tech-level-2)
 	(shared-goal age-match-human NO) ; default config settings
+	(unit-type-count-total UNIT-WORKER > 10)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
 =>
 	(release-escrow food)
 	(set-goal attacksonhold-auto YES)
@@ -54,6 +57,7 @@
 (defrule
 	(can-research-with-escrow tech-level-3)
 	(shared-goal age-match-human NO)
+	(current-age-time > 120)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -65,6 +69,16 @@
 (defrule
 	(can-research-with-escrow tech-level-4)
 	(shared-goal age-match-human NO)
+	(or
+		(building-type-count-total BLDG-FARM >= 25)
+		(or
+			(and
+				(game-time > 1560)
+				(building-type-count-total BLDG-FARM >= 22)
+			)
+			(game-time > 1500)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -79,6 +93,9 @@
 	(can-research-with-escrow tech-level-2)
 	(shared-goal age-match-human YES)
 	(players-current-age any-human >= tech-level-2)
+	(unit-type-count-total UNIT-WORKER > 10)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
 =>
 	(release-escrow food)
 	(set-goal attacksonhold-auto YES)
@@ -304,7 +321,7 @@
 	(shared-goal treatytimer 1)
 =>
 	(acknowledge-taunt this-any-human 102)
-	(chat-to-player every-human "Treaty Timer has elapsed. A new one cannot be set due to script contraints.")
+	(chat-to-player every-human "Treaty Timer has elapsed. A new one cannot be set.")
 	(set-goal config-in-progress CONFIG-CLOSE)
 )
 
@@ -319,7 +336,7 @@
 	(chat-to-player every-human "Taunt 3: 45 minutes")
 	(chat-to-player every-human "Taunt 4: 60 minutes")
 	(chat-to-player every-human "Taunt 99: Never attack at all")
-	(chat-to-player every-human "Note: Due to script contraints, the treaty timer cannot be reset after it has expired.")
+	(chat-to-player every-human "Note: The treaty timer cannot be reset after it has expired.")
 	(set-goal config-in-progress CONFIG-TREATYTIME)
 )
 
@@ -328,7 +345,7 @@
 	(taunt-detected any-human 1)
 =>
 	(acknowledge-taunt this-any-human 1)
-	(chat-to-player every-human "Treaty timer set to 5 minutes.")
+	(chat-to-player every-human "Treaty timer set to 15 minutes.")
 	(set-shared-goal treatytimer 15)
 	(chat-to-player every-human "AI will not automatically attack after this much in-game time has elapsed since game start.")
 	(set-goal config-in-progress CONFIG-CLOSE)
@@ -380,10 +397,10 @@
 	(taunt-detected any-human 103)
 =>
 	(acknowledge-taunt this-any-human 103)
-	(chat-to-player every-human "Cheat Tech Bypass. Since the AI does not play the way the same as a human does,")
+	(chat-to-player every-human "Cheat Tech Bypass. Since the AI does not play as a human does,")
 	(chat-to-player every-human " it misses out on some things. Cheat techs rectify this, but with side effects.")
 	(chat-to-player every-human " This option bypasses their normal requirements.")
-	(chat-to-player every-human "Current list: Gunship Arnaments, garrisoned Adv Turrets")
+	(chat-to-player every-human "Current list: Gunship Armaments, garrisoned Adv Turrets")
 	(chat-to-player every-human "Use 1 to enable and 2 to go back.")
 	(set-goal config-in-progress CONFIG-CHEATTECH)
 )

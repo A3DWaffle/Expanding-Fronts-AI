@@ -8,7 +8,10 @@
 ; =====================================================
 ;
 ;	Chapter 0: SETUP
-;	Chapter 1: LOGIC
+;	Chapter 1: COMPUTER STANCE MIRROR
+;	Chapter 2: HUMAN DIPLOMACY
+;	Chapter 3: TREATY STATE TRACKING
+;	Chapter 4: TREATY STANCE RESTORE
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
@@ -22,6 +25,10 @@
         (enable-timer t-chathelp 120)
         (disable-self)
 )
+
+; =====================================================
+; *** Chapter 1: COMPUTER STANCE MIRROR ***
+; =====================================================
 
 (defrule
         (current-age >= tech-level-2)
@@ -77,21 +84,20 @@
         (set-stance this-any-computer-enemy neutral)
 )
 
-;************
-
-;*******************************************************
-;BASIC DIPLOMACY VS. HUMANS
+; =====================================================
+; *** Chapter 2: HUMAN DIPLOMACY ***
+; =====================================================
 
 (defrule
 	(goal scn-detected YES)
 =>
 	(set-goal get-mad UNDEFINED)
-	(disable-timer t-chathelp) ; should stop all the below from firing
+	(disable-timer t-chathelp)
 	(disable-self)
 )
 
 
-;if the human player doesn't go neutral at our request
+; If a human player does not go neutral at our request.
 (defrule
         (goal get-mad NO)
         (timer-triggered t-chathelp)
@@ -162,8 +168,7 @@
         (disable-self)
 )
 
-;when an ally turns on us
-; to neutral
+; If an ally turns on us by going neutral.
 (defrule
         (goal get-mad NO)
         (players-stance any-human-ally neutral)
@@ -176,7 +181,7 @@
         (set-goal get-mad ANGRY)
 )
 
-; to enemy (bypass first stage)
+; If an ally turns enemy, skip the first warning stage.
 (defrule
         (goal get-mad NO)
         ; (players-stance any-human-ally neutral)
@@ -253,7 +258,7 @@
         (disable-self)
 )
 
-; if neutral to human, but no bots left in game, go enemy
+; If we are neutral to a human and no other bots remain, turn hostile.
 (defrule
         (stance-toward any-human neutral)
         (nor
@@ -276,9 +281,9 @@
 
 
 
-; TREATY SHENANIGANS
-
-; Check alliances at game start
+; =====================================================
+; *** Chapter 3: TREATY STATE TRACKING ***
+; =====================================================
 
 (defrule
 	(true)
@@ -291,7 +296,7 @@
 	(set-goal 56 99)
 	(set-goal 57 99)
 	(set-goal 58 99)
-	(disable-self) ;aaaaaaaaaaaaaaaaaaaaa
+	(disable-self)
 )
 
 (defrule
@@ -494,7 +499,7 @@
 	(disable-self)
 )
 
-; If treaty is active, set allies
+; If treaty is active, force temporary alliances.
 
 (defrule
 	(not
@@ -529,15 +534,19 @@
 	(chat-to-player this-any-computer "BOT: This alliance will last... for as long as the treaty.")
 )
 
-; when treaty times out, reset diplo
-; setting to ally not needed as is already the setting
+; =====================================================
+; *** Chapter 4: TREATY STANCE RESTORE ***
+; =====================================================
+
+; When treaty expires, restore only the players who started neutral or enemy.
+; Initial ally states need no restore because treaty already leaves them allied.
 
 (defrule
 	(shared-goal treatytimer 1)
 	(goal 51 neutral)
 =>
 	(set-stance 1 neutral)
-	(disable-self) ; should avoid several issues
+	(disable-self)
 )
 (defrule
 	(shared-goal treatytimer 1)

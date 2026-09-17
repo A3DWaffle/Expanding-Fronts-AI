@@ -61,43 +61,66 @@
 
 ; save the animals code 
 
-; the reason for this MESS is because the AI would build 2 nurseries for 1 set of animals
-; so we have this much more complicated rule instead
+; Keep each nursery case separate; nested ORs can exceed the AI rule-size limit.
 (defrule
 	(building-type-count BLDG-MAIN > 0)
     (can-build-with-escrow BLDG-DROPANIM)
 	(goal savetheanimals YES)
-	(or
-		(and
-			(building-type-count-total BLDG-DROPANIM < 1) ; not properly indented for your viewing pleasure
-			(goal savetheanimals-nursery ONE)
-		)
-	(or
-		(and
-			(building-type-count-total BLDG-DROPANIM < 2)
-			(goal savetheanimals-nursery TWO)
-		)
-	(or
-		(and
-			(building-type-count-total BLDG-DROPANIM < 3)
-			(goal savetheanimals-nursery THREE)
-		)
-	(or
-		(and
-			(building-type-count-total BLDG-DROPANIM < 4)
-			(goal savetheanimals-nursery FOUR)
-		)
-		(false) ; to keep the or's looking clean
-	)
-	)
-	)
-	)
+	(building-type-count-total BLDG-DROPANIM < 1)
+	(goal savetheanimals-nursery ONE)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon) ; needed for later TL starts
     (build BLDG-DROPANIM)
 )
 
+(defrule
+	(building-type-count BLDG-MAIN > 0)
+    (can-build-with-escrow BLDG-DROPANIM)
+	(goal savetheanimals YES)
+	(building-type-count-total BLDG-DROPANIM < 2)
+	(goal savetheanimals-nursery TWO)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+    (build BLDG-DROPANIM)
+)
 
+(defrule
+	(building-type-count BLDG-MAIN > 0)
+    (can-build-with-escrow BLDG-DROPANIM)
+	(goal savetheanimals YES)
+	(building-type-count-total BLDG-DROPANIM < 3)
+	(goal savetheanimals-nursery THREE)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+    (build BLDG-DROPANIM)
+)
+
+(defrule
+	(building-type-count BLDG-MAIN > 0)
+    (can-build-with-escrow BLDG-DROPANIM)
+	(goal savetheanimals YES)
+	(building-type-count-total BLDG-DROPANIM < 4)
+	(goal savetheanimals-nursery FOUR)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+    (build BLDG-DROPANIM)
+)
+
+(defrule
+	(building-type-count BLDG-MAIN > 0)
+    (can-build-with-escrow BLDG-DROPANIM)
+	(goal savetheanimals YES)
+	(building-type-count-total BLDG-DROPANIM < 5)
+	(goal savetheanimals-nursery FIVE)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+    (build BLDG-DROPANIM)
+)
 
 (defrule
 	(nursery-headroom < 1)
@@ -107,6 +130,7 @@
 		(game-time > 800) 
 		(unit-type-count GAIA-ANIMAL-HERD-LINE > 40) ; map with bananas nerf gen
 	)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
     (build BLDG-DROPANIM) ; generic non-save-the-animals check for if they get some lategame and yes they have to be escrow'd
@@ -118,6 +142,7 @@
     (can-build BLDG-DROPANIM)
 	(building-type-count-total BLDG-DROPANIM == 0)
 	(not (current-age == tech-level-1))
+	(not (goal buildpause YES))
 =>
     (build BLDG-DROPANIM)
 	(disable-self)
@@ -138,6 +163,7 @@
 	(building-type-count-total BLDG-DROPANIM == 0)
 	(game-time > 120)
     (can-build-with-escrow BLDG-DROPANIM)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
     (build BLDG-DROPANIM)
@@ -217,6 +243,20 @@
 	(set-strategic-number sn-carbon-gatherer-percentage 100)
 	(set-strategic-number sn-food-gatherer-percentage 0)
 	(set-strategic-number sn-mill-max-distance 10) ; should hopefully keep animal nurseries close to home
+)
+
+; Verified lure-food starts still need workers on food even if herdable
+; protection is active. Otherwise Kath-style maps can collapse into all carbon.
+(defrule
+	(current-age == tech-level-1)
+	(goal allowgarbage LOWLUREFOOD)
+	(game-time > 90)
+	(not (strategic-number sn-food-gatherer-percentage == 55))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 35)
+	(set-strategic-number sn-food-gatherer-percentage 55)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
 )
 
 ; override in case things have completely broken
@@ -299,8 +339,8 @@
 =>
 	(disable-timer t-nerfs)
 	(set-goal savetheanimals NO)
-	(set-strategic-number sn-carbon-gatherer-percentage 35)
-	(set-strategic-number sn-food-gatherer-percentage 35) ; unleash the hounds!
+	(set-strategic-number sn-carbon-gatherer-percentage 25)
+	(set-strategic-number sn-food-gatherer-percentage 55) ; unleash the hounds!
 	;(set-strategic-number sn-nova-gatherer-percentage 0)
 	;(set-strategic-number sn-metal-gatherer-percentage 0) ; manual reset since the rules below may have fired
 )
@@ -342,7 +382,7 @@
 ; which causes it to eat WAY more carbon than a player would
 
 
-; so, after a minute, go 50-50 food 
+; so, after a minute, push harder to food/hunt instead of camping berries/carbon
 (defrule
 	(current-age == tech-level-1)
 	(building-type-count-total BLDG-MAIN > 0)
@@ -350,25 +390,47 @@
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 45)
-	(set-strategic-number sn-food-gatherer-percentage 45)
+	(set-strategic-number sn-carbon-gatherer-percentage 35)
+	(set-strategic-number sn-food-gatherer-percentage 55)
 	;(set-strategic-number sn-nova-gatherer-percentage 0)
 	(set-strategic-number sn-metal-gatherer-percentage 0)
 	(disable-self)
+)
+
+; Fund the first Power Core and Troop Center through visible gatherer assignment
+; instead of leaning on early carbon refunds.
+(defrule
+	(current-age == tech-level-1)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(or
+		(building-type-count-total BLDG-POWERCORE == 0)
+		(building-type-count-total BLDG-TRAINTROOPER == 0)
+	)
+	(carbon-amount < 220)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+	(not (strategic-number sn-carbon-gatherer-percentage == 55))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 55)
+	(set-strategic-number sn-food-gatherer-percentage 35)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
 )
 
 ; if a shipyard is in play, go harder on the carbon
 
 (defrule
 	(current-age == tech-level-1)
-	(building-type-count-total BCORE-MAIN > 0)
-	(building-type-count-total BMIL-SHIP > 0)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-TRAINBOAT > 0)
 	(game-time > 90)
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 55)
-	(set-strategic-number sn-food-gatherer-percentage 35)
+	(set-strategic-number sn-carbon-gatherer-percentage 45)
+	(set-strategic-number sn-food-gatherer-percentage 45)
 	;(set-strategic-number sn-nova-gatherer-percentage 0)
 	(set-strategic-number sn-metal-gatherer-percentage 0)
 	(disable-self)
@@ -381,11 +443,11 @@
 ; possibly nova proc in T1
 (defrule
 	(current-age == tech-level-1)
-	(building-type-count-total BCORE-MAIN > 0)
-	(building-type-count-total BMIL-TROOP > 0) 
-	(building-type-count-total BCORE-POWER > 0)
-	(building-type-count-total BECO-FOOD > 0)		; All relevant T1 buildings done
-	(building-type-count-total BECO-CARB > 0)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0) 
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-DROPCHOW > 0)		; All relevant T1 buildings done
+	(building-type-count-total BLDG-DROPCARBON > 0)
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
 	(carbon-amount > 300) ; So all buildings done and some carbon to spare
@@ -399,11 +461,11 @@
 ; that way the AI does not build too many farms because it is eating berries for days
 (defrule
 	(current-age == tech-level-1)
-	(building-type-count-total BCORE-MAIN > 0)
-	(building-type-count-total BMIL-TROOP > 0) 
-	(building-type-count-total BCORE-POWER > 0)
-	(building-type-count-total BECO-FOOD > 0)
-	(building-type-count-total BECO-CARB > 0)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0) 
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
 	(carbon-amount > 500) ; lotsa carbon
@@ -421,8 +483,10 @@
 	(not (goal savetheanimals WAITING))
 	(goal agingup YES) ; if we're advancing to T2, allow some more carbon gatherers again
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 35)
-	(set-strategic-number sn-food-gatherer-percentage 55)
+	(set-strategic-number sn-carbon-gatherer-percentage 45)
+	(set-strategic-number sn-food-gatherer-percentage 40)
+	(set-strategic-number sn-nova-gatherer-percentage 15)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
 	(disable-self)
 )
 
@@ -445,9 +509,9 @@
 	(building-type-count-total BLDG-MAIN > 0)
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
-	(not (strategic-number sn-carbon-gatherer-percentage == 40))
+	(not (strategic-number sn-carbon-gatherer-percentage == 35))
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 40)
+	(set-strategic-number sn-carbon-gatherer-percentage 35)
 )
 
 (defrule
@@ -456,9 +520,9 @@
 	(building-type-count-total BLDG-MAIN > 0)
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
-	(not (strategic-number sn-food-gatherer-percentage == 45))
+	(not (strategic-number sn-food-gatherer-percentage == 50))
 =>
-	(set-strategic-number sn-food-gatherer-percentage 45)
+	(set-strategic-number sn-food-gatherer-percentage 50)
 )
 
 (defrule
@@ -469,9 +533,9 @@
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
 	(not (unit-type-count-total UNIT-WORKER > 20))
-	(not (strategic-number sn-nova-gatherer-percentage == 15))
+	(not (strategic-number sn-nova-gatherer-percentage == 0))
 =>
-	(set-strategic-number sn-nova-gatherer-percentage 15)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
 )
 
 (defrule
@@ -482,9 +546,9 @@
 	(unit-type-count-total UNIT-WORKER > 20)
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
-	(not (strategic-number sn-nova-gatherer-percentage == 20))
+	(not (strategic-number sn-nova-gatherer-percentage == 15))
 =>
-	(set-strategic-number sn-nova-gatherer-percentage 20)
+	(set-strategic-number sn-nova-gatherer-percentage 15)
 )
 
 (defrule
@@ -498,17 +562,17 @@
 	(set-strategic-number sn-metal-gatherer-percentage 0)
 )
 
-; Defensive gives up TL1 nova so it can hit TL2 with cleaner carbon/food flow.
-; Mining ore before an ore proc exists just creates long useless walks.
+; Defensive gives up TL1 nova/ore so it can hit TL2 with cleaner carbon/food flow.
+; Mining ore before aging up pulls workers off the spine buildings too early.
 (defrule
 	(current-age == tech-level-1)
 	(goal openingstyle STYLE-DEFENSIVE)
 	(building-type-count-total BLDG-MAIN > 0)
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
-	(not (strategic-number sn-carbon-gatherer-percentage == 40))
+	(not (strategic-number sn-carbon-gatherer-percentage == 35))
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 40)
+	(set-strategic-number sn-carbon-gatherer-percentage 35)
 )
 
 (defrule
@@ -517,9 +581,9 @@
 	(building-type-count-total BLDG-MAIN > 0)
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
-	(not (strategic-number sn-food-gatherer-percentage == 40))
+	(not (strategic-number sn-food-gatherer-percentage == 50))
 =>
-	(set-strategic-number sn-food-gatherer-percentage 40)
+	(set-strategic-number sn-food-gatherer-percentage 50)
 )
 
 (defrule
@@ -548,6 +612,20 @@
 (defrule
 	(current-age == tech-level-1)
 	(goal openingstyle STYLE-DEFENSIVE)
+	(goal agingup NO)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-DROPMETAL > 0)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+	(not (strategic-number sn-metal-gatherer-percentage == 0))
+=>
+	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal agingup YES)
 	(building-type-count-total BLDG-MAIN > 0)
 	(building-type-count-total BLDG-DROPMETAL > 0)
 	(not (goal savetheanimals YES))
@@ -561,6 +639,7 @@
 (defrule
 	(current-age == tech-level-1)
 	(goal openingstyle STYLE-DEFENSIVE)
+	(goal agingup YES)
 	(building-type-count-total BLDG-MAIN > 0)
 	(building-type-count-total BLDG-DROPMETAL > 0)
 	(unit-type-count-total UNIT-WORKER > 20)
@@ -576,8 +655,9 @@
 	(current-age == tech-level-1)
 	(not (goal openingstyle STYLE-RUSH))
 	(not (goal openingstyle STYLE-DEFENSIVE))
-	(not (strategic-number sn-nova-gatherer-percentage == 10))
+	(building-type-count-total BLDG-DROPNOVA > 0)
 	(not (unit-type-count-total UNIT-WORKER > 20))
+	(not (strategic-number sn-nova-gatherer-percentage == 0))
 	(or
 		(and
 			(goal agingup NO)
@@ -589,13 +669,36 @@
 		)
 	)
 =>
-	(set-strategic-number sn-nova-gatherer-percentage 10)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
+)
+
+; Final TL1 correction after personality rules: if the opener is still missing
+; its first Power Core or Troop Center, bias workers back to carbon briefly.
+(defrule
+	(current-age == tech-level-1)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(or
+		(building-type-count-total BLDG-POWERCORE == 0)
+		(building-type-count-total BLDG-TRAINTROOPER == 0)
+	)
+	(carbon-amount < 220)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+	(not (strategic-number sn-carbon-gatherer-percentage == 55))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 55)
+	(set-strategic-number sn-food-gatherer-percentage 35)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
 )
 
 (defrule
 	(current-age == tech-level-1)
 	(not (goal openingstyle STYLE-RUSH))
 	(not (goal openingstyle STYLE-DEFENSIVE))
+	(building-type-count-total BLDG-DROPNOVA > 0)
 	(unit-type-count-total UNIT-WORKER > 20)
 	(not (strategic-number sn-nova-gatherer-percentage == 15))
 	(or
@@ -625,21 +728,108 @@
 
 
 
+; Late TL1 worker-count correction. Once the opener spine is online, stop
+; parking double-digit worker counts on carbon and push the surplus to food.
+(defrule
+	(current-age == tech-level-1)
+	(unit-type-count-total UNIT-WORKER > 10)
+	(food-amount < 120)
+	(carbon-amount > 300)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 15)
+	(set-strategic-number sn-food-gatherer-percentage 85)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(unit-type-count-total UNIT-WORKER > 9)
+	(not (unit-type-count-total UNIT-WORKER > 19))
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 25)
+	(set-strategic-number sn-food-gatherer-percentage 75)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-DROPNOVA == 0)
+	(unit-type-count-total UNIT-WORKER > 19)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 25)
+	(set-strategic-number sn-food-gatherer-percentage 75)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-DROPNOVA > 0)
+	(unit-type-count-total UNIT-WORKER > 19)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 20)
+	(set-strategic-number sn-food-gatherer-percentage 65)
+	(set-strategic-number sn-nova-gatherer-percentage 15)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
+
+; Final TL1 starvation override. This must sit after the normal TL1 spine rules
+; because those rules can otherwise restore a carbon-heavy split while food is low.
+(defrule
+	(current-age == tech-level-1)
+	(unit-type-count-total UNIT-WORKER > 12)
+	(food-amount < 150)
+	(carbon-amount > 600)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+	(not (strategic-number sn-food-gatherer-percentage == 95))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 5)
+	(set-strategic-number sn-food-gatherer-percentage 95)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
+
 ; tech 2
 ; does not use (much) resource switching
-; but rather a "get lots of carb for all our buildings"
+; but rather a "get enough carb for our buildings"
 ; "and then go on food"
-
 
 (defrule
 	(current-age == tech-level-2)
 	(unit-type-count BOAT-WORKER < 5) ; if our fishing fleet is nonexistent
 	(game-time > latestart-nerf-timeout)
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 45)
+	(set-strategic-number sn-carbon-gatherer-percentage 40)
 	(set-strategic-number sn-food-gatherer-percentage 35)
-	;(set-strategic-number sn-nova-gatherer-percentage 10) ; handled elsewhere
-	(set-strategic-number sn-metal-gatherer-percentage 10)
+	(set-strategic-number sn-nova-gatherer-percentage 20)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
 	(disable-self)
 )
 
@@ -648,10 +838,10 @@
 	(unit-type-count BOAT-WORKER >= 5) ; if we have a functioning fishing fleet
 	(game-time > latestart-nerf-timeout)
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 55)
-	(set-strategic-number sn-food-gatherer-percentage 20)
-	;(set-strategic-number sn-nova-gatherer-percentage 20) ; handled elsewhere
-	(set-strategic-number sn-metal-gatherer-percentage 10)
+	(set-strategic-number sn-carbon-gatherer-percentage 45)
+	(set-strategic-number sn-food-gatherer-percentage 25)
+	(set-strategic-number sn-nova-gatherer-percentage 25)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
 	(disable-self)
 )
 
@@ -666,30 +856,30 @@
 	(building-type-count-total BLDG-WARCTR > 0)
 	(carbon-amount > 250) ; So all buildings done and some carbon to spare
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 25) 
-	(set-strategic-number sn-food-gatherer-percentage 45)
-	;(set-strategic-number sn-nova-gatherer-percentage 15)
-	(set-strategic-number sn-metal-gatherer-percentage 10)
+	(set-strategic-number sn-carbon-gatherer-percentage 30) 
+	(set-strategic-number sn-food-gatherer-percentage 40)
+	(set-strategic-number sn-nova-gatherer-percentage 25)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
 	(disable-self)
 )
 
 ; nova for general purpose
 (defrule
 	(current-age == tech-level-2)
-	(nova-amount < 100)
+	(nova-amount < 300)
 	(carbon-amount > 100) ; only if we have enough-ish of other res
 	(food-amount > 50)
-	(not (strategic-number sn-nova-gatherer-percentage == 15))
+	(not (strategic-number sn-nova-gatherer-percentage == 25))
 =>
-	(set-strategic-number sn-nova-gatherer-percentage 15)
+	(set-strategic-number sn-nova-gatherer-percentage 25)
 )
 
 (defrule
 	(current-age == tech-level-2)
-	(nova-amount > 200)
-	(not (strategic-number sn-nova-gatherer-percentage == 5))
+	(nova-amount > 700)
+	(not (strategic-number sn-nova-gatherer-percentage == 15))
 =>
-	(set-strategic-number sn-nova-gatherer-percentage 5)
+	(set-strategic-number sn-nova-gatherer-percentage 15)
 )
 
 ; ore for general purpose
@@ -700,17 +890,17 @@
 	(metal-amount < 150)
 	(carbon-amount > 100) ; only if we have enough-ish of other res
 	(food-amount > 50)
-	(not (strategic-number sn-metal-gatherer-percentage == 10))
+	(not (strategic-number sn-metal-gatherer-percentage == 5))
 =>
-	(set-strategic-number sn-metal-gatherer-percentage 10)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
 )
 
 (defrule
 	(current-age == tech-level-2)
-	(metal-amount > 300) ; turn off
-	(not (strategic-number sn-metal-gatherer-percentage == 1))
+	(metal-amount > 250) ; turn off
+	(not (strategic-number sn-metal-gatherer-percentage == 0))
 =>
-	(set-strategic-number sn-metal-gatherer-percentage 1)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
 )
 
 ; Rush keeps TL2 pointed at pressure techs and age pace instead of static defense.
@@ -736,9 +926,9 @@
 	(current-age == tech-level-2)
 	(goal openingstyle STYLE-RUSH)
 	(game-time > latestart-nerf-timeout)
-	(not (strategic-number sn-nova-gatherer-percentage == 20))
+	(not (strategic-number sn-nova-gatherer-percentage == 25))
 =>
-	(set-strategic-number sn-nova-gatherer-percentage 20)
+	(set-strategic-number sn-nova-gatherer-percentage 25)
 )
 
 (defrule
@@ -758,9 +948,9 @@
 	(not (goal openingstyle STYLE-RUSH))
 	(not (goal openingstyle STYLE-DEFENSIVE))
 	(game-time > latestart-nerf-timeout)
-	(not (strategic-number sn-carbon-gatherer-percentage == 30))
+	(not (strategic-number sn-carbon-gatherer-percentage == 40))
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 30)
+	(set-strategic-number sn-carbon-gatherer-percentage 40)
 )
 
 (defrule
@@ -779,9 +969,9 @@
 	(goal hunt-present YES)
 	(goal openingstyle STYLE-RUSH)
 	(game-time > latestart-nerf-timeout)
-	(not (strategic-number sn-carbon-gatherer-percentage == 35))
+	(not (strategic-number sn-carbon-gatherer-percentage == 40))
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 35)
+	(set-strategic-number sn-carbon-gatherer-percentage 40)
 )
 
 (defrule
@@ -794,7 +984,7 @@
 	(set-strategic-number sn-food-gatherer-percentage 45)
 )
 
-; Defensive opens TL2 by finishing the ore work it started in TL1.
+; Defensive opens TL2 by funding the Mech Factory + Spaceport spine first.
 (defrule
 	(current-age == tech-level-2)
 	(goal openingstyle STYLE-DEFENSIVE)
@@ -810,9 +1000,9 @@
 	(goal openingstyle STYLE-DEFENSIVE)
 	(game-time > latestart-nerf-timeout)
 	(building-type-count-total BLDG-TURRET-LINE < 3)
-	(not (strategic-number sn-food-gatherer-percentage == 30))
+	(not (strategic-number sn-food-gatherer-percentage == 35))
 =>
-	(set-strategic-number sn-food-gatherer-percentage 30)
+	(set-strategic-number sn-food-gatherer-percentage 35)
 )
 
 (defrule
@@ -820,9 +1010,9 @@
 	(goal openingstyle STYLE-DEFENSIVE)
 	(game-time > latestart-nerf-timeout)
 	(building-type-count-total BLDG-TURRET-LINE < 3)
-	(not (strategic-number sn-nova-gatherer-percentage == 5))
+	(not (strategic-number sn-nova-gatherer-percentage == 20))
 =>
-	(set-strategic-number sn-nova-gatherer-percentage 5)
+	(set-strategic-number sn-nova-gatherer-percentage 20)
 )
 
 (defrule
@@ -830,9 +1020,9 @@
 	(goal openingstyle STYLE-DEFENSIVE)
 	(game-time > latestart-nerf-timeout)
 	(building-type-count-total BLDG-TURRET-LINE < 3)
-	(not (strategic-number sn-metal-gatherer-percentage == 20))
+	(not (strategic-number sn-metal-gatherer-percentage == 5))
 =>
-	(set-strategic-number sn-metal-gatherer-percentage 20)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
 )
 
 ; Even while Defensive is finishing its shell, hunt maps should pull a bit harder
@@ -843,9 +1033,9 @@
 	(goal hunt-present YES)
 	(game-time > latestart-nerf-timeout)
 	(building-type-count-total BLDG-TURRET-LINE < 3)
-	(not (strategic-number sn-carbon-gatherer-percentage == 35))
+	(not (strategic-number sn-carbon-gatherer-percentage == 40))
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 35)
+	(set-strategic-number sn-carbon-gatherer-percentage 40)
 )
 
 (defrule
@@ -868,9 +1058,9 @@
 		(building-type-count-total BLDG-TURRET-LINE >= 3)
 		(current-age-time > 240)
 	)
-	(not (strategic-number sn-carbon-gatherer-percentage == 30))
+	(not (strategic-number sn-carbon-gatherer-percentage == 35))
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 30)
+	(set-strategic-number sn-carbon-gatherer-percentage 35)
 )
 
 (defrule
@@ -881,9 +1071,9 @@
 		(building-type-count-total BLDG-TURRET-LINE >= 3)
 		(current-age-time > 240)
 	)
-	(not (strategic-number sn-food-gatherer-percentage == 35))
+	(not (strategic-number sn-food-gatherer-percentage == 40))
 =>
-	(set-strategic-number sn-food-gatherer-percentage 35)
+	(set-strategic-number sn-food-gatherer-percentage 40)
 )
 
 (defrule
@@ -907,15 +1097,67 @@
 		(building-type-count-total BLDG-TURRET-LINE >= 3)
 		(current-age-time > 240)
 	)
-	(not (strategic-number sn-metal-gatherer-percentage == 10))
+	(not (strategic-number sn-metal-gatherer-percentage == 5))
 =>
-	(set-strategic-number sn-metal-gatherer-percentage 10)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
 )
 
+; TL2 carbon/food parity override. This intentionally sits after the normal TL2
+; personality mixes so a large carbon bank cannot strand the food economy.
+(defrule
+	(current-age == tech-level-2)
+	(unit-type-count-total UNIT-WORKER > 10)
+	(food-amount < 200)
+	(carbon-amount > 600)
+	(not (strategic-number sn-food-gatherer-percentage == 60))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 15)
+	(set-strategic-number sn-food-gatherer-percentage 60)
+	(set-strategic-number sn-nova-gatherer-percentage 15)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
+)
 
+(defrule
+	(current-age == tech-level-2)
+	(unit-type-count-total UNIT-WORKER > 10)
+	(food-amount < 75)
+	(carbon-amount > 300)
+	(not (strategic-number sn-food-gatherer-percentage == 75))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 10)
+	(set-strategic-number sn-food-gatherer-percentage 75)
+	(set-strategic-number sn-nova-gatherer-percentage 10)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
 
+(defrule
+	(current-age == tech-level-2)
+	(unit-type-count-total UNIT-WORKER > 10)
+	(food-amount < 150)
+	(food-amount > 74)
+	(carbon-amount > 1000)
+	(not (strategic-number sn-food-gatherer-percentage == 70))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 10)
+	(set-strategic-number sn-food-gatherer-percentage 70)
+	(set-strategic-number sn-nova-gatherer-percentage 10)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
+)
 
-
+; Once TL3 is queued, stop treating TL2 like a carbon-spine phase. Keep food
+; online, cut ore, and bank nova for TL3 unit and tech spending.
+(defrule
+	(current-age == tech-level-2)
+	(goal agingup YES)
+	(unit-type-count-total UNIT-WORKER > 18)
+	(food-amount > 50)
+	(not (strategic-number sn-nova-gatherer-percentage == 30))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 30)
+	(set-strategic-number sn-food-gatherer-percentage 40)
+	(set-strategic-number sn-nova-gatherer-percentage 30)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
 
 ;tech 3
 
@@ -932,9 +1174,9 @@
 	(unit-type-count BOAT-WORKER < 5)
 	(game-time > latestart-nerf-timeout)
 	=>
-	(set-strategic-number sn-carbon-gatherer-percentage 40)
-	(set-strategic-number sn-food-gatherer-percentage 30)
-	(set-strategic-number sn-nova-gatherer-percentage 10)
+	(set-strategic-number sn-carbon-gatherer-percentage 30)
+	(set-strategic-number sn-food-gatherer-percentage 35)
+	(set-strategic-number sn-nova-gatherer-percentage 15)
 	(set-strategic-number sn-metal-gatherer-percentage 20)
 	(disable-self)
 )
@@ -955,10 +1197,10 @@
 (defrule
 	(current-age == tech-level-3)
 	(game-time > latestart-nerf-timeout)
-	(building-type-count BCORE-FORT > 0) ; wait for it to go up properly
-	(building-type-count-total BCORE-MAIN >= 2)
+	(building-type-count BLDG-GOVTCTR > 0) ; wait for it to go up properly
+	(building-type-count-total BLDG-MAIN >= 2)
 =>
-	(set-strategic-number sn-metal-gatherer-percentage 10)
+	(set-strategic-number sn-metal-gatherer-percentage 15)
 	(disable-self)
 )
 
@@ -967,10 +1209,10 @@
 	(game-time > latestart-nerf-timeout)
 	(goal importantT3research DONE) ; mandates research center and a lotta res which in turn suggests a bunch of other buildings up
 	=>
-	(set-strategic-number sn-carbon-gatherer-percentage 40)
-	(set-strategic-number sn-food-gatherer-percentage 30)
+	(set-strategic-number sn-carbon-gatherer-percentage 30)
+	(set-strategic-number sn-food-gatherer-percentage 35)
 	(set-strategic-number sn-nova-gatherer-percentage 20)
-	(set-strategic-number sn-metal-gatherer-percentage 10)
+	(set-strategic-number sn-metal-gatherer-percentage 15)
 	(disable-self)
 )
 
@@ -980,9 +1222,9 @@
 	(goal openingstyle STYLE-RUSH)
 	(goal attacksonhold-auto YES)
 	(game-time > latestart-nerf-timeout)
-	(not (strategic-number sn-carbon-gatherer-percentage == 45))
+	(not (strategic-number sn-carbon-gatherer-percentage == 35))
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 45)
+	(set-strategic-number sn-carbon-gatherer-percentage 35)
 	(set-goal ecoswitch COOLDOWN)
 )
 
@@ -1013,13 +1255,13 @@
 	(goal openingstyle STYLE-RUSH)
 	(goal attacksonhold-auto YES)
 	(game-time > latestart-nerf-timeout)
-	(not (strategic-number sn-metal-gatherer-percentage == 5))
+	(not (strategic-number sn-metal-gatherer-percentage == 12))
 =>
-	(set-strategic-number sn-metal-gatherer-percentage 5)
+	(set-strategic-number sn-metal-gatherer-percentage 12)
 	(set-goal ecoswitch COOLDOWN)
 )
 
-; Defensive TL3 is an air/tech economy, not an ore economy.
+; Defensive TL3 still needs enough ore to AA its base while staying air/tech focused.
 (defrule
 	(current-age == tech-level-3)
 	(goal openingstyle STYLE-DEFENSIVE)
@@ -1054,9 +1296,9 @@
 	(current-age == tech-level-3)
 	(goal openingstyle STYLE-DEFENSIVE)
 	(game-time > latestart-nerf-timeout)
-	(not (strategic-number sn-metal-gatherer-percentage == 10))
+	(not (strategic-number sn-metal-gatherer-percentage == 15))
 =>
-	(set-strategic-number sn-metal-gatherer-percentage 10)
+	(set-strategic-number sn-metal-gatherer-percentage 15)
 	(set-goal ecoswitch COOLDOWN)
 )
 
@@ -1127,22 +1369,62 @@
 	(current-age == tech-level-3)
 	(game-time > latestart-nerf-timeout)
 	(goal ecoswitch READYTOGO)
+	(food-amount < 400)
+	(carbon-amount > 600)
 	(or
-		(and
-			(food-amount < 150) ; 150f for MD
-			(carbon-amount > 700) ; lotsa carbon, not much food
-		)
-		(and
-			(food-amount < 50)
-			(carbon-amount > 300) ; fine carbon, NO food
-		)
+		(not (strategic-number sn-carbon-gatherer-percentage == 20)) 
+		(not (strategic-number sn-food-gatherer-percentage == 45))
 	)
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 20)
+	(set-strategic-number sn-food-gatherer-percentage 45)
+	(set-goal ecoswitch COOLDOWN)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(game-time > latestart-nerf-timeout)
+	(goal ecoswitch READYTOGO)
+	(food-amount < 800)
+	(carbon-amount > 1200)
 	(or
-		(not (strategic-number sn-carbon-gatherer-percentage == 25)) 
+		(not (strategic-number sn-carbon-gatherer-percentage == 15)) 
 		(not (strategic-number sn-food-gatherer-percentage == 50))
 	)
 =>
-	(set-strategic-number sn-carbon-gatherer-percentage 25)
+	(set-strategic-number sn-carbon-gatherer-percentage 15)
+	(set-strategic-number sn-food-gatherer-percentage 50)
+	(set-goal ecoswitch COOLDOWN)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(game-time > latestart-nerf-timeout)
+	(goal ecoswitch READYTOGO)
+	(food-amount < 150) ; 150f for MD
+	(carbon-amount > 700) ; lotsa carbon, not much food
+	(or
+		(not (strategic-number sn-carbon-gatherer-percentage == 15)) 
+		(not (strategic-number sn-food-gatherer-percentage == 50))
+	)
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 15)
+	(set-strategic-number sn-food-gatherer-percentage 50)
+	(set-goal ecoswitch COOLDOWN)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(game-time > latestart-nerf-timeout)
+	(goal ecoswitch READYTOGO)
+	(food-amount < 50)
+	(carbon-amount > 300) ; fine carbon, NO food
+	(or
+		(not (strategic-number sn-carbon-gatherer-percentage == 15)) 
+		(not (strategic-number sn-food-gatherer-percentage == 50))
+	)
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 15)
 	(set-strategic-number sn-food-gatherer-percentage 50)
 	(set-goal ecoswitch COOLDOWN)
 )
@@ -1152,8 +1434,16 @@
 	(current-age == tech-level-3)
 	(game-time > latestart-nerf-timeout)
 	(goal ecoswitch READYTOGO)
-	(nova-amount < 200)
-	(carbon-amount > 700)
+	(or
+		(and
+			(nova-amount < 450)
+			(carbon-amount > 1200)
+		)
+		(and
+			(nova-amount < 200)
+			(carbon-amount > 700)
+		)
+	)
 	(goal nova-found YES)
 	(or
 		(not (strategic-number sn-carbon-gatherer-percentage == 10)) 
@@ -1188,24 +1478,32 @@
 (defrule
 	(or
 		(not (strategic-number sn-carbon-gatherer-percentage == 50)) ; hopefully lag reduction? not sure ; yes this seems to have helped a lot
-		(not (strategic-number sn-food-gatherer-percentage == 10))
+		(not (strategic-number sn-food-gatherer-percentage == 20))
 	)
 	(current-age == tech-level-4)
 	(game-time > latestart-nerf-timeout)
 	(goal ecoswitch READYTOGO)
-	(or
-		(and
-			(food-amount > 1000) ; LOTS too much food, low carbon (but some!)
-			(carbon-amount < 250)
-		)
-		(and
-			(food-amount > 500) ; some too much food, no carbon at all
-			(carbon-amount < 50)
-		)
-	)
+	(food-amount > 1000) ; LOTS too much food, low carbon (but some!)
+	(carbon-amount < 250)
 =>
 	(set-strategic-number sn-carbon-gatherer-percentage 50)
-	(set-strategic-number sn-food-gatherer-percentage 10)
+	(set-strategic-number sn-food-gatherer-percentage 20)
+	(set-goal ecoswitch COOLDOWN)
+)
+
+(defrule
+	(or
+		(not (strategic-number sn-carbon-gatherer-percentage == 50))
+		(not (strategic-number sn-food-gatherer-percentage == 20))
+	)
+	(current-age == tech-level-4)
+	(game-time > latestart-nerf-timeout)
+	(goal ecoswitch READYTOGO)
+	(food-amount > 500) ; some too much food, no carbon at all
+	(carbon-amount < 50)
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 50)
+	(set-strategic-number sn-food-gatherer-percentage 20)
 	(set-goal ecoswitch COOLDOWN)
 )
 
@@ -1215,15 +1513,19 @@
 	(game-time > latestart-nerf-timeout)
 	(goal ecoswitch READYTOGO)
 	(food-amount > 1000)
-	(nova-amount < 200)
+	(nova-amount < 350)
 	(goal nova-found YES)
 	(or
-		(not (strategic-number sn-nova-gatherer-percentage == 25))
-		(not (strategic-number sn-food-gatherer-percentage == 10))
+		(not (strategic-number sn-nova-gatherer-percentage == 35))
+		(or
+			(not (strategic-number sn-food-gatherer-percentage == 15))
+			(not (strategic-number sn-metal-gatherer-percentage == 5))
+		)
 	)
 =>
-	(set-strategic-number sn-nova-gatherer-percentage 25)
-	(set-strategic-number sn-food-gatherer-percentage 10)
+	(set-strategic-number sn-nova-gatherer-percentage 35)
+	(set-strategic-number sn-food-gatherer-percentage 15)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
 	(set-goal ecoswitch COOLDOWN)
 )
 
@@ -1234,16 +1536,24 @@
 	(current-age == tech-level-4)
 	(game-time > latestart-nerf-timeout)
 	(goal ecoswitch READYTOGO)
+	(food-amount < 200) 
+	(carbon-amount > 1500) ; lotsa carbon, not much food
 	(or
-		(and
-			(food-amount < 200) 
-			(carbon-amount > 1500) ; lotsa carbon, not much food
-		)
-		(and
-			(food-amount < 50) 
-			(carbon-amount > 300) ; fine carbon, NO food
-		)
+		(not (strategic-number sn-carbon-gatherer-percentage == 10))
+		(not (strategic-number sn-food-gatherer-percentage == 50))
 	)
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 10)
+	(set-strategic-number sn-food-gatherer-percentage 50)
+	(set-goal ecoswitch COOLDOWN)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(game-time > latestart-nerf-timeout)
+	(goal ecoswitch READYTOGO)
+	(food-amount < 50) 
+	(carbon-amount > 300) ; fine carbon, NO food
 	(or
 		(not (strategic-number sn-carbon-gatherer-percentage == 10))
 		(not (strategic-number sn-food-gatherer-percentage == 50))
@@ -1259,16 +1569,61 @@
 	(current-age == tech-level-4)
 	(game-time > latestart-nerf-timeout)
 	(goal ecoswitch READYTOGO)
-	(nova-amount < 350) ; assault
+	(nova-amount < 700) ; assault and TL4 tech drain
 	(carbon-amount > 1000)
 	(goal nova-found YES)
 	(or
 		(not (strategic-number sn-carbon-gatherer-percentage == 10))
-		(not (strategic-number sn-nova-gatherer-percentage == 25))
+		(or
+			(not (strategic-number sn-nova-gatherer-percentage == 35))
+			(not (strategic-number sn-metal-gatherer-percentage == 5))
+		)
 	)
 =>
 	(set-strategic-number sn-carbon-gatherer-percentage 10)
-	(set-strategic-number sn-nova-gatherer-percentage 25)
+	(set-strategic-number sn-nova-gatherer-percentage 35)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
+	(set-goal ecoswitch COOLDOWN)
+)
+
+; Late TL4 rare-resource vacuum: if carbon is bloated but nova is not banked,
+; keep a large mining crew on nova instead of drifting back to carbon.
+(defrule
+	(current-age == tech-level-4)
+	(game-time > 2400)
+	(goal ecoswitch READYTOGO)
+	(nova-amount < 1000)
+	(carbon-amount > 1500)
+	(goal nova-found YES)
+	(or
+		(not (strategic-number sn-carbon-gatherer-percentage == 10))
+		(or
+			(not (strategic-number sn-nova-gatherer-percentage == 40))
+			(not (strategic-number sn-metal-gatherer-percentage == 5))
+		)
+	)
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 10)
+	(set-strategic-number sn-nova-gatherer-percentage 40)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
+	(set-goal ecoswitch COOLDOWN)
+)
+
+; TL4 ore maintenance is allowed only after nova has a real bank.
+(defrule
+	(current-age == tech-level-4)
+	(game-time > latestart-nerf-timeout)
+	(goal ecoswitch READYTOGO)
+	(nova-amount > 1200)
+	(metal-amount < 500)
+	(goal ore-found YES)
+	(or
+		(not (strategic-number sn-nova-gatherer-percentage == 20))
+		(not (strategic-number sn-metal-gatherer-percentage == 8))
+	)
+=>
+	(set-strategic-number sn-nova-gatherer-percentage 20)
+	(set-strategic-number sn-metal-gatherer-percentage 8)
 	(set-goal ecoswitch COOLDOWN)
 )
 
@@ -1277,11 +1632,45 @@
 	(current-age == tech-level-4)
 	(game-time > latestart-nerf-timeout)
 	(goal ecoswitch READYTOGO)
-	(nova-amount > 600)
-	(not (strategic-number sn-nova-gatherer-percentage == 10))
+	(nova-amount > 1200)
+	(not (strategic-number sn-nova-gatherer-percentage == 15))
 =>
-	(set-strategic-number sn-nova-gatherer-percentage 10)
+	(set-strategic-number sn-nova-gatherer-percentage 15)
+	(set-strategic-number sn-metal-gatherer-percentage 8)
 	(set-goal ecoswitch COOLDOWN)
+)
+
+; Farm-collapse recovery: when late game farms are exhausted in waves, the
+; gather split can leave too few workers on replacement farms unless food crashes.
+(defrule
+	(current-age == tech-level-4)
+	(game-time > latestart-nerf-timeout)
+	(building-type-count-total BLDG-FARM > 0)
+	(food-amount < 12000)
+	(carbon-amount > 1000)
+	(or
+		(not (strategic-number sn-carbon-gatherer-percentage == 35))
+		(not (strategic-number sn-food-gatherer-percentage == 35))
+	)
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 35)
+	(set-strategic-number sn-food-gatherer-percentage 35)
+)
+
+; Late food-collapse recovery. This catches the ugly case where food is gone and
+; carbon is also low, so the normal "too much carbon" food switches never fire.
+(defrule
+	(current-age >= tech-level-3)
+	(game-time > 2400)
+	(unit-type-count-total UNIT-WORKER > 40)
+	(building-type-count-total BLDG-FARM > 0)
+	(food-amount < 300)
+	(not (strategic-number sn-food-gatherer-percentage == 70))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 20)
+	(set-strategic-number sn-food-gatherer-percentage 70)
+	(set-strategic-number sn-nova-gatherer-percentage 10)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
 )
 
 ; GENERIC NON T1 START
@@ -1298,5 +1687,3 @@
 	(set-strategic-number sn-metal-gatherer-percentage 10)
 	(disable-self)
 )
-
-

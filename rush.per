@@ -18,7 +18,33 @@
 	(goal openingstyle UNDEFINED)
 =>
 	(set-goal openingstyle STYLE-RUSH)
+	(set-goal passiveage NO)
 	(disable-self)
+)
+
+(defrule
+	(goal openingstyle STYLE-RUSH)
+	(current-age == tech-level-3)
+	(current-age-time < 480)
+	(not (goal passiveage YES))
+=>
+	(set-goal passiveage YES)
+)
+
+(defrule
+	(goal openingstyle STYLE-RUSH)
+	(goal passiveage YES)
+	(current-age-time > 480)
+=>
+	(set-goal passiveage NO)
+)
+
+(defrule
+	(goal openingstyle STYLE-RUSH)
+	(not (current-age == tech-level-3))
+	(not (goal passiveage NO))
+=>
+	(set-goal passiveage NO)
 )
 
 (defrule

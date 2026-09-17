@@ -39,6 +39,27 @@
 ; don't worry tho, the T1 trooper rules check for food amounts so this will not
 ; allow the AI to have infinite troopers in T1 
 
+#load-if-defined DIFFICULTY-HARDEST
+; Hardest receives a large engine-side starting stockpile on standard starts.
+; Normalize only when those inflated opening amounts are present so unusual
+; starts are not accidentally pushed negative.
+(defrule
+	(game-time < 10)
+	(current-age == tech-level-1)
+	(carbon-amount > 600)
+	(food-amount > 600)
+	(nova-amount > 500)
+	(metal-amount > 650)
+=>
+	(cc-add-resource carbon -500)
+	(cc-add-resource food -500)
+	(cc-add-resource nova -500)
+	(cc-add-resource metal -500)
+	(disable-self)
+)
+#end-if
+
+#load-if-not-defined DIFFICULTY-HARDEST
 (defrule
 	(game-time < 10)
 	(food-amount > 100)
@@ -46,6 +67,7 @@
 	(cc-add-resource food 2) ; large enough to tip over the food at start so it's not zero when they train all their workers
 	(disable-self)
 )
+#end-if
 
 #load-if-defined DIFFICULTY-MODERATE
 (defrule
@@ -85,7 +107,7 @@
 	(unit-type-count UNIT-WORKER > 10)
 =>
 	(cc-add-resource carbon 75)
-	(cc-add-resource food 75)
+	(cc-add-resource food 100)
 	(cc-add-resource nova 25)
 	(cc-add-resource metal 25)
 	(disable-self)
@@ -127,8 +149,7 @@
 		(food-amount < 250)
 	)
 =>
-	(cc-add-resource carbon 4)
-	(cc-add-resource food 8)
+	(cc-add-resource food 14)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -141,8 +162,7 @@
 		(food-amount < 250)
 	)
 =>
-	(cc-add-resource carbon 4)
-	(cc-add-resource food 8)
+	(cc-add-resource food 14)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -155,8 +175,7 @@
 		(food-amount < 250)
 	)
 =>
-	(cc-add-resource carbon 4)
-	(cc-add-resource food 8)
+	(cc-add-resource food 14)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -169,8 +188,7 @@
 		(food-amount < 250)
 	)
 =>
-	(cc-add-resource carbon 4)
-	(cc-add-resource food 8)
+	(cc-add-resource food 14)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -183,8 +201,7 @@
 		(food-amount < 250)
 	)
 =>
-	(cc-add-resource carbon 8)
-	(cc-add-resource food 8)
+	(cc-add-resource food 14)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -197,8 +214,7 @@
 		(food-amount < 250)
 	)
 =>
-	(cc-add-resource carbon 8)
-	(cc-add-resource food 8)
+	(cc-add-resource food 14)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -211,8 +227,7 @@
 		(food-amount < 250)
 	)
 =>
-	(cc-add-resource carbon 8)
-	(cc-add-resource food 8)
+	(cc-add-resource food 14)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -225,8 +240,7 @@
 		(food-amount < 250)
 	)
 =>
-	(cc-add-resource carbon 8)
-	(cc-add-resource food 8)
+	(cc-add-resource food 14)
 )
 
 ; TL2 worker-band income
@@ -542,7 +556,6 @@
 		(food-amount < 275)
 	)
 =>
-	(cc-add-resource carbon 4)
 	(cc-add-resource food 4)
 )
 (defrule
@@ -581,580 +594,14 @@
 	)
 =>
 	(cc-add-resource carbon 20)
-	(cc-add-resource food 8)
+	(cc-add-resource food 14)
 	(cc-add-resource nova 4)
 	(cc-add-resource metal 2)
 )
 #end-if
 
 #load-if-defined DIFFICULTY-MODERATE
-; MODERATE CHEATS
-; Uses worker-scaled income instead of flat catch-up pulses.
-
-(defrule
-	(current-age == tech-level-2)
-	(current-age-time > cheat-timeout)
-	(unit-type-count UNIT-WORKER > 10)
-=>
-	(cc-add-resource carbon 175)
-	(cc-add-resource food 100)
-	(cc-add-resource nova 50)
-	(cc-add-resource metal 50)
-	(disable-self)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(current-age-time > cheat-timeout)
-	(unit-type-count UNIT-WORKER > 15)
-=>
-	(cc-add-resource carbon 325)
-	(cc-add-resource food 150)
-	(cc-add-resource nova 75)
-	(cc-add-resource metal 50)
-	(disable-self)
-)
-
-(defrule
-	(current-age == tech-level-4)
-	(current-age-time > cheat-timeout)
-	(unit-type-count UNIT-WORKER > 20)
-=>
-	(cc-add-resource carbon 325)
-	(cc-add-resource food 150)
-	(cc-add-resource nova 150)
-	(cc-add-resource metal 75)
-	(disable-self)
-)
-
-; TL1 worker-band income
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-1)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 5)
-	(strategic-number snc-lure-amount > 0)
-	(or
-		(carbon-amount < 450)
-		(food-amount < 300)
-	)
-=>
-	(cc-add-resource carbon 8)
-	(cc-add-resource food 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-1)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 10)
-	(strategic-number snc-lure-amount > 0)
-	(or
-		(carbon-amount < 450)
-		(food-amount < 300)
-	)
-=>
-	(cc-add-resource carbon 8)
-	(cc-add-resource food 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-1)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 15)
-	(strategic-number snc-lure-amount > 0)
-	(or
-		(carbon-amount < 450)
-		(food-amount < 300)
-	)
-=>
-	(cc-add-resource carbon 8)
-	(cc-add-resource food 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-1)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 20)
-	(strategic-number snc-lure-amount > 0)
-	(or
-		(carbon-amount < 450)
-		(food-amount < 300)
-	)
-=>
-	(cc-add-resource carbon 8)
-	(cc-add-resource food 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-1)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 5)
-	(strategic-number snc-lure-amount == 0)
-	(or
-		(carbon-amount < 450)
-		(food-amount < 300)
-	)
-=>
-	(cc-add-resource carbon 14)
-	(cc-add-resource food 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-1)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 10)
-	(strategic-number snc-lure-amount == 0)
-	(or
-		(carbon-amount < 450)
-		(food-amount < 300)
-	)
-=>
-	(cc-add-resource carbon 14)
-	(cc-add-resource food 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-1)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 15)
-	(strategic-number snc-lure-amount == 0)
-	(or
-		(carbon-amount < 450)
-		(food-amount < 300)
-	)
-=>
-	(cc-add-resource carbon 14)
-	(cc-add-resource food 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-1)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 20)
-	(strategic-number snc-lure-amount == 0)
-	(or
-		(carbon-amount < 450)
-		(food-amount < 300)
-	)
-=>
-	(cc-add-resource carbon 14)
-	(cc-add-resource food 10)
-)
-
-; TL2 worker-band income
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 10)
-	(or
-		(carbon-amount < 1000)
-		(or
-			(food-amount < 600)
-			(nova-amount < 200)
-		)
-	)
-=>
-	(cc-add-resource carbon 50)
-	(cc-add-resource food 12)
-	(cc-add-resource nova 6)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 15)
-	(or
-		(carbon-amount < 1000)
-		(or
-			(food-amount < 600)
-			(nova-amount < 200)
-		)
-	)
-=>
-	(cc-add-resource carbon 50)
-	(cc-add-resource food 12)
-	(cc-add-resource nova 6)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 20)
-	(or
-		(carbon-amount < 1000)
-		(or
-			(food-amount < 600)
-			(nova-amount < 200)
-		)
-	)
-=>
-	(cc-add-resource carbon 50)
-	(cc-add-resource food 12)
-	(cc-add-resource nova 6)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 25)
-	(or
-		(carbon-amount < 1000)
-		(or
-			(food-amount < 600)
-			(nova-amount < 200)
-		)
-	)
-=>
-	(cc-add-resource carbon 50)
-	(cc-add-resource food 12)
-	(cc-add-resource nova 6)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 30)
-	(or
-		(carbon-amount < 1000)
-		(or
-			(food-amount < 600)
-			(nova-amount < 200)
-		)
-	)
-=>
-	(cc-add-resource carbon 50)
-	(cc-add-resource food 12)
-	(cc-add-resource nova 6)
-)
-
-; TL3 worker-band income
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 15)
-	(or
-		(carbon-amount < 1800)
-		(or
-			(food-amount < 950)
-			(or
-				(nova-amount < 400)
-				(metal-amount < 175)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 110)
-	(cc-add-resource food 25)
-	(cc-add-resource nova 15)
-	(cc-add-resource metal 8)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 20)
-	(or
-		(carbon-amount < 1800)
-		(or
-			(food-amount < 950)
-			(or
-				(nova-amount < 400)
-				(metal-amount < 175)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 110)
-	(cc-add-resource food 25)
-	(cc-add-resource nova 15)
-	(cc-add-resource metal 8)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 25)
-	(or
-		(carbon-amount < 1800)
-		(or
-			(food-amount < 950)
-			(or
-				(nova-amount < 400)
-				(metal-amount < 175)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 110)
-	(cc-add-resource food 25)
-	(cc-add-resource nova 15)
-	(cc-add-resource metal 8)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 30)
-	(or
-		(carbon-amount < 1800)
-		(or
-			(food-amount < 950)
-			(or
-				(nova-amount < 400)
-				(metal-amount < 175)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 110)
-	(cc-add-resource food 25)
-	(cc-add-resource nova 15)
-	(cc-add-resource metal 8)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 35)
-	(or
-		(carbon-amount < 1800)
-		(or
-			(food-amount < 950)
-			(or
-				(nova-amount < 400)
-				(metal-amount < 175)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 110)
-	(cc-add-resource food 25)
-	(cc-add-resource nova 15)
-	(cc-add-resource metal 8)
-)
-
-; TL4 worker-band income
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-4)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 20)
-	(or
-		(carbon-amount < 2400)
-		(or
-			(food-amount < 1500)
-			(or
-				(nova-amount < 700)
-				(metal-amount < 300)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 95)
-	(cc-add-resource food 40)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-4)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 25)
-	(or
-		(carbon-amount < 2400)
-		(or
-			(food-amount < 1500)
-			(or
-				(nova-amount < 700)
-				(metal-amount < 300)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 95)
-	(cc-add-resource food 40)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-4)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 30)
-	(or
-		(carbon-amount < 2400)
-		(or
-			(food-amount < 1500)
-			(or
-				(nova-amount < 700)
-				(metal-amount < 300)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 95)
-	(cc-add-resource food 40)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-4)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 35)
-	(or
-		(carbon-amount < 2400)
-		(or
-			(food-amount < 1500)
-			(or
-				(nova-amount < 700)
-				(metal-amount < 300)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 95)
-	(cc-add-resource food 40)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 10)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-4)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 40)
-	(or
-		(carbon-amount < 2400)
-		(or
-			(food-amount < 1500)
-			(or
-				(nova-amount < 700)
-				(metal-amount < 300)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 95)
-	(cc-add-resource food 40)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 10)
-)
-
-; If Moderate sits in an age too long, add a mild extra worker packet.
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-1)
-	(current-age-time > 240)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 10)
-	(or
-		(carbon-amount < 475)
-		(food-amount < 325)
-	)
-=>
-	(cc-add-resource carbon 8)
-	(cc-add-resource food 5)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(current-age-time > 240)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 15)
-	(or
-		(carbon-amount < 1050)
-		(or
-			(food-amount < 625)
-			(nova-amount < 225)
-		)
-	)
-=>
-	(cc-add-resource carbon 15)
-	(cc-add-resource food 6)
-	(cc-add-resource nova 3)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(current-age-time > 240)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 20)
-	(or
-		(carbon-amount < 1850)
-		(or
-			(food-amount < 975)
-			(or
-				(nova-amount < 425)
-				(metal-amount < 185)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 35)
-	(cc-add-resource food 10)
-	(cc-add-resource nova 5)
-	(cc-add-resource metal 3)
-)
-
-; Small personality-specific helps
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(research-available tech-level-3)
-	(not (can-research-with-escrow tech-level-3))
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 20)
-	(building-type-count-total BLDG-TRAINMECH >= 1)
-	(building-type-count-total BLDG-SPACEPORT >= 1)
-=>
-	(cc-add-resource food 75)
-	(cc-add-resource nova 37)
-)
-
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(research-available tech-level-4)
-	(not (can-research-with-escrow tech-level-4))
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 24)
-	(building-type-count-total BLDG-TRAINAIR >= 2)
-	(building-type-count-total BLDG-RESCTR >= 1)
-=>
-	(cc-add-resource food 100)
-	(cc-add-resource nova 50)
-)
-
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 16)
-=>
-	(cc-add-resource food 25)
-	(cc-add-resource nova 12)
-)
-
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(goal openingstyle STYLE-RUSH)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 22)
-=>
-	(cc-add-resource food 50)
-	(cc-add-resource nova 25)
-)
-#end-if
-
-
-#load-if-defined DIFFICULTY-HARD
-; HARD CHEATS
+; MODERATE CHEATS - former Prototype Hard
 ; Stronger than Moderate in TL2/TL3, but still driven by actual worker count and stockpile need.
 
 (defrule
@@ -1168,8 +615,8 @@
 	(game-time > cheat-timeout)
 	(strategic-number snc-lure-amount > 0)
 =>
-	(cc-add-resource carbon 60)
-	(cc-add-resource food 75)
+	(cc-add-resource carbon 15)
+	(cc-add-resource food 60)
 	(disable-self)
 )       
 
@@ -1178,8 +625,8 @@
 	(game-time > cheat-timeout)
 	(strategic-number snc-lure-amount == 0)
 =>
-	(cc-add-resource carbon 110)
-	(cc-add-resource food 75)
+	(cc-add-resource carbon 30)
+	(cc-add-resource food 80)
 	(disable-self)
 )       
 
@@ -1188,8 +635,8 @@
 	(current-age-time > cheat-timeout)
 	(unit-type-count UNIT-WORKER > 10)
 =>
-	(cc-add-resource carbon 300)
-	(cc-add-resource food 185)
+	(cc-add-resource carbon 220)
+	(cc-add-resource food 265)
 	(cc-add-resource nova 110)
 	(cc-add-resource metal 100)
 	(disable-self)
@@ -1200,8 +647,8 @@
 	(current-age-time > cheat-timeout)
 	(unit-type-count UNIT-WORKER > 18)
 =>
-	(cc-add-resource carbon 450)
-	(cc-add-resource food 225)
+	(cc-add-resource carbon 320)
+	(cc-add-resource food 355)
 	(cc-add-resource nova 125)
 	(cc-add-resource metal 75)
 	(disable-self)
@@ -1212,8 +659,8 @@
 	(current-age-time > cheat-timeout)
 	(unit-type-count UNIT-WORKER > 24)
 =>
-	(cc-add-resource carbon 400)
-	(cc-add-resource food 200)
+	(cc-add-resource carbon 280)
+	(cc-add-resource food 320)
 	(cc-add-resource nova 200)
 	(cc-add-resource metal 100)
 	(disable-self)
@@ -1231,8 +678,7 @@
 		(food-amount < 325)
 	)
 =>
-	(cc-add-resource carbon 15)
-	(cc-add-resource food 14)
+	(cc-add-resource food 20)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1245,8 +691,7 @@
 		(food-amount < 325)
 	)
 =>
-	(cc-add-resource carbon 15)
-	(cc-add-resource food 14)
+	(cc-add-resource food 20)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1259,8 +704,7 @@
 		(food-amount < 325)
 	)
 =>
-	(cc-add-resource carbon 15)
-	(cc-add-resource food 14)
+	(cc-add-resource food 20)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1273,8 +717,7 @@
 		(food-amount < 325)
 	)
 =>
-	(cc-add-resource carbon 15)
-	(cc-add-resource food 14)
+	(cc-add-resource food 20)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1287,8 +730,7 @@
 		(food-amount < 325)
 	)
 =>
-	(cc-add-resource carbon 24)
-	(cc-add-resource food 14)
+	(cc-add-resource food 20)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1301,8 +743,7 @@
 		(food-amount < 325)
 	)
 =>
-	(cc-add-resource carbon 24)
-	(cc-add-resource food 14)
+	(cc-add-resource food 20)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1315,8 +756,7 @@
 		(food-amount < 325)
 	)
 =>
-	(cc-add-resource carbon 24)
-	(cc-add-resource food 14)
+	(cc-add-resource food 20)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1329,8 +769,7 @@
 		(food-amount < 325)
 	)
 =>
-	(cc-add-resource carbon 24)
-	(cc-add-resource food 14)
+	(cc-add-resource food 20)
 )
 
 ; Keep the lure-food shim, but let it ride on top of the smaller worker-based economy.
@@ -1363,17 +802,20 @@
 	(disable-self)
 )
 (defrule
+	(current-age == tech-level-1)
 	(goal cheatlure YES)
 	(strategic-number snc-lure-amount == 0)
 =>
 	(set-goal cheatlure NO)
 )
 (defrule
+	(current-age == tech-level-1)
 	(goal cheatlure YES)
 =>
 	(generate-random-number 20)
 )
 (defrule
+	(current-age == tech-level-1)
 	(goal cheatlure YES)
 	(random-number == 1)
 	(strategic-number snc-lure-amount > 0)
@@ -1382,6 +824,7 @@
 	(set-goal cheatlure SUBTRACT)
 )
 (defrule
+	(current-age == tech-level-1)
 	(goal cheatlure SUBTRACT)
 	(strategic-number snc-lure-amount == 4)
 =>
@@ -1389,6 +832,7 @@
 	(set-goal cheatlure NO)
 )
 (defrule
+	(current-age == tech-level-1)
 	(goal cheatlure SUBTRACT)
 	(strategic-number snc-lure-amount == 3)
 =>
@@ -1396,6 +840,7 @@
 	(set-goal cheatlure NO)
 )
 (defrule
+	(current-age == tech-level-1)
 	(goal cheatlure SUBTRACT)
 	(strategic-number snc-lure-amount == 2)
 =>
@@ -1403,6 +848,7 @@
 	(set-goal cheatlure NO)
 )
 (defrule
+	(current-age == tech-level-1)
 	(goal cheatlure SUBTRACT)
 	(strategic-number snc-lure-amount == 1)
 =>
@@ -1417,16 +863,16 @@
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 10)
 	(or
-		(carbon-amount < 1200)
+		(carbon-amount < 900)
 		(or
-			(food-amount < 725)
-			(nova-amount < 250)
+			(food-amount < 575)
+			(nova-amount < 175)
 		)
 	)
 =>
-	(cc-add-resource carbon 70)
-	(cc-add-resource food 28)
-	(cc-add-resource nova 14)
+	(cc-add-resource carbon 30)
+	(cc-add-resource food 22)
+	(cc-add-resource nova 5)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1434,16 +880,16 @@
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 15)
 	(or
-		(carbon-amount < 1200)
+		(carbon-amount < 900)
 		(or
-			(food-amount < 725)
-			(nova-amount < 250)
+			(food-amount < 575)
+			(nova-amount < 175)
 		)
 	)
 =>
-	(cc-add-resource carbon 70)
-	(cc-add-resource food 28)
-	(cc-add-resource nova 14)
+	(cc-add-resource carbon 30)
+	(cc-add-resource food 22)
+	(cc-add-resource nova 5)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1451,16 +897,16 @@
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 20)
 	(or
-		(carbon-amount < 1200)
+		(carbon-amount < 900)
 		(or
-			(food-amount < 725)
-			(nova-amount < 250)
+			(food-amount < 575)
+			(nova-amount < 175)
 		)
 	)
 =>
-	(cc-add-resource carbon 70)
-	(cc-add-resource food 28)
-	(cc-add-resource nova 14)
+	(cc-add-resource carbon 30)
+	(cc-add-resource food 22)
+	(cc-add-resource nova 5)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1468,16 +914,16 @@
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 25)
 	(or
-		(carbon-amount < 1200)
+		(carbon-amount < 900)
 		(or
-			(food-amount < 725)
-			(nova-amount < 250)
+			(food-amount < 575)
+			(nova-amount < 175)
 		)
 	)
 =>
-	(cc-add-resource carbon 70)
-	(cc-add-resource food 28)
-	(cc-add-resource nova 14)
+	(cc-add-resource carbon 30)
+	(cc-add-resource food 22)
+	(cc-add-resource nova 5)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1485,16 +931,51 @@
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 30)
 	(or
-		(carbon-amount < 1200)
+		(carbon-amount < 900)
 		(or
-			(food-amount < 725)
-			(nova-amount < 250)
+			(food-amount < 575)
+			(nova-amount < 175)
 		)
 	)
 =>
-	(cc-add-resource carbon 70)
+	(cc-add-resource carbon 30)
+	(cc-add-resource food 22)
+	(cc-add-resource nova 5)
+)
+
+; delayed TL2 reinforcement
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(current-age-time > 420)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 20)
+=>
+	(cc-add-resource carbon 40)
 	(cc-add-resource food 28)
-	(cc-add-resource nova 14)
+	(cc-add-resource nova 12)
+)
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(current-age-time > 420)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 25)
+=>
+	(cc-add-resource carbon 40)
+	(cc-add-resource food 28)
+	(cc-add-resource nova 12)
+)
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(current-age-time > 420)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 30)
+=>
+	(cc-add-resource carbon 40)
+	(cc-add-resource food 28)
+	(cc-add-resource nova 12)
 )
 
 ; TL3 worker-band income
@@ -1514,10 +995,10 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 100)
-	(cc-add-resource food 35)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 12)
+	(cc-add-resource carbon 55)
+	(cc-add-resource food 60)
+	(cc-add-resource nova 18)
+	(cc-add-resource metal 10)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1535,10 +1016,10 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 100)
-	(cc-add-resource food 35)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 12)
+	(cc-add-resource carbon 55)
+	(cc-add-resource food 60)
+	(cc-add-resource nova 18)
+	(cc-add-resource metal 10)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1556,10 +1037,10 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 100)
-	(cc-add-resource food 35)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 12)
+	(cc-add-resource carbon 55)
+	(cc-add-resource food 60)
+	(cc-add-resource nova 18)
+	(cc-add-resource metal 10)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1577,10 +1058,10 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 100)
-	(cc-add-resource food 35)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 12)
+	(cc-add-resource carbon 55)
+	(cc-add-resource food 60)
+	(cc-add-resource nova 18)
+	(cc-add-resource metal 10)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1598,10 +1079,10 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 100)
-	(cc-add-resource food 35)
-	(cc-add-resource nova 20)
-	(cc-add-resource metal 12)
+	(cc-add-resource carbon 55)
+	(cc-add-resource food 60)
+	(cc-add-resource nova 18)
+	(cc-add-resource metal 10)
 )
 
 ; TL4 worker-band income
@@ -1621,10 +1102,10 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 120)
-	(cc-add-resource food 55)
-	(cc-add-resource nova 30)
-	(cc-add-resource metal 15)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 80)
+	(cc-add-resource nova 26)
+	(cc-add-resource metal 13)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1642,10 +1123,10 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 120)
-	(cc-add-resource food 55)
-	(cc-add-resource nova 30)
-	(cc-add-resource metal 15)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 80)
+	(cc-add-resource nova 26)
+	(cc-add-resource metal 13)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1663,10 +1144,10 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 120)
-	(cc-add-resource food 55)
-	(cc-add-resource nova 30)
-	(cc-add-resource metal 15)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 80)
+	(cc-add-resource nova 26)
+	(cc-add-resource metal 13)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1684,10 +1165,10 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 120)
-	(cc-add-resource food 55)
-	(cc-add-resource nova 30)
-	(cc-add-resource metal 15)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 80)
+	(cc-add-resource nova 26)
+	(cc-add-resource metal 13)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1705,13 +1186,13 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 120)
-	(cc-add-resource food 55)
-	(cc-add-resource nova 30)
-	(cc-add-resource metal 15)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 80)
+	(cc-add-resource nova 26)
+	(cc-add-resource metal 13)
 )
 
-; If Hard is still in the same age after 4 minutes, bump the worker trickle a bit.
+; If Moderate is still in the same age after 4 minutes, bump the worker trickle a bit.
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -1723,8 +1204,7 @@
 		(food-amount < 350)
 	)
 =>
-	(cc-add-resource carbon 10)
-	(cc-add-resource food 6)
+	(cc-add-resource food 10)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1733,16 +1213,16 @@
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 15)
 	(or
-		(carbon-amount < 1200)
+		(carbon-amount < 900)
 		(or
-			(food-amount < 700)
-			(nova-amount < 250)
+			(food-amount < 575)
+			(nova-amount < 175)
 		)
 	)
 =>
-	(cc-add-resource carbon 18)
+	(cc-add-resource carbon 8)
 	(cc-add-resource food 8)
-	(cc-add-resource nova 4)
+	(cc-add-resource nova 2)
 )
 (defrule
 	(timer-triggered t-aicheat)
@@ -1761,113 +1241,42 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 35)
-	(cc-add-resource food 12)
-	(cc-add-resource nova 6)
-	(cc-add-resource metal 4)
+	(cc-add-resource carbon 18)
+	(cc-add-resource food 20)
+	(cc-add-resource nova 5)
+	(cc-add-resource metal 3)
 )
 
-; Smart, role-specific nudges
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(research-available tech-level-3)
-	(not (can-research-with-escrow tech-level-3))
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 22)
-	(building-type-count-total BLDG-TRAINMECH >= 1)
-	(building-type-count-total BLDG-SPACEPORT >= 1)
-=>
-	(cc-add-resource food 125)
-	(cc-add-resource nova 62)
-)
-
+; targeted TL3 research support
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-3)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(research-available tech-level-4)
-	(not (can-research-with-escrow tech-level-4))
 	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 28)
-	(building-type-count-total BLDG-TRAINAIR >= 2)
-	(building-type-count-total BLDG-RESCTR >= 1)
+	(unit-type-count UNIT-WORKER > 20)
+	(or
+		(carbon-amount < 1600)
+		(or
+			(food-amount < 950)
+			(or
+				(nova-amount < 400)
+				(metal-amount < 180)
+			)
+		)
+	)
+	(not (goal importantT3research DONE))
 =>
-	(cc-add-resource food 150)
-	(cc-add-resource nova 62)
-)
-
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 18)
-=>
+	(cc-add-resource carbon 90)
 	(cc-add-resource food 50)
 	(cc-add-resource nova 25)
-)
-
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(goal openingstyle STYLE-RUSH)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 24)
-=>
-	(cc-add-resource food 75)
-	(cc-add-resource nova 37)
+	(cc-add-resource metal 20)
 )
 #end-if
 
+#load-if-defined DIFFICULTY-HARD
 
-;********************************
-; Random map Hardest cheats:
-
-#load-if-defined DIFFICULTY-HARDEST
-
-; HARDEST CHEATS
-; This keeps the current 50%-ish overall strength, but ties the recurring income
-; to actual workers and stockpile need so raids matter more.
-
-; cancel the engine's hardcoded freebies
-(defrule
-	(current-age == tech-level-1)
-=>
-	(cc-add-resource carbon -500)
-	(cc-add-resource food -500)
-	(cc-add-resource nova -500)
-	(cc-add-resource metal -500)
-	(disable-self)
-)
-(defrule
-	(current-age == tech-level-2)
-=>
-	(cc-add-resource carbon -500)
-	(cc-add-resource food -500)
-	(cc-add-resource nova -500)
-	(cc-add-resource metal -500)
-	(disable-self)
-)
-(defrule
-	(current-age == tech-level-3)
-=>
-	(cc-add-resource carbon -500)
-	(cc-add-resource food -500)
-	(cc-add-resource nova -500)
-	(cc-add-resource metal -500)
-	(disable-self)
-)
-(defrule
-	(current-age == tech-level-4)
-=>
-	(cc-add-resource carbon -500)
-	(cc-add-resource food -500)
-	(cc-add-resource nova -500)
-	(cc-add-resource metal -500)
-	(disable-self)
-)
+; HARD CHEATS - stable baseline plus worker bonus scaling
+; Main income should not collapse when raided. Worker count now adds bonus income
+; instead of being the core requirement for Hard's economy.
 
 ; one-time age-up supports
 (defrule
@@ -1875,47 +1284,39 @@
 	(game-time > cheat-timeout)
 	(strategic-number snc-lure-amount > 0)
 =>
-	(cc-add-resource carbon 40)
+	(cc-add-resource carbon 25)
 	(cc-add-resource food 80)
 	(disable-self)
 )
+
 (defrule
 	(current-age == tech-level-1)
 	(game-time > cheat-timeout)
 	(strategic-number snc-lure-amount == 0)
 =>
-	(cc-add-resource carbon 80)
+	(cc-add-resource carbon 50)
 	(cc-add-resource food 80)
 	(disable-self)
 )
+
 (defrule
 	(current-age == tech-level-2)
 	(current-age-time > cheat-timeout)
-	(unit-type-count UNIT-WORKER > 12)
 =>
-	(cc-add-resource carbon 325)
-	(cc-add-resource food 200)
-	(cc-add-resource nova 100)
-	(cc-add-resource metal 100)
+	(cc-add-resource carbon 360)
+	(cc-add-resource food 240)
+	(cc-add-resource nova 125)
+	(cc-add-resource metal 150)
 	(disable-self)
 )
-(defrule
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(unit-type-count UNIT-WORKER > 12)
-	(metal-amount < 400)
-=>
-	(cc-add-resource metal 100)
-	(disable-self)
-)
+
 (defrule
 	(current-age == tech-level-3)
-	(current-age-time > cheat-timeout)
-	(unit-type-count UNIT-WORKER > 18)
+	(game-time > cheat-timeout)
 =>
-	(cc-add-resource carbon 1100)
-	(cc-add-resource food 500)
-	(cc-add-resource nova 300)
+	(cc-add-resource carbon 1150)
+	(cc-add-resource food 550)
+	(cc-add-resource nova 350)
 	(cc-add-resource metal 300)
 	(disable-self)
 )
@@ -1923,16 +1324,15 @@
 (defrule
 	(current-age == tech-level-4)
 	(current-age-time > cheat-timeout)
-	(unit-type-count UNIT-WORKER > 24)
 =>
-	(cc-add-resource carbon 850)
-	(cc-add-resource food 400)
-	(cc-add-resource nova 400)
-	(cc-add-resource metal 200)
+	(cc-add-resource carbon 800)
+	(cc-add-resource food 425)
+	(cc-add-resource nova 375)
+	(cc-add-resource metal 225)
 	(disable-self)
 )
 
-; TL1 worker-band income
+; TL1 worker-band income stays light. TL1 should still care about early eco health.
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -1944,9 +1344,9 @@
 		(food-amount < 425)
 	)
 =>
-	(cc-add-resource carbon 15)
 	(cc-add-resource food 20)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -1958,9 +1358,9 @@
 		(food-amount < 425)
 	)
 =>
-	(cc-add-resource carbon 15)
 	(cc-add-resource food 20)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -1972,9 +1372,9 @@
 		(food-amount < 425)
 	)
 =>
-	(cc-add-resource carbon 15)
 	(cc-add-resource food 20)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -1986,9 +1386,9 @@
 		(food-amount < 425)
 	)
 =>
-	(cc-add-resource carbon 15)
 	(cc-add-resource food 20)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -2000,9 +1400,9 @@
 		(food-amount < 425)
 	)
 =>
-	(cc-add-resource carbon 28)
 	(cc-add-resource food 20)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -2014,9 +1414,9 @@
 		(food-amount < 425)
 	)
 =>
-	(cc-add-resource carbon 28)
 	(cc-add-resource food 20)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -2028,9 +1428,9 @@
 		(food-amount < 425)
 	)
 =>
-	(cc-add-resource carbon 28)
 	(cc-add-resource food 20)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -2042,7 +1442,6 @@
 		(food-amount < 425)
 	)
 =>
-	(cc-add-resource carbon 28)
 	(cc-add-resource food 20)
 )
 
@@ -2054,6 +1453,7 @@
 	(set-goal cheatlure YES)
 	(disable-self)
 )
+
 (defrule
 	(current-age == tech-level-1)
 	(game-time > 420)
@@ -2061,6 +1461,7 @@
 	(set-goal cheatlure YES)
 	(disable-self)
 )
+
 (defrule
 	(current-age == tech-level-1)
 	(game-time > 540)
@@ -2068,6 +1469,7 @@
 	(set-goal cheatlure YES)
 	(disable-self)
 )
+
 (defrule
 	(current-age == tech-level-1)
 	(game-time > 600)
@@ -2075,28 +1477,31 @@
 	(set-goal cheatlure YES)
 	(disable-self)
 )
+
 (defrule
 	(goal cheatlure YES)
 	(strategic-number snc-lure-amount == 0)
 =>
 	(set-goal cheatlure NO)
 )
+
 (defrule
 	(goal cheatlure YES)
 =>
 	(generate-random-number 10)
 )
+
 (defrule
 	(goal cheatlure YES)
 	(random-number == 1)
 =>
-	(chat-local-to-self "WAFFLE: T1 Food cheat activate")
 	(cc-add-resource food 40)
 	(set-goal cheatlure NO)
 )
 
 ; TL1 panic support
 (defrule
+	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
 	(goal agingup NO)
 	(game-time > 600)
@@ -2104,10 +1509,11 @@
 	(unit-type-count UNIT-WORKER > 10)
 	(strategic-number snc-lure-amount > 0)
 =>
-	(cc-add-resource carbon 6)
 	(cc-add-resource food 12)
 )
+
 (defrule
+	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
 	(goal agingup NO)
 	(game-time > 600)
@@ -2115,16 +1521,14 @@
 	(unit-type-count UNIT-WORKER > 10)
 	(strategic-number snc-lure-amount == 0)
 =>
-	(cc-add-resource carbon 10)
 	(cc-add-resource food 12)
 )
 
-; TL2 worker-band income
+; TL2 baseline income
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-2)
 	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 10)
 	(or
 		(carbon-amount < 1200)
 		(or
@@ -2133,10 +1537,12 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 75)
-	(cc-add-resource food 20)
-	(cc-add-resource nova 10)
+	(cc-add-resource carbon 300)
+	(cc-add-resource food 125)
+	(cc-add-resource nova 25)
 )
+
+; TL2 worker bonus income
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-2)
@@ -2150,10 +1556,11 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 75)
-	(cc-add-resource food 20)
-	(cc-add-resource nova 10)
+	(cc-add-resource carbon 35)
+	(cc-add-resource food 15)
+	(cc-add-resource nova 5)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-2)
@@ -2167,10 +1574,11 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 75)
-	(cc-add-resource food 20)
-	(cc-add-resource nova 10)
+	(cc-add-resource carbon 35)
+	(cc-add-resource food 15)
+	(cc-add-resource nova 5)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-2)
@@ -2184,10 +1592,11 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 75)
-	(cc-add-resource food 20)
-	(cc-add-resource nova 10)
+	(cc-add-resource carbon 35)
+	(cc-add-resource food 15)
+	(cc-add-resource nova 5)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-2)
@@ -2201,58 +1610,72 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 75)
-	(cc-add-resource food 20)
-	(cc-add-resource nova 10)
+	(cc-add-resource carbon 35)
+	(cc-add-resource food 15)
+	(cc-add-resource nova 5)
 )
 
-; generic age-up help should depend on an actual economy, not enemy age
+; delayed TL2 reinforcement. This is no longer worker-gated.
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(current-age-time > 420)
+	(goal agingup NO)
+=>
+	(cc-add-resource carbon 180)
+	(cc-add-resource food 126)
+	(cc-add-resource nova 27)
+)
+
+; generic age-up help should be a safety net, not another worker gate
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-2)
 	(goal agingup YES)
-	(unit-type-count UNIT-WORKER > 15)
 	(or
 		(food-amount < 500)
 		(nova-amount < 175)
 	)
 =>
-	(cc-add-resource carbon 110)
-	(cc-add-resource food 80)
-	(cc-add-resource nova 40)
-)
-
-; personality helpers
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(research-available tech-level-3)
-	(not (can-research-with-escrow tech-level-3))
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 22)
-	(building-type-count-total BLDG-TRAINMECH >= 1)
-	(building-type-count-total BLDG-SPACEPORT >= 1)
-=>
-	(cc-add-resource food 150)
-	(cc-add-resource nova 75)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 18)
-=>
-	(cc-add-resource carbon 50)
-	(cc-add-resource food 50)
+	(cc-add-resource carbon 130)
+	(cc-add-resource food 100)
 	(cc-add-resource nova 25)
 )
 
-; TL3 worker-band income
+; TL3 baseline income
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
+	(goal agingup NO)
+	(or
+		(carbon-amount < 2200)
+		(or
+			(food-amount < 1200)
+			(or
+				(nova-amount < 500)
+				(metal-amount < 250)
+			)
+		)
+	)
+=>
+	(cc-add-resource carbon 600)
+	(cc-add-resource food 300)
+	(cc-add-resource nova 150)
+	(cc-add-resource metal 50)
+)
+
+; TL3 worker bonus income
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 15)
 	(or
@@ -2266,14 +1689,19 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 190)
-	(cc-add-resource food 70)
-	(cc-add-resource nova 40)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 40)
+	(cc-add-resource nova 22)
+	(cc-add-resource metal 8)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 20)
 	(or
@@ -2287,14 +1715,19 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 190)
-	(cc-add-resource food 70)
-	(cc-add-resource nova 40)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 40)
+	(cc-add-resource nova 22)
+	(cc-add-resource metal 8)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 25)
 	(or
@@ -2308,14 +1741,19 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 190)
-	(cc-add-resource food 70)
-	(cc-add-resource nova 40)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 40)
+	(cc-add-resource nova 22)
+	(cc-add-resource metal 8)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 30)
 	(or
@@ -2329,14 +1767,19 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 190)
-	(cc-add-resource food 70)
-	(cc-add-resource nova 40)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 40)
+	(cc-add-resource nova 22)
+	(cc-add-resource metal 8)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
 	(goal agingup NO)
 	(unit-type-count UNIT-WORKER >= 35)
 	(or
@@ -2350,17 +1793,16 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 190)
-	(cc-add-resource food 70)
-	(cc-add-resource nova 40)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 70)
+	(cc-add-resource food 40)
+	(cc-add-resource nova 22)
+	(cc-add-resource metal 8)
 )
 
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-3)
 	(goal agingup YES)
-	(unit-type-count UNIT-WORKER > 22)
 	(or
 		(food-amount < 1000)
 		(nova-amount < 400)
@@ -2370,37 +1812,57 @@
 	(cc-add-resource food 150)
 	(cc-add-resource nova 75)
 )
+
+; targeted TL3 research support
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-3)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(research-available tech-level-4)
-	(not (can-research-with-escrow tech-level-4))
 	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 28)
-	(building-type-count-total BLDG-TRAINAIR >= 2)
-	(building-type-count-total BLDG-RESCTR >= 1)
+	(or
+		(carbon-amount < 1900)
+		(or
+			(food-amount < 1100)
+			(or
+				(nova-amount < 475)
+				(metal-amount < 230)
+			)
+		)
+	)
+	(not (goal importantT3research DONE))
 =>
-	(cc-add-resource food 400)
-	(cc-add-resource nova 150)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-3)
-	(goal openingstyle STYLE-RUSH)
-	(goal agingup NO)
-	(unit-type-count UNIT-WORKER > 24)
-=>
-	(cc-add-resource carbon 125)
+	(cc-add-resource carbon 220)
 	(cc-add-resource food 200)
-	(cc-add-resource nova 100)
-	(cc-add-resource metal 100)
+	(cc-add-resource nova 125)
+	(cc-add-resource metal 50)
 )
 
-; TL4 worker-band income
+; TL4 baseline income
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-4)
+	(current-age-time > 180)
+	(or
+		(carbon-amount < 3000)
+		(or
+			(food-amount < 2000)
+			(or
+				(nova-amount < 1000)
+				(metal-amount < 400)
+			)
+		)
+	)
+=>
+	(cc-add-resource carbon 650)
+	(cc-add-resource food 450)
+	(cc-add-resource nova 250)
+	(cc-add-resource metal 60)
+)
+
+; TL4 worker bonus income
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 180)
 	(unit-type-count UNIT-WORKER >= 20)
 	(or
 		(carbon-amount < 3000)
@@ -2413,14 +1875,16 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 240)
-	(cc-add-resource food 180)
-	(cc-add-resource nova 100)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 60)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 30)
+	(cc-add-resource metal 8)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-4)
+	(current-age-time > 180)
 	(unit-type-count UNIT-WORKER >= 25)
 	(or
 		(carbon-amount < 3000)
@@ -2433,14 +1897,16 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 240)
-	(cc-add-resource food 180)
-	(cc-add-resource nova 100)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 60)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 30)
+	(cc-add-resource metal 8)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-4)
+	(current-age-time > 180)
 	(unit-type-count UNIT-WORKER >= 30)
 	(or
 		(carbon-amount < 3000)
@@ -2453,14 +1919,16 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 240)
-	(cc-add-resource food 180)
-	(cc-add-resource nova 100)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 60)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 30)
+	(cc-add-resource metal 8)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-4)
+	(current-age-time > 180)
 	(unit-type-count UNIT-WORKER >= 35)
 	(or
 		(carbon-amount < 3000)
@@ -2473,14 +1941,16 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 240)
-	(cc-add-resource food 180)
-	(cc-add-resource nova 100)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 60)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 30)
+	(cc-add-resource metal 8)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-4)
+	(current-age-time > 180)
 	(unit-type-count UNIT-WORKER >= 40)
 	(or
 		(carbon-amount < 3000)
@@ -2493,13 +1963,13 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 240)
-	(cc-add-resource food 180)
-	(cc-add-resource nova 100)
-	(cc-add-resource metal 30)
+	(cc-add-resource carbon 60)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 30)
+	(cc-add-resource metal 8)
 )
 
-; If Hardest is still parked in an age after 4 minutes, reinforce the worker trickle a little.
+; If Hard is still parked in an age after 4 minutes, add a small baseline trickle.
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-1)
@@ -2511,15 +1981,14 @@
 		(food-amount < 375)
 	)
 =>
-	(cc-add-resource carbon 10)
 	(cc-add-resource food 8)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-2)
 	(current-age-time > 240)
 	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 15)
 	(or
 		(carbon-amount < 1350)
 		(or
@@ -2528,16 +1997,16 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 22)
-	(cc-add-resource food 10)
-	(cc-add-resource nova 5)
+	(cc-add-resource carbon 90)
+	(cc-add-resource food 40)
+	(cc-add-resource nova 20)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-3)
 	(current-age-time > 240)
 	(goal agingup NO)
-	(unit-type-count UNIT-WORKER >= 20)
 	(or
 		(carbon-amount < 2400)
 		(or
@@ -2549,18 +2018,17 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 45)
-	(cc-add-resource food 15)
-	(cc-add-resource nova 8)
-	(cc-add-resource metal 5)
+	(cc-add-resource carbon 135)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 24)
+	(cc-add-resource metal 15)
 )
 
-; long-game TL4 reinforcement, still worker-tied
+; long-game TL4 reinforcement: baseline plus worker bonus scaling.
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-4)
 	(current-age-time > 1800)
-	(unit-type-count UNIT-WORKER >= 25)
 	(or
 		(carbon-amount < 3200)
 		(or
@@ -2572,11 +2040,12 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 140)
-	(cc-add-resource food 130)
-	(cc-add-resource nova 80)
-	(cc-add-resource metal 20)
+	(cc-add-resource carbon 350)
+	(cc-add-resource food 325)
+	(cc-add-resource nova 200)
+	(cc-add-resource metal 50)
 )
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-4)
@@ -2593,32 +2062,12 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 140)
-	(cc-add-resource food 130)
-	(cc-add-resource nova 80)
-	(cc-add-resource metal 20)
+	(cc-add-resource carbon 175)
+	(cc-add-resource food 160)
+	(cc-add-resource nova 100)
+	(cc-add-resource metal 25)
 )
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-4)
-	(current-age-time > 1800)
-	(unit-type-count UNIT-WORKER >= 35)
-	(or
-		(carbon-amount < 3200)
-		(or
-			(food-amount < 2200)
-			(or
-				(nova-amount < 1100)
-				(metal-amount < 450)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 140)
-	(cc-add-resource food 130)
-	(cc-add-resource nova 80)
-	(cc-add-resource metal 20)
-)
+
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-4)
@@ -2635,38 +2084,17 @@
 		)
 	)
 =>
-	(cc-add-resource carbon 140)
-	(cc-add-resource food 130)
-	(cc-add-resource nova 80)
-	(cc-add-resource metal 20)
-)
-(defrule
-	(timer-triggered t-aicheat)
-	(current-age == tech-level-4)
-	(current-age-time > 1800)
-	(unit-type-count UNIT-WORKER >= 45)
-	(or
-		(carbon-amount < 3200)
-		(or
-			(food-amount < 2200)
-			(or
-				(nova-amount < 1100)
-				(metal-amount < 450)
-			)
-		)
-	)
-=>
-	(cc-add-resource carbon 140)
-	(cc-add-resource food 130)
-	(cc-add-resource nova 80)
-	(cc-add-resource metal 20)
+	(cc-add-resource carbon 175)
+	(cc-add-resource food 165)
+	(cc-add-resource nova 100)
+	(cc-add-resource metal 25)
 )
 
-; targeted T4 research support
+; targeted TL4 research support
 (defrule
 	(timer-triggered t-aicheat)
 	(current-age == tech-level-4)
-	(unit-type-count UNIT-WORKER > 25)
+	(current-age-time > 180)
 	(or
 		(carbon-amount < 2500)
 		(or
@@ -2680,6 +2108,700 @@
 	(cc-add-resource food 500)
 	(cc-add-resource nova 500)
 	(cc-add-resource metal 100)
+)
+
+#end-if
+
+#load-if-defined DIFFICULTY-HARDEST
+
+; HARDEST CHEATS
+; Stronger than Hard, but still built around baseline + worker bonus scaling.
+; Worker raids should reduce the extra bonus, not shut off the whole difficulty.
+
+; Resources on age up
+; Hardest receives an engine-side +500 stockpile to every resource on each age-up.
+; These scripted values are reduced by that amount so the effective grant remains
+; the intended difficulty support instead of stacking an extra 500 each time.
+
+(defrule
+	(current-age == tech-level-1)
+	(game-time > cheat-timeout)
+	(strategic-number snc-lure-amount > 0)
+=>
+	(cc-add-resource carbon 35)
+	(cc-add-resource food 50)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(game-time > cheat-timeout)
+	(strategic-number snc-lure-amount == 0)
+=>
+	(cc-add-resource carbon 65)
+	(cc-add-resource food 50)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(game-time > cheat-timeout)
+=>
+	(cc-add-resource carbon -50)
+	(cc-add-resource food -250)
+	(cc-add-resource nova -375)
+	(cc-add-resource metal -275)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(game-time > cheat-timeout)
+=>
+	(cc-add-resource carbon 1300)
+	(cc-add-resource food 350)
+	(cc-add-resource nova 100)
+	(cc-add-resource metal 25)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(game-time > cheat-timeout)
+=>
+	(cc-add-resource carbon 550)
+	(cc-add-resource food 75)
+	(cc-add-resource nova 25)
+	(cc-add-resource metal -125)
+	(disable-self)
+)
+
+
+; TL1 worker-band income
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 5)
+	(strategic-number snc-lure-amount > 0)
+	(or
+		(carbon-amount < 800)
+		(food-amount < 500)
+	)
+=>
+	(cc-add-resource food 16)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 10)
+	(strategic-number snc-lure-amount > 0)
+	(or
+		(carbon-amount < 800)
+		(food-amount < 500)
+	)
+=>
+	(cc-add-resource food 16)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 15)
+	(strategic-number snc-lure-amount > 0)
+	(or
+		(carbon-amount < 800)
+		(food-amount < 500)
+	)
+=>
+	(cc-add-resource food 16)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 20)
+	(strategic-number snc-lure-amount > 0)
+	(or
+		(carbon-amount < 800)
+		(food-amount < 500)
+	)
+=>
+	(cc-add-resource food 16)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 5)
+	(strategic-number snc-lure-amount == 0)
+	(or
+		(carbon-amount < 800)
+		(food-amount < 500)
+	)
+=>
+	(cc-add-resource food 16)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 10)
+	(strategic-number snc-lure-amount == 0)
+	(or
+		(carbon-amount < 800)
+		(food-amount < 500)
+	)
+=>
+	(cc-add-resource food 16)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 15)
+	(strategic-number snc-lure-amount == 0)
+	(or
+		(carbon-amount < 800)
+		(food-amount < 500)
+	)
+=>
+	(cc-add-resource food 16)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 20)
+	(strategic-number snc-lure-amount == 0)
+	(or
+		(carbon-amount < 800)
+		(food-amount < 500)
+	)
+=>
+	(cc-add-resource food 16)
+)
+
+
+; TL1 stuck-age nudges
+
+(defrule
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(game-time > 300)
+=>
+	(set-goal cheatlure YES)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(game-time > 360)
+=>
+	(set-goal cheatlure YES)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(game-time > 420)
+=>
+	(set-goal cheatlure YES)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(game-time > 480)
+=>
+	(set-goal cheatlure YES)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(goal agingup NO)
+	(game-time > 540)
+=>
+	(cc-add-resource food 45)
+	(disable-self)
+)
+
+(defrule
+	(goal cheatlure YES)
+=>
+	(generate-random-number 10)
+)
+
+(defrule
+	(goal cheatlure YES)
+	(random-number == 1)
+=>
+	(cc-add-resource food 20)
+	(set-goal cheatlure NO)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(or
+		(game-time > 600)
+		(or
+			(players-current-age any-enemy >= tech-level-2)
+			(players-current-age any-ally >= tech-level-2)
+		)
+	)
+	(goal agingup NO)
+	(food-amount < 500)
+	(game-time > cheat-timeout)
+=>
+	(cc-add-resource food 30)
+)
+
+
+; TL2 baseline plus worker bonus income
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(goal agingup NO)
+	(or
+		(carbon-amount < 1400)
+		(or
+			(food-amount < 700)
+			(nova-amount < 250)
+		)
+	)
+=>
+	(cc-add-resource carbon 120)
+	(cc-add-resource food 170)
+	(cc-add-resource nova 35)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 15)
+	(or
+		(carbon-amount < 1400)
+		(or
+			(food-amount < 700)
+			(nova-amount < 250)
+		)
+	)
+=>
+	(cc-add-resource carbon 25)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 10)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 20)
+	(or
+		(carbon-amount < 1400)
+		(or
+			(food-amount < 700)
+			(nova-amount < 250)
+		)
+	)
+=>
+	(cc-add-resource carbon 25)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 10)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 25)
+	(or
+		(carbon-amount < 1400)
+		(or
+			(food-amount < 700)
+			(nova-amount < 250)
+		)
+	)
+=>
+	(cc-add-resource carbon 25)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 10)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 30)
+	(or
+		(carbon-amount < 1400)
+		(or
+			(food-amount < 700)
+			(nova-amount < 250)
+		)
+	)
+=>
+	(cc-add-resource carbon 25)
+	(cc-add-resource food 45)
+	(cc-add-resource nova 10)
+)
+
+
+; Delayed TL2 reinforcement, no worker gate
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(current-age-time > 420)
+	(goal agingup NO)
+	(or
+		(carbon-amount < 1400)
+		(or
+			(food-amount < 700)
+			(nova-amount < 250)
+		)
+	)
+=>
+	(cc-add-resource carbon 120)
+	(cc-add-resource food 210)
+	(cc-add-resource nova 45)
+)
+
+
+; TL2 catch-up and age-up support
+
+(defrule
+	(current-age == tech-level-2)
+	(or
+		(players-current-age any-enemy >= tech-level-3)
+		(players-current-age any-ally >= tech-level-3)
+	)
+	(goal agingup NO)
+	(game-time > cheat-timeout)
+=>
+	(cc-add-resource carbon 180)
+	(cc-add-resource food 160)
+	(cc-add-resource nova 75)
+	(disable-self)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-2)
+	(or
+		(players-current-age any-enemy >= tech-level-3)
+		(players-current-age any-ally >= tech-level-3)
+	)
+	(goal agingup YES)
+=>
+	(cc-add-resource carbon 150)
+	(cc-add-resource food 150)
+	(cc-add-resource nova 40)
+)
+
+
+; TL3 baseline plus worker bonus income
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
+	(goal agingup NO)
+=>
+	(cc-add-resource carbon 850)
+	(cc-add-resource food 550)
+	(cc-add-resource nova 325)
+	(cc-add-resource metal 90)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 15)
+=>
+	(cc-add-resource carbon 125)
+	(cc-add-resource food 85)
+	(cc-add-resource nova 50)
+	(cc-add-resource metal 12)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 20)
+=>
+	(cc-add-resource carbon 125)
+	(cc-add-resource food 85)
+	(cc-add-resource nova 50)
+	(cc-add-resource metal 12)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 25)
+=>
+	(cc-add-resource carbon 125)
+	(cc-add-resource food 85)
+	(cc-add-resource nova 50)
+	(cc-add-resource metal 12)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 30)
+=>
+	(cc-add-resource carbon 125)
+	(cc-add-resource food 85)
+	(cc-add-resource nova 50)
+	(cc-add-resource metal 12)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(or
+		(current-age-time > 240)
+		(not (goal hunt-present YES))
+	)
+	(goal agingup NO)
+	(unit-type-count UNIT-WORKER >= 35)
+=>
+	(cc-add-resource carbon 125)
+	(cc-add-resource food 85)
+	(cc-add-resource nova 50)
+	(cc-add-resource metal 12)
+)
+
+
+; TL3 catch-up and age-up support, no worker gate
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(or
+		(players-current-age any-enemy >= tech-level-4)
+		(players-current-age any-ally >= tech-level-4)
+	)
+	(goal agingup NO)
+=>
+	(cc-add-resource carbon 300)
+	(cc-add-resource food 300)
+	(cc-add-resource nova 180)
+	(cc-add-resource metal 60)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(or
+		(players-current-age any-enemy >= tech-level-4)
+		(players-current-age any-ally >= tech-level-4)
+	)
+	(goal agingup YES)
+=>
+	(cc-add-resource carbon 300)
+	(cc-add-resource food 250)
+	(cc-add-resource nova 100)
+)
+
+
+; Targeted TL3 research support
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-3)
+	(goal agingup NO)
+	(or
+		(carbon-amount < 2400)
+		(or
+			(food-amount < 1400)
+			(or
+				(nova-amount < 650)
+				(metal-amount < 325)
+			)
+		)
+	)
+	(not (goal importantT3research DONE))
+=>
+	(cc-add-resource carbon 350)
+	(cc-add-resource food 325)
+	(cc-add-resource nova 225)
+	(cc-add-resource metal 85)
+)
+
+
+; TL4 baseline plus worker bonus income
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 180)
+=>
+	(cc-add-resource carbon 1100)
+	(cc-add-resource food 775)
+	(cc-add-resource nova 450)
+	(cc-add-resource metal 100)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 180)
+	(unit-type-count UNIT-WORKER >= 25)
+=>
+	(cc-add-resource carbon 150)
+	(cc-add-resource food 115)
+	(cc-add-resource nova 70)
+	(cc-add-resource metal 15)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 180)
+	(unit-type-count UNIT-WORKER >= 30)
+=>
+	(cc-add-resource carbon 150)
+	(cc-add-resource food 115)
+	(cc-add-resource nova 70)
+	(cc-add-resource metal 15)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 180)
+	(unit-type-count UNIT-WORKER >= 35)
+=>
+	(cc-add-resource carbon 150)
+	(cc-add-resource food 115)
+	(cc-add-resource nova 70)
+	(cc-add-resource metal 15)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 180)
+	(unit-type-count UNIT-WORKER >= 40)
+=>
+	(cc-add-resource carbon 150)
+	(cc-add-resource food 115)
+	(cc-add-resource nova 70)
+	(cc-add-resource metal 15)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 180)
+	(unit-type-count UNIT-WORKER >= 45)
+=>
+	(cc-add-resource carbon 150)
+	(cc-add-resource food 115)
+	(cc-add-resource nova 70)
+	(cc-add-resource metal 15)
+)
+
+
+; Long-game TL4 reinforcement.
+; This is split so worker raids reduce the bonus without turning off the whole late-game support.
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 1800)
+=>
+	(cc-add-resource carbon 700)
+	(cc-add-resource food 625)
+	(cc-add-resource nova 400)
+	(cc-add-resource metal 100)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 1800)
+	(unit-type-count UNIT-WORKER >= 30)
+=>
+	(cc-add-resource carbon 250)
+	(cc-add-resource food 225)
+	(cc-add-resource nova 140)
+	(cc-add-resource metal 35)
+)
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 1800)
+	(unit-type-count UNIT-WORKER >= 40)
+=>
+	(cc-add-resource carbon 250)
+	(cc-add-resource food 225)
+	(cc-add-resource nova 140)
+	(cc-add-resource metal 35)
+)
+
+
+; Targeted TL4 research support
+
+(defrule
+	(timer-triggered t-aicheat)
+	(current-age == tech-level-4)
+	(current-age-time > 180)
+	(or
+		(carbon-amount < 2800)
+		(or
+			(food-amount < 2000)
+			(nova-amount < 1000)
+		)
+	)
+	(not (goal importantT4research DONE))
+=>
+	(cc-add-resource carbon 325)
+	(cc-add-resource food 325)
+	(cc-add-resource nova 425)
+	(cc-add-resource metal 80)
 )
 
 #end-if
@@ -2751,7 +2873,6 @@
 	(current-age == tech-level-1)
 	(shared-goal customdifficulty EXTREME)
 =>
-	(cc-add-resource carbon 50) 
 	(cc-add-resource food 50)
 ) 
 
@@ -2802,9 +2923,69 @@
 ;********************************
 ; ADDITIONAL CHEAT SHENANIGANS
 
+(defrule
+	(town-under-attack)
+	(goal buildpause NO)
+=>
+	(set-goal buildpause YES)
+	(enable-timer t-buildpause 30)
+)
+
+(defrule
+	(timer-triggered t-buildpause)
+	(goal buildpause YES)
+	(town-under-attack)
+=>
+	(set-goal buildpause DONE)
+	(disable-timer t-buildpause)
+)
+
+(defrule
+	(timer-triggered t-buildpause)
+	(goal buildpause YES)
+	(not (town-under-attack))
+=>
+	(set-goal buildpause NO)
+	(disable-timer t-buildpause)
+)
+
+(defrule
+	(goal buildpause DONE)
+	(not (town-under-attack))
+=>
+	(set-goal buildpause NO)
+)
+
+(defrule
+	(goal buildpause YES)
+	(not (goal resourcerefund NULL))
+=>
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal buildpause YES)
+	(not (goal tryingtobuild NULL))
+=>
+	(set-goal tryingtobuild NULL)
+)
+
 
 #load-if-not-defined DIFFICULTY-EASIEST
 #load-if-not-defined DIFFICULTY-EASY
+
+; One-time TL1 opener bridge. Only fires if the first Troop Center is late,
+; so normal openers still need to gather most of their follow-on carbon.
+(defrule
+	(current-age == tech-level-1)
+	(game-time > 240)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(building-type-count-total BLDG-TRAINTROOPER == 0)
+	(carbon-amount < 100)
+=>
+	(cc-add-resource carbon 40)
+	(disable-self)
+)
 
 ; used for construction of military buildings without need to escrow
 (defrule
@@ -2823,7 +3004,7 @@
 (defrule
 	(goal resourcerefund cshipyard)
 =>
-	(cc-add-resource carbon 80)
+	(cc-add-resource carbon 120)
 	(set-goal resourcerefund NULL)
 )
 #end-if
@@ -2832,7 +3013,7 @@
 (defrule
 	(goal resourcerefund cshipyard)
 =>
-	(cc-add-resource carbon 45)
+	(cc-add-resource carbon 80)
 	(set-goal resourcerefund NULL)
 )
 #end-if
@@ -2841,7 +3022,7 @@
 (defrule
 	(goal resourcerefund cshipyard)
 =>
-	(cc-add-resource carbon 40)
+	(cc-add-resource carbon 45)
 	(set-goal resourcerefund NULL)
 )
 #end-if
@@ -2854,6 +3035,68 @@
 #load-if-defined DIFFICULTY-HARDEST
 (defrule
 	(goal resourcerefund cpowercore)
+	(current-age == tech-level-1)
+=>
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund cpowercore)
+	(current-age >= tech-level-2)
+=>
+	(cc-add-resource carbon 150)
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund ccarbonproc)
+	(current-age == tech-level-1)
+=>
+	(cc-add-resource carbon 60)
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund ccarbonproc)
+	(current-age >= tech-level-2)
+=>
+	(cc-add-resource carbon 120)
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund cfoodproc)
+=>
+	(cc-add-resource food 150)
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund cnovaproc)
+=>
+	(cc-add-resource nova 150)
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund cmetalproc)
+=>
+	(cc-add-resource metal 150)
+	(set-goal resourcerefund NULL)
+)
+#end-if
+
+#load-if-defined DIFFICULTY-HARD
+(defrule
+	(goal resourcerefund cpowercore)
+	(current-age == tech-level-1)
+=>
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund cpowercore)
+	(current-age >= tech-level-2)
 =>
 	(cc-add-resource carbon 100)
 	(set-goal resourcerefund NULL)
@@ -2861,6 +3104,15 @@
 
 (defrule
 	(goal resourcerefund ccarbonproc)
+	(current-age == tech-level-1)
+=>
+	(cc-add-resource carbon 40)
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund ccarbonproc)
+	(current-age >= tech-level-2)
 =>
 	(cc-add-resource carbon 80)
 	(set-goal resourcerefund NULL)
@@ -2888,9 +3140,16 @@
 )
 #end-if
 
-#load-if-defined DIFFICULTY-HARD
+#load-if-defined DIFFICULTY-MODERATE 
 (defrule
 	(goal resourcerefund cpowercore)
+	(current-age == tech-level-1)
+=>
+	(set-goal resourcerefund NULL) ; do nothing
+)
+(defrule
+	(goal resourcerefund cpowercore)
+	(current-age >= tech-level-2)
 =>
 	(cc-add-resource carbon 60)
 	(set-goal resourcerefund NULL)
@@ -2898,6 +3157,15 @@
 
 (defrule
 	(goal resourcerefund ccarbonproc)
+	(current-age == tech-level-1)
+=>
+	(cc-add-resource carbon 20)
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund ccarbonproc)
+	(current-age >= tech-level-2)
 =>
 	(cc-add-resource carbon 40)
 	(set-goal resourcerefund NULL)
@@ -2925,25 +3193,40 @@
 )
 #end-if
 
-#load-if-defined DIFFICULTY-MODERATE 
-(defrule
-	(goal resourcerefund cpowercore)
-	(current-age == tech-level-1)
-=>
-	(set-goal resourcerefund NULL) ; do nothing
-)
+
+
 (defrule
 	(goal resourcerefund cpowercore)
 =>
-	(cc-add-resource carbon 50)
 	(set-goal resourcerefund NULL)
 )
-#end-if
-
-
 
 (defrule
-	(goal resourcerefund cpowercore)
+	(goal resourcerefund cshipyard)
+=>
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund ccarbonproc)
+=>
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund cfoodproc)
+=>
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund cnovaproc)
+=>
+	(set-goal resourcerefund NULL)
+)
+
+(defrule
+	(goal resourcerefund cmetalproc)
 =>
 	(set-goal resourcerefund NULL)
 )
@@ -2951,36 +3234,36 @@
 
 
 ; Additional rules exist to build refunded AA Turrets in T3+. See fortress for info.
-; Laser turret reimbursements are capped at four turrets so this supports the shell
-; without turning the whole age into free static defense.
+; Laser turret reimbursements remain Moderate+ only and are capped at four so
+; Defensive does not become free.
 
 #load-if-defined DIFFICULTY-MODERATE
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 1)
 =>
-	(cc-add-resource metal 31)
+	(cc-add-resource metal 62)
 	(disable-self)
 )
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 2)
 =>
-	(cc-add-resource metal 31)
+	(cc-add-resource metal 62)
 	(disable-self)
 )
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 3)
 =>
-	(cc-add-resource metal 31)
+	(cc-add-resource metal 62)
 	(disable-self)
 )
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 4)
 =>
-	(cc-add-resource metal 31)
+	(cc-add-resource metal 62)
 	(disable-self)
 )
 #end-if
@@ -2990,28 +3273,28 @@
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 1)
 =>
-	(cc-add-resource metal 62)
+	(cc-add-resource metal 93)
 	(disable-self)
 )
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 2)
 =>
-	(cc-add-resource metal 62)
+	(cc-add-resource metal 93)
 	(disable-self)
 )
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 3)
 =>
-	(cc-add-resource metal 62)
+	(cc-add-resource metal 93)
 	(disable-self)
 )
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 4)
 =>
-	(cc-add-resource metal 62)
+	(cc-add-resource metal 93)
 	(disable-self)
 )
 #end-if
@@ -3021,28 +3304,28 @@
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 1)
 =>
-	(cc-add-resource metal 93)
+	(cc-add-resource metal 124)
 	(disable-self)
 )
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 2)
 =>
-	(cc-add-resource metal 93)
+	(cc-add-resource metal 124)
 	(disable-self)
 )
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 3)
 =>
-	(cc-add-resource metal 93)
+	(cc-add-resource metal 124)
 	(disable-self)
 )
 (defrule
 	(current-age >= tech-level-2)
 	(building-type-count-total BLDG-TURRET-LINE >= 4)
 =>
-	(cc-add-resource metal 93)
+	(cc-add-resource metal 124)
 	(disable-self)
 )
 #end-if
@@ -3055,7 +3338,7 @@
 =>
 	(disable-timer t-aicheat)
 	(enable-timer t-aicheat 150) ; faster cadence to support the prototype's heavier early/midgame plans
-	(chat-local-to-self "WAFFLE: Timer cheat rollover. Expect free money.")
+	; (chat-local-to-self "WAFFLE: Timer cheat rollover. Expect free money.")
 )
 
 
@@ -3090,10 +3373,9 @@
 #load-if-not-defined DIFFICULTY-HARD 
 ; Hardest
 
-; GUNSHIP ARNAMENTS: AI EDITION
+; GUNSHIP ARMAMENTS: AI EDITION
 (defrule
 	(research-completed rt-gunship-lasers)
-	(research-completed ut-laser-4) ; repeater
 	(can-research aic-gunship-garrison)
 	(civ-selected REPUBLIC)
 	(or
@@ -3133,7 +3415,6 @@
 ; config bypass 
 (defrule
 	(research-completed rt-gunship-lasers)
-	(research-completed ut-laser-4) ; repeater
 	(can-research aic-gunship-garrison)
 	(civ-selected REPUBLIC)
 	(shared-goal purgebypass TURBO)
@@ -3144,7 +3425,6 @@
 ; "Garrisoned" turrets
 (defrule
 	(research-completed ut-adv-turret)
-	(research-completed ut-laser-4) ; repeater
 	(can-research aic-turret-garrison)
 	(shared-goal purgebypass TURBO)
 =>
@@ -3214,7 +3494,3 @@
 	(disable-self)
 )
 #end-if
-
-
-
-

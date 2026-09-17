@@ -11,10 +11,15 @@
 ;	Chapter 1: BUILDINGS
 ;	Chapter 2: UPGRADES
 ;	Chapter 3: TL3 PACKAGES
-;	Chapter 4: TL4 PACKAGES
+;	Chapter 4: TL4 CORE MECH ARM
+;	Chapter 5: TL4 SUPPORT MECHS
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
+; =====================================================
+
+; =====================================================
+; *** Chapter 1: BUILDINGS ***
 ; =====================================================
 
 (defrule
@@ -24,6 +29,7 @@
 	(can-build-with-escrow BLDG-TRAINMECH)
 	(metal-amount > 25)
 	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
 =>
 	(set-goal tryingtobuild MECH)
 )
@@ -40,6 +46,47 @@
 	(can-build-with-escrow BLDG-TRAINMECH)
 	(metal-amount > 25)
 	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+=>
+	(set-goal tryingtobuild MECH)
+)
+
+; --- Late T3 Mech Factory ---
+(defrule
+	(current-age == tech-level-3)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(building-type-count-total BLDG-TRAINMECH < 3)
+	(building-type-count-total BLDG-TRAINMECH >= 2)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-WARCTR > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-TRAINMECH)
+	(metal-amount > 25)
+	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+=>
+	(set-goal tryingtobuild MECH)
+)
+
+; --- TL3 post-spine Mech Factory scaling ---
+(defrule
+	(current-age == tech-level-3)
+	(building-type-count-total BLDG-TRAINMECH < 4)
+	(building-type-count-total BLDG-TRAINMECH >= 3)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-WARCTR > 0)
+	(building-type-count-total BLDG-MAIN >= 2)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-TRAINMECH)
+	(carbon-amount > 600)
+	(metal-amount > 50)
+	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild MECH)
@@ -54,6 +101,7 @@
 	(can-build-with-escrow BLDG-TRAINMECH)
 	(metal-amount > 25)
 	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild MECH)
@@ -75,6 +123,7 @@
 	(can-build-with-escrow BLDG-TRAINMECH)
 	(metal-amount > 25)
 	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild MECH)
@@ -96,6 +145,7 @@
 	(can-build-with-escrow BLDG-TRAINMECH)
 	(metal-amount > 25)
 	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
 	(current-age-time > 420)
 	(not (too-many-unpowered-buildings))
 =>
@@ -115,19 +165,69 @@
 	(can-build-with-escrow BLDG-TRAINMECH)
 	(metal-amount > 25)
 	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
 	(current-age-time > 840)
 	(not (too-many-unpowered-buildings))
 =>
 	(set-goal tryingtobuild MECH)
 )
 
+; --- Mech package: sixth factory ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(building-type-count-total BLDG-TRAINMECH < 6)
+	(building-type-count-total BLDG-TRAINMECH >= 5)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-TRAINMECH)
+	(metal-amount > 25)
+	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
+	(current-age-time > 1260)
+	(not (too-many-unpowered-buildings))
+=>
+	(set-goal tryingtobuild MECH)
+)
+
+; Rich TL4 forward mech scaling. Spend large banks through forward queues
+; without changing normal timing caps.
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
+	(building-type-count-total BLDG-TRAINMECH >= 6)
+	(building-type-count-total BLDG-TRAINMECH < 8)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(carbon-amount > 2500)
+	(food-amount > 1000)
+	(nova-amount > 700)
+	(metal-amount > 300)
+	(military-population >= MIL_POP_B)
+	(can-build-with-escrow BLDG-TRAINMECH)
+	(not (goal tryingtobuild MECH))
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+=>
+	(release-escrow carbon)
+	(build-forward BLDG-TRAINMECH)
+)
+
 ; =====================================================
-; CHAPTER 2: UPGRADES
+; *** Chapter 2: UPGRADES ***
 ; =====================================================
 
 ; --- Heavy Strike Mech ---
 (defrule
 	(current-age >= tech-level-4)
+	(unit-type-count-total UNIT-MECH1-LINE > 0)
 	(can-research-with-escrow ut-single-mech-2)
 =>
 	(release-escrow carbon)
@@ -138,6 +238,7 @@
 ; --- Heavy Mech Destroyer ---
 (defrule
 	(current-age >= tech-level-4)
+	(unit-type-count-total UNIT-MECH2-LINE > 0)
 	(can-research-with-escrow ut-dual-mech-2)
 =>
 	(release-escrow carbon)
@@ -149,6 +250,7 @@
 (defrule
 	(current-age >= tech-level-4)
 	(can-research-with-escrow ut-multi-mech-2)
+	(unit-type-count-total UNIT-MECH3-LINE > 0)
 	(not (research-available ut-dual-mech-2))
 	(not (research-available ut-single-mech-2))
 =>
@@ -164,13 +266,61 @@
 		(unit-type-count-total UNIT-MECH1-LINE > 0)
 		(or
 			(unit-type-count-total UNIT-MECH2-LINE > 0)
-			(unit-type-count-total UNIT-MECH3-LINE > 0)
+			(or
+				(unit-type-count-total UNIT-MECH3-LINE > 0)
+				(unit-type-count-total UNIT-MECH4-LINE > 0)
+			)
 		)
 	)
 =>
 	(release-escrow food)
 	(release-escrow metal)
 	(research rt-wookiee-mechanics)
+)
+
+(defrule
+    ; Wookiee Ingenuity
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-wookiee-ingenuity)
+	(or
+		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(or
+			(unit-type-count-total UNIT-MECH2-LINE > 0)
+			(or
+				(unit-type-count-total UNIT-MECH3-LINE > 0)
+				(unit-type-count-total UNIT-MECH4-LINE > 0)
+			)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-wookiee-ingenuity)
+)
+
+(defrule
+    ; Wookiee Ingenuity rich/late fallback
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-wookiee-ingenuity)
+	(or
+		(current-age-time > 480)
+		(and
+			(food-amount > 700)
+			(nova-amount > 500)
+		)
+	)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
+	(building-type-count-total BLDG-TRAINMECH > 0)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-wookiee-ingenuity)
 )
 
 (defrule
@@ -238,6 +388,13 @@
 (defrule
 	; GE Walker Research
 	(can-research-with-escrow rt-transport-capability)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
 =>
 	(release-escrow metal)
 	(release-escrow nova)
@@ -247,24 +404,29 @@
 (defrule
 	; GN Creature Armor
 	(can-research-with-escrow rt-goonga-armor)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
 	(research rt-goonga-armor)
 )
 
-;(defrule
-;	; TF Deployment Racks, has no effect on the AI but for sake of completion here it is commented out.
-;	(can-research-with-escrow rt-deployment-racks)
-;=>
-;	(release-escrow food)
-;	(release-escrow carbon)
-;	(research rt-deployment-racks)
-;)
-
 (defrule
 	; ZC Phased Pulse Cannons
 	(can-research-with-escrow rt-phased-pulse)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -274,6 +436,13 @@
 (defrule
 	; IR Advanced Particle Cannons
 	(can-research-with-escrow rt-advparticlecannon)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow metal)
@@ -284,6 +453,13 @@
 (defrule
 	; RS Salvaged Components
 	(can-research-with-escrow rt-salvcomponents)
+	(or
+		(goal combat-arm MECH)
+		(or
+			(goal combat-arm MECH/HW)
+			(goal support-assault-mech YES)
+		)
+	)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -291,8 +467,18 @@
 )
 
 ; =====================================================
-; CHAPTER 3: TECH 3 MECH PACKAGES
+; *** Chapter 3: TL3 PACKAGES ***
 ; =====================================================
+
+; Replace the starting scout if the AI has lost it.
+(defrule
+	(current-age >= tech-level-2)
+	(unit-type-count-total UNIT-FASTBIKE-LINE < 1)
+	(can-train UNIT-FASTBIKE-LINE)
+=>
+	(train UNIT-FASTBIKE-LINE)
+	(disable-self)
+)
 
 ; -----------------------
 ; STRIKE MECH
@@ -301,16 +487,44 @@
 (defrule
 	(current-age == tech-level-3)
 	(not (goal combat-arm MECH))
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1-water)
-		)
-	)
+		(goal special-map LAND)
+		(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(not (goal combat-arm MECH))
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1-water)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(not (goal combat-arm MECH))
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1-asteroid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(not (goal combat-arm MECH))
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1-hybrid)
 	(can-train-with-escrow UNIT-MECH1-LINE)
 =>
 	(release-escrow food)
@@ -322,16 +536,51 @@
 	(current-age == tech-level-3)
 	(not (goal combat-arm MECH))
 	(goal importantT3research DONE)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p3)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p3-water)
-		)
-	)
+	(not (goal passiveage YES))
+		(goal special-map LAND)
+		(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p3)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(not (goal combat-arm MECH))
+	(goal importantT3research DONE)
+	(not (goal passiveage YES))
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p3-water)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(not (goal combat-arm MECH))
+	(goal importantT3research DONE)
+	(not (goal passiveage YES))
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p3-asteroid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(not (goal combat-arm MECH))
+	(goal importantT3research DONE)
+	(not (goal passiveage YES))
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p3-hybrid)
 	(can-train-with-escrow UNIT-MECH1-LINE)
 =>
 	(release-escrow food)
@@ -343,21 +592,59 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal combat-arm MECH)
-	(or
+	(not (goal passiveage YES))
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p1)
-				(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p1)
+			(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p1-water)
-				(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1-water)
-			)
-		)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(not (goal passiveage YES))
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p1-water)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1-water)
+	)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(not (goal passiveage YES))
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p1-asteroid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1-asteroid)
+	)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(not (goal passiveage YES))
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p1-hybrid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p1-hybrid)
 	)
 	(can-train-with-escrow UNIT-MECH1-LINE)
 =>
@@ -370,21 +657,59 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal combat-arm MECH)
-	(or
+	(not (goal passiveage YES))
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p2)
-				(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p2)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p2)
+			(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p2)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p2-water)
-				(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p2-water)
-			)
-		)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(not (goal passiveage YES))
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p2-water)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p2-water)
+	)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(not (goal passiveage YES))
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p2-asteroid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p2-asteroid)
+	)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(not (goal passiveage YES))
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL3-mech2-arm-p2-hybrid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL3-mech1-arm-p2-hybrid)
 	)
 	(can-train-with-escrow UNIT-MECH1-LINE)
 =>
@@ -400,18 +725,43 @@
 ; --- TL3 MD core p1 ---
 (defrule
 	(current-age == tech-level-3)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
 	(goal combat-arm MECH)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p2)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p2-water)
-		)
-	)
+	(not (goal passiveage YES))
+		(goal special-map LAND)
+		(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p2)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(not (goal passiveage YES))
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p2-water)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(not (goal passiveage YES))
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p2-asteroid)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(not (goal passiveage YES))
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p2-hybrid)
 	(can-train UNIT-MECH2-LINE)
 =>
 	(train UNIT-MECH2-LINE)
@@ -420,24 +770,58 @@
 ; --- TL3 MD core p2 ---
 (defrule
 	(current-age == tech-level-3)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
 	(goal combat-arm MECH)
 	(goal importantT3research DONE)
-	(or
+	(not (goal passiveage YES))
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH1-LINE >= TL3-mech1-arm-p1)
-				(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p4)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL3-mech1-arm-p1)
+			(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p4)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH1-LINE >= TL3-mech1-arm-p1-water)
-				(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p4-water)
-			)
-		)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(goal importantT3research DONE)
+	(not (goal passiveage YES))
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL3-mech1-arm-p1-water)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p4-water)
+	)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(goal importantT3research DONE)
+	(not (goal passiveage YES))
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL3-mech1-arm-p1-asteroid)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p4-asteroid)
+	)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal combat-arm MECH)
+	(goal importantT3research DONE)
+	(not (goal passiveage YES))
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH1-LINE >= TL3-mech1-arm-p1-hybrid)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-arm-p4-hybrid)
 	)
 	(can-train UNIT-MECH2-LINE)
 =>
@@ -447,18 +831,9 @@
 ; --- TL3 MD detect response ---
 (defrule
 	(current-age == tech-level-3)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
 	(goal enemymechsighted MECH-ALERT-P1)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p1-water)
-		)
-	)
+		(goal special-map LAND)
+		(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p1)
 	(can-train UNIT-MECH2-LINE)
 =>
 	(train UNIT-MECH2-LINE)
@@ -466,18 +841,40 @@
 
 (defrule
 	(current-age == tech-level-3)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
+	(goal enemymechsighted MECH-ALERT-P1)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p1-water)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p1-asteroid)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p1-hybrid)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
 	(goal enemymechsighted MECH-ALERT-P2)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p2)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p2-water)
-		)
-	)
+	(not (goal passiveage YES))
+		(goal special-map LAND)
+		(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p2)
 	(can-train UNIT-MECH2-LINE)
 =>
 	(train UNIT-MECH2-LINE)
@@ -485,25 +882,83 @@
 
 (defrule
 	(current-age == tech-level-3)
-	(not (goal fightertrick FIGHTERTRICK-ACTIVE))
+	(goal enemymechsighted MECH-ALERT-P2)
+	(not (goal passiveage YES))
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p2-water)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal enemymechsighted MECH-ALERT-P2)
+	(not (goal passiveage YES))
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p2-asteroid)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal enemymechsighted MECH-ALERT-P2)
+	(not (goal passiveage YES))
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p2-hybrid)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
 	(goal enemymechsighted MECH-ALERT-P3)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p3)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p3-water)
-		)
-	)
+	(not (goal passiveage YES))
+		(goal special-map LAND)
+		(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p3)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal enemymechsighted MECH-ALERT-P3)
+	(not (goal passiveage YES))
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p3-water)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal enemymechsighted MECH-ALERT-P3)
+	(not (goal passiveage YES))
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p3-asteroid)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal enemymechsighted MECH-ALERT-P3)
+	(not (goal passiveage YES))
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL3-mech2-detect-p3-hybrid)
 	(can-train UNIT-MECH2-LINE)
 =>
 	(train UNIT-MECH2-LINE)
 )
 
 ; =====================================================
-; CHAPTER 4: TECH 4 CORE MECH ARM
+; *** Chapter 4: TL4 CORE MECH ARM ***
 ; =====================================================
 
 ; -----------------------
@@ -514,16 +969,38 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm MECH)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p1-water)
-		)
-	)
+		(goal special-map LAND)
+		(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p1)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p1-water)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p1-asteroid)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p1-hybrid)
 	(can-train UNIT-MECH2-LINE)
 =>
 	(train UNIT-MECH2-LINE)
@@ -534,21 +1011,52 @@
 	(current-age == tech-level-4)
 	(goal combat-arm MECH)
 	(goal importantT4research DONE)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1)
-				(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p2)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1)
+			(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p2)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1-water)
-				(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p2-water)
-			)
-		)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1-water)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p2-water)
+	)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1-asteroid)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p2-asteroid)
+	)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1-hybrid)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p2-hybrid)
 	)
 	(can-train UNIT-MECH2-LINE)
 =>
@@ -559,21 +1067,49 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm MECH)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
-				(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p3)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+			(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p3)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
-				(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p3-water)
-			)
-		)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p3-water)
+	)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p3-asteroid)
+	)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p3-hybrid)
 	)
 	(can-train UNIT-MECH2-LINE)
 =>
@@ -584,21 +1120,49 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm MECH)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3)
-				(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p4)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3)
+			(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p4)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3-water)
-				(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p4-water)
-			)
-		)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3-water)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p4-water)
+	)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3-asteroid)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p4-asteroid)
+	)
+	(can-train UNIT-MECH2-LINE)
+=>
+	(train UNIT-MECH2-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3-hybrid)
+	(unit-type-count-total UNIT-MECH2-LINE < TL4-mech2-arm-p4-hybrid)
 	)
 	(can-train UNIT-MECH2-LINE)
 =>
@@ -614,21 +1178,52 @@
 	(current-age == tech-level-4)
 	(goal combat-arm MECH)
 	(goal importantT4research DONE)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1)
-				(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1)
+			(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1-water)
-				(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1-water)
-			)
-		)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1-water)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1-water)
+	)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1-asteroid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1-asteroid)
+	)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p1-hybrid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1-hybrid)
 	)
 	(can-train UNIT-MECH1-LINE)
 =>
@@ -640,21 +1235,52 @@
 	(current-age == tech-level-4)
 	(goal combat-arm MECH)
 	(goal importantT4research DONE)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
-				(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+			(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
-				(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2-water)
-			)
-		)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2-water)
+	)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2-asteroid)
+	)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2-hybrid)
 	)
 	(can-train UNIT-MECH1-LINE)
 =>
@@ -666,21 +1292,52 @@
 	(current-age == tech-level-4)
 	(goal combat-arm MECH)
 	(goal importantT4research DONE)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3)
-				(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3)
+			(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3-water)
-				(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3-water)
-			)
-		)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3-water)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3-water)
+	)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3-asteroid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3-asteroid)
+	)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p3-hybrid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3-hybrid)
 	)
 	(can-train UNIT-MECH1-LINE)
 =>
@@ -692,21 +1349,52 @@
 	(current-age == tech-level-4)
 	(goal combat-arm MECH)
 	(goal importantT4research DONE)
-	(or
+		(goal special-map LAND)
 		(and
-			(not (goal special-map WATER))
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p4)
-				(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p4)
+			(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4)
 			)
-		)
-		(and
-			(goal special-map WATER)
-			(and
-				(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p4-water)
-				(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4-water)
-			)
-		)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map WATER)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p4-water)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4-water)
+	)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map ASTEROID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p4-asteroid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4-asteroid)
+	)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH)
+	(goal importantT4research DONE)
+	(goal special-map HYBRID)
+	(and
+	(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p4-hybrid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4-hybrid)
 	)
 	(can-train UNIT-MECH1-LINE)
 =>
@@ -721,9 +1409,48 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm MECH/HW)
+	(goal special-map LAND)
 	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1)
-	(can-train UNIT-MECH1-LINE)
+	(can-train-with-escrow UNIT-MECH1-LINE)
 =>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1-water)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1-asteroid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p1-hybrid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
 	(train UNIT-MECH1-LINE)
 )
 
@@ -732,19 +1459,55 @@
 	(current-age == tech-level-4)
 	(goal combat-arm MECH/HW)
 	(goal importantT4research DONE)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1-water)
-		)
-	)
+		(goal special-map LAND)
+		(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1)
 	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2)
-	(can-train UNIT-MECH1-LINE)
+	(can-train-with-escrow UNIT-MECH1-LINE)
 =>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal importantT4research DONE)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1-water)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2-water)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal importantT4research DONE)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1-asteroid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2-asteroid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal importantT4research DONE)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1-hybrid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p2-hybrid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
 	(train UNIT-MECH1-LINE)
 )
 
@@ -752,19 +1515,52 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm MECH/HW)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
-		)
-	)
+		(goal special-map LAND)
+		(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
 	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3)
-	(can-train UNIT-MECH1-LINE)
+	(can-train-with-escrow UNIT-MECH1-LINE)
 =>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3-water)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3-asteroid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p3-hybrid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
 	(train UNIT-MECH1-LINE)
 )
 
@@ -772,69 +1568,706 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal combat-arm MECH/HW)
-	(or
-		(and
-			(not (goal special-map WATER))
-			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
-		)
-		(and
-			(goal special-map WATER)
-			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3-water)
-		)
-	)
+		(goal special-map LAND)
+		(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
 	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4)
-	(can-train UNIT-MECH1-LINE)
+	(can-train-with-escrow UNIT-MECH1-LINE)
 =>
+	(release-escrow food)
+	(release-escrow carbon)
 	(train UNIT-MECH1-LINE)
 )
 
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map WATER)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3-water)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4-water)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map ASTEROID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3-asteroid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4-asteroid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm MECH/HW)
+	(goal special-map HYBRID)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3-hybrid)
+	(unit-type-count-total UNIT-MECH1-LINE < TL4-mech1-arm-p4-hybrid)
+	(can-train-with-escrow UNIT-MECH1-LINE)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(train UNIT-MECH1-LINE)
+)
+
+; -----------------------
+; ASSAULT MECH CORE
+; -----------------------
+
+; --- Assault Mech core p1 land ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map LAND)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p1)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p1 water ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map WATER)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p1-water)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p1 asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map ASTEROID)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-asteroid)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p1-asteroid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p1 hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map HYBRID)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-hybrid)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p1-hybrid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p2 land ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map LAND)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p2)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p2 water ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map WATER)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p2-water)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p2 asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map ASTEROID)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-asteroid)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p2-asteroid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p2 hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map HYBRID)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-hybrid)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p2-hybrid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p3 land ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map LAND)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p3)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p3 water ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map WATER)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p3-water)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p3 asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map ASTEROID)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-asteroid)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p3-asteroid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p3 hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map HYBRID)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-hybrid)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p3-hybrid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p4 land ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map LAND)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p4)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p4 water ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map WATER)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-water)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-water)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p4-water)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p4 asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map ASTEROID)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-asteroid)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-asteroid)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p4-asteroid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech core p4 hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(or
+		(goal combat-arm MECH)
+		(goal combat-arm MECH/HW)
+	)
+	(goal special-map HYBRID)
+	(or
+		(and
+			(goal combat-arm MECH)
+			(unit-type-count-total UNIT-MECH2-LINE >= TL4-mech2-arm-p2-hybrid)
+		)
+		(and
+			(goal combat-arm MECH/HW)
+			(unit-type-count-total UNIT-MECH1-LINE >= TL4-mech1-arm-p2-hybrid)
+		)
+	)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-arm-p4-hybrid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
 ; =====================================================
-; CHAPTER 5: TECH 4 SUPPORT MECHS
+; *** Chapter 5: TL4 SUPPORT MECHS ***
 ; =====================================================
 
 ; -----------------------
 ; ASSAULT MECH SUPPORT
 ; -----------------------
 
-; --- Assault Mech support p1 ---
+; --- Assault Mech support p1 TROOP land ---
 (defrule
 	(current-age == tech-level-4)
+	(goal combat-arm TROOP)
 	(goal support-assault-mech YES)
-	(goal importantT4research DONE)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1)
 	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p1)
 	(can-train UNIT-MECH3-LINE)
 =>
 	(train UNIT-MECH3-LINE)
 )
 
-; --- Assault Mech support p2 ---
+; --- Assault Mech support p1 TROOP water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP)
+	(goal support-assault-mech YES)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-water)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p1-water)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p1 TROOP asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP)
+	(goal support-assault-mech YES)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-asteroid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p1-asteroid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p1 TROOP hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm TROOP)
+	(goal support-assault-mech YES)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-hybrid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p1-hybrid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p1 land ---
 (defrule
 	(current-age == tech-level-4)
 	(goal support-assault-mech YES)
+	(goal special-map LAND)
 	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p1)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p1 water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map WATER)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p1-water)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p1 asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map ASTEROID)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p1-asteroid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p1 hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map HYBRID)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p1-hybrid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p2 land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map LAND)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
 	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p2)
 	(can-train UNIT-MECH3-LINE)
 =>
 	(train UNIT-MECH3-LINE)
 )
 
-; --- Assault Mech support p3 ---
+; --- Assault Mech support p2 water ---
 (defrule
 	(current-age == tech-level-4)
 	(goal support-assault-mech YES)
+	(goal special-map WATER)
 	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p2-water)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p2 asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map ASTEROID)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p2-asteroid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p2 hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map HYBRID)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p2-hybrid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p3 land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map LAND)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
 	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p3)
 	(can-train UNIT-MECH3-LINE)
 =>
 	(train UNIT-MECH3-LINE)
 )
 
-; --- Assault Mech support p4 ---
+; --- Assault Mech support p3 water ---
 (defrule
 	(current-age == tech-level-4)
 	(goal support-assault-mech YES)
+	(goal special-map WATER)
 	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p3-water)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p3 asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map ASTEROID)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p3-asteroid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p3 hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map HYBRID)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p3-hybrid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p4 land ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map LAND)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
 	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p4)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p4 water ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map WATER)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p4-water)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p4 asteroid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map ASTEROID)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p4-asteroid)
+	(can-train UNIT-MECH3-LINE)
+=>
+	(train UNIT-MECH3-LINE)
+)
+
+; --- Assault Mech support p4 hybrid ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-assault-mech YES)
+	(goal special-map HYBRID)
+	(goal importantT4research DONE)
+	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(unit-type-count-total UNIT-MECH3-LINE < TL4-mech3-supp-p4-hybrid)
 	(can-train UNIT-MECH3-LINE)
 =>
 	(train UNIT-MECH3-LINE)
@@ -844,55 +2277,258 @@
 ; TRANSPORT MECH SUPPORT
 ; -----------------------
 
-; --- Transport Mech support p1 ---
+; --- Transport Mech support p1 normal ---
 (defrule
 	(current-age >= tech-level-4)
 	(goal importantT4research DONE)
-	(goal combat-arm TROOP)
-	(unit-type-count-total UNIT-LASER-LINE > TL4-trooper-arm-p1)
-	(unit-type-count-total UNIT-GRENADE-LINE > TL4-grenade-arm-p1)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1)
 	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p1)
 	(can-train UNIT-MECH4-LINE)
 =>
 	(train UNIT-MECH4-LINE)
 )
 
-; --- Transport Mech support p2 ---
+; --- Transport Mech support p1 water ---
 (defrule
 	(current-age >= tech-level-4)
 	(goal importantT4research DONE)
-	(goal combat-arm TROOP)
-	(unit-type-count-total UNIT-LASER-LINE > TL4-trooper-arm-p2)
-	(unit-type-count-total UNIT-GRENADE-LINE > TL4-grenade-arm-p2)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-water)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p1-water)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p1 asteroid ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-asteroid)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p1-asteroid)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p1 hybrid ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1-hybrid)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p1-hybrid)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p2 normal ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2)
 	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p2)
 	(can-train UNIT-MECH4-LINE)
 =>
 	(train UNIT-MECH4-LINE)
 )
 
-; --- Transport Mech support p3 ---
+; --- Transport Mech support p2 water ---
 (defrule
 	(current-age >= tech-level-4)
 	(goal importantT4research DONE)
-	(goal combat-arm TROOP)
-	(unit-type-count-total UNIT-LASER-LINE > TL4-trooper-arm-p3)
-	(unit-type-count-total UNIT-GRENADE-LINE > TL4-grenade-arm-p3)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-water)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p2-water)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p2 asteroid ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-asteroid)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p2-asteroid)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p2 hybrid ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-hybrid)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p2-hybrid)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p3 normal ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3)
 	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p3)
 	(can-train UNIT-MECH4-LINE)
 =>
 	(train UNIT-MECH4-LINE)
 )
 
-; --- Transport Mech support p4 ---
+; --- Transport Mech support p3 water ---
 (defrule
 	(current-age >= tech-level-4)
 	(goal importantT4research DONE)
-	(goal combat-arm TROOP)
-	(unit-type-count-total UNIT-LASER-LINE > TL4-trooper-arm-p4)
-	(unit-type-count-total UNIT-GRENADE-LINE > TL4-grenade-arm-p4)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-water)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p3-water)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p3 asteroid ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-asteroid)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p3-asteroid)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p3 hybrid ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-hybrid)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p3-hybrid)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p4 normal ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p4)
 	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p4)
 	(can-train UNIT-MECH4-LINE)
 =>
 	(train UNIT-MECH4-LINE)
 )
 
+; --- Transport Mech support p4 water ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p4-water)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p4-water)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p4 asteroid ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p4-asteroid)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p4-asteroid)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)
+
+; --- Transport Mech support p4 hybrid ---
+(defrule
+	(current-age >= tech-level-4)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p4-hybrid)
+	(unit-type-count-total UNIT-MECH4-LINE < TL4-mech4-supp-p4-hybrid)
+	(can-train UNIT-MECH4-LINE)
+=>
+	(train UNIT-MECH4-LINE)
+)

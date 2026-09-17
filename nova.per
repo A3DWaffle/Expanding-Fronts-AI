@@ -57,7 +57,9 @@
 	(building-type-count-total BLDG-DROPCARBON > 0)
 	(building-type-count-total BLDG-DROPNOVA < 1)
 	(building-type-count-total BLDG-TRAINTROOPER > 0)
+	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-DROPNOVA)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(set-goal resourcerefund cnovaproc)
@@ -70,37 +72,60 @@
 ; 1: TL2 after 1 of each dropoff built (ignore)
 ; 2: TL3
 ; 3: TL4 
-; 4: In TL4 for 30min
-; 5: In TL4 for 1hr (or T3 for 1hr)
+; 4: In TL4 for 40min
+; 5: In TL4 for 1hr (or T3 for 1hr30m)
 ; 6: In TL4 for 1h30m
 (defrule
 	(current-age >= tech-level-3)
-	(or
-		(or
-			(and
-				(goal camplevel 2)
-				(building-type-count-total BLDG-DROPNOVA < 4)  
-			)
-			(and
-				(goal camplevel 3)
-				(building-type-count-total BLDG-DROPNOVA < 5) 
-			)
-		)
-		(or
-			(and
-				(goal camplevel 4)
-				(building-type-count-total BLDG-DROPNOVA < 7)
-			)
-			(and
-				(goal camplevel 5)
-				(building-type-count-total BLDG-DROPNOVA < 8)
-			)
-		)
-	)
+	(goal camplevel 2)
+	(building-type-count-total BLDG-DROPNOVA < 4)
 	(goal nova-found YES) ; checks several things
 	(building-type-count-total BLDG-MAIN > 0)
 	(dropsite-min-distance nova > 7)
 	(can-build BLDG-DROPNOVA)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cnovaproc)
+	(build BLDG-DROPNOVA)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal camplevel 3)
+	(building-type-count-total BLDG-DROPNOVA < 6)
+	(goal nova-found YES)
+	(building-type-count-total BLDG-MAIN > 0)
+	(dropsite-min-distance nova > 7)
+	(can-build BLDG-DROPNOVA)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cnovaproc)
+	(build BLDG-DROPNOVA)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal camplevel 4)
+	(building-type-count-total BLDG-DROPNOVA < 9)
+	(goal nova-found YES)
+	(building-type-count-total BLDG-MAIN > 0)
+	(dropsite-min-distance nova > 7)
+	(can-build BLDG-DROPNOVA)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cnovaproc)
+	(build BLDG-DROPNOVA)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal camplevel 5)
+	(building-type-count-total BLDG-DROPNOVA < 11)
+	(goal nova-found YES)
+	(building-type-count-total BLDG-MAIN > 0)
+	(dropsite-min-distance nova > 7)
+	(can-build BLDG-DROPNOVA)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cnovaproc)
 	(build BLDG-DROPNOVA)
@@ -110,33 +135,46 @@
 	(current-age >= tech-level-3)
 	(and
 		(goal camplevel 6)
-		(building-type-count-total BLDG-DROPNOVA < 10)  
+		(building-type-count-total BLDG-DROPNOVA < 14)  
 	)
 	(goal nova-found YES)
 	(building-type-count-total BLDG-MAIN > 0)
 	(dropsite-min-distance nova > 7)
 	(can-build BLDG-DROPNOVA)
+	(not (goal buildpause YES))
 =>
 	(set-goal resourcerefund cnovaproc)
 	(build BLDG-DROPNOVA)
 )
 
 (defrule
-    ; Beamdrill Mining Nova, TL2
-	(can-research rt-beamdrill-nova-mining) ; allow with general spare res in T2
-	(goal importantT2research DONE)
+    ; Beamdrill Mining Nova
+	(or
+		(current-age >= tech-level-3)
+		(and
+			(current-age == tech-level-2)
+			(goal agingup YES)
+		)
+	)
+	(can-research rt-beamdrill-nova-mining)
 	(or
 		(goal agingup YES)
-		(food-amount > 1000)
+		(food-amount > 800)
 	)
 =>
 	(research rt-beamdrill-nova-mining)
 )
 
 (defrule
-    ; Beamdrill Mining Nova, TL2 Alt
+    ; Beamdrill Mining Nova Alt
+	(or
+		(current-age >= tech-level-3)
+		(and
+			(current-age == tech-level-2)
+			(goal agingup YES)
+		)
+	)
     (can-research-with-escrow rt-beamdrill-nova-mining)
-	(goal importantT3research DONE)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -145,8 +183,8 @@
 
 (defrule
     ; Hvy Beamdrill Mining Nova, TL3
+	(current-age >= tech-level-3)
     (can-research-with-escrow rt-hvy-beamdrill-nova)
-	(goal importantT3research DONE) ; allow getting this in T3
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -155,6 +193,7 @@
 
 (defrule
     ; CF Fusion Extractor Nova, TL4
+	(current-age >= tech-level-4)
     (can-research-with-escrow rt-nova-fusion-extractor)
 	(goal importantT4research DONE)
 =>
@@ -230,7 +269,7 @@
 	(goal resource-search SEARCH) ; essentially the timer going off
 =>
 	(set-goal nova-found NO)
-	(chat-local-to-self "WAFFLE: No nova.")
+	; (chat-local-to-self "WAFFLE: No nova.")
 )
 
 ; rule 2: if timer triggered and we have no nova miners, maybe there's no nova left on the map.
@@ -244,7 +283,7 @@
 	(goal resource-search SEARCH) ; essentially the timer going off
 =>
 	(set-goal nova-found MAYBENOT)
-	(chat-local-to-self "WAFFLE: maybe no nova?")
+	; (chat-local-to-self "WAFFLE: maybe no nova?")
 )
 
 ; -------------------
@@ -254,7 +293,9 @@
 
 (defrule
 	; CF Fusion Extractor (Nova)
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-nova-fusion-extractor)
+	(goal importantT4research DONE)
 =>
 	(release-escrow food)
 	(release-escrow carbon)

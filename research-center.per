@@ -8,8 +8,8 @@
 ; =====================================================
 ;
 ;	Chapter 0: SETUP
-;	Chapter 1: BUILDINGS
-;	Chapter 2: CORE TECHS
+;	Chapter 1: CORE TECHS
+;	Chapter 2: UNIQUE TECHS
 ;	Chapter 3: DEFENSIVE TECHS
 ;
 ; =====================================================
@@ -21,6 +21,7 @@
 	(building-type-count BLDG-MAIN > 2)
 	(building-type-count-total BLDG-RESCTR < 1)
 	(can-build-with-escrow BLDG-RESCTR)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-RESCTR)
@@ -30,6 +31,7 @@
 	(current-age == tech-level-4)
 	(building-type-count-total BLDG-RESCTR == 1)
 	(can-build-with-escrow BLDG-RESCTR)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build BLDG-RESCTR)
@@ -50,7 +52,7 @@
 
 (defrule
     ; Tracking and Targeting Computers
-	(goal importantT3research DONE)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-tracking-computer)
 =>
 	(release-escrow carbon)
@@ -59,10 +61,12 @@
 )
 
 (defrule
-    ; Durasteel Reinforced Support Beams
+	; Durasteel Reinforced Support Beams
 	(current-age >= tech-level-4)
 	(building-type-count-total BLDG-GOVTCTR > 0)
+	(can-research-with-escrow rt-durasteel)
 	(goal importantT4research DONE)
+	(military-population >= MIL_POP_B)
 =>
 	(release-escrow food)
 	(release-escrow metal)
@@ -74,6 +78,7 @@
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-permacite-plating)
 	(goal importantT4research DONE)
+	(military-population >= MIL_POP_B)
 =>
 	(release-escrow metal)
 	(release-escrow food)
@@ -111,6 +116,20 @@
     ; CF Droid Upgrades
     (current-age >= tech-level-4)
     (can-research-with-escrow rt-droidupg)
+	(goal importantT4research DONE)
+	(or
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(or
+				(goal combat-arm MECH)
+				(or
+					(goal combat-arm MECH/HW)
+					(goal support-assault-mech YES)
+				)
+			)
+		)
+	)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -119,9 +138,10 @@
 
 (defrule
     ; RA Evacuation Protocols
-	(current-age >= tech-level-3)
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-evac)
 	(goal importantT4research DONE)
+	(military-population >= MIL_POP_A)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -130,9 +150,10 @@
 
 (defrule
     ; IR Fortress Worlds
-	(current-age >= tech-level-3)
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-fortressworlds)
 	(goal importantT4research DONE)
+	(military-population >= MIL_POP_A)
 =>
 	(release-escrow carbon)
 	(release-escrow metal)
@@ -143,6 +164,8 @@
     ; FO Advanced Torpedoes
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-adv-torpedoes)
+	(goal importantT4research DONE)
+	(not (goal enemyairsighted AIR-ALERT-NONE))
 =>
 	(release-escrow carbon)
 	(release-escrow metal)
@@ -157,6 +180,7 @@
 	; Rotation Bearings
 	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-rotation-bearings)
+	(military-population >= MIL_POP_A)
 	(or
 		(goal importantT4research DONE)
 		(goal openingstyle STYLE-DEFENSIVE)
@@ -171,6 +195,7 @@
 	; Ion Accu-Accelerator
 	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-ion-accelerator)
+	(military-population >= MIL_POP_A)
 	(or
 		(goal importantT4research DONE)
 		(goal openingstyle STYLE-DEFENSIVE)

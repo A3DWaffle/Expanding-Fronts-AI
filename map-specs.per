@@ -13,34 +13,3 @@
 ; =====================================================
 ; *** Chapter 0: SETUP ***
 ; =====================================================
-
-#load-if-defined THISWILLNEVERBEDEFINED
-
-; rule moved to shipyard
-(defrule
-        (not (map-type map10) )
-		(game-time > 5)
-=>
-        (set-strategic-number sn-minimum-water-body-size-for-dock 3000)
-        (disable-self)
-)
-
-(defrule
-        (map-type map4) 
-        (unit-type-count-total UNIT-PACKED1 < 2)
-        (can-train-with-escrow UNIT-PACKED1)
-=>
-        (release-escrow carbon)
-        (release-escrow nova)
-        (train UNIT-PACKED1)
-)
-
-(defrule
-        (map-type map9)
-        (current-age >= TECH-AGE2)
-        (not (strategic-number sn-maximum-town-size == 40) )
-=>
-        (set-strategic-number sn-maximum-town-size 40)
-)
-
-#end-if
