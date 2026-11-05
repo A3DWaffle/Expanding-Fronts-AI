@@ -157,9 +157,9 @@
 ; monument infrastructure before later economy/production rules compete.
 (defrule
 	(can-build BLDG-GOVTCTR)
-	(building-type-count-total BLDG-GOVTCTR < 5)
+	(building-type-count-total BLDG-GOVTCTR < 3)
 	(not (goal special-map WATER))
-	(goal buildpause NO)
+	(not (goal buildpause YES))
 =>
 	(build BLDG-GOVTCTR)
 )

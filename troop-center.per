@@ -18,152 +18,334 @@
 ; *** Chapter 0: SETUP ***
 ; =====================================================
 
+; RAID: split oversized prerequisite list
 (defrule
-	(current-age == tech-level-1)
-	(building-type-count-total BLDG-TRAINTROOPER == 0)
-	(building-type-count-total BLDG-DROPCHOW > 0)
-	(building-type-count-total BLDG-DROPCARBON > 0)
-	(building-type-count-total BLDG-POWERCORE > 0)
-	(or
-		(building-type-count-total BLDG-DROPANIM > 0)
-		(or
-			(not (goal savetheanimals YES))
-			(game-time > 120)
-		)
-	)
-	(or
-		(not (goal special-map WATER))
-		(or
-			(building-type-count-total BLDG-TRAINBOAT > 0)
-			(game-time > 300)
-		)
-	)
-	(can-build-with-escrow BLDG-TRAINTROOPER)
-	(not (goal buildpause YES))
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (current-age == tech-level-1))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-TRAINTROOPER == 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-DROPCHOW > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-DROPCARBON > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-POWERCORE > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (building-type-count-total BLDG-DROPANIM > 0) (or (not (goal savetheanimals YES)) (game-time > 120))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (not (goal special-map WATER)) (or (building-type-count-total BLDG-TRAINBOAT > 0) (game-time > 300))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (can-build-with-escrow BLDG-TRAINTROOPER))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal buildpause YES)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-build-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINTROOPER)
 )
 
+
+
 (defrule
 	(current-age == tech-level-1)
-	(goal openingstyle STYLE-RUSH)
 	(goal agingup YES)
 	(building-type-count-total BLDG-TRAINTROOPER < 2)
 	(can-build-with-escrow BLDG-TRAINTROOPER)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINTROOPER)
 )
 
+; RAID: split oversized prerequisite list
 (defrule
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-RUSH)
-	(building-type-count-total BLDG-TRAINTROOPER < 2)
-	(building-type-count-total BLDG-POWERCORE > 0)
-	(building-type-count-total BLDG-WARCTR > 0)
-	(can-build-with-escrow BLDG-TRAINTROOPER)
-	(not (goal buildpause YES))
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (current-age == tech-level-2))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (goal combat-arm TROOP) (or (goal combat-arm TROOP/HW) (goal combat-arm AIR))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-SPACEPORT > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (building-type-count-total BLDG-TRAINJEDI >= 1) (building-type-count-total BLDG-TRAINMECH >= 1)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-TRAINTROOPER < 2))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-POWERCORE > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (can-build-with-escrow BLDG-TRAINTROOPER))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal buildpause YES)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-build-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINTROOPER)
 )
 
+
+
+; RAID: split oversized prerequisite list
 (defrule
-	(current-age == tech-level-2)
-	(not (goal openingstyle STYLE-RUSH))
-	(building-type-count-total BLDG-TRAINTROOPER < 2)
-	(building-type-count-total BLDG-POWERCORE > 0)
-	(building-type-count-total BLDG-TRAINMECH > 0)
-	(building-type-count-total BLDG-SPACEPORT > 0)
-	(can-build-with-escrow BLDG-TRAINTROOPER)
-	(not (goal buildpause YES))
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (current-age >= tech-level-2))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal combat-arm TROOP)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal combat-arm TROOP/HW)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal combat-arm AIR)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-TRAINTROOPER < 1))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-SPACEPORT > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (building-type-count-total BLDG-TRAINJEDI >= 1) (building-type-count-total BLDG-TRAINMECH >= 1)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-POWERCORE > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (can-build-with-escrow BLDG-TRAINTROOPER))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal buildpause YES)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-build-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINTROOPER)
 )
 
-; --- TL3/4 Troop Center ---
+
+
 (defrule
+	(current-age >= tech-level-3)
 	(or
-		(current-age == tech-level-3)
-		(current-age == tech-level-4)
+		(goal combat-arm TROOP)
+		(or
+			(goal combat-arm TROOP/HW)
+			(goal combat-arm AIR)
+		)
 	)
-	(or
-		(building-type-count-total BLDG-TRAINAIR >= 2)
-		(building-type-count-total BLDG-MAIN >= 2)
-	)
-	(building-type-count-total BLDG-TRAINTROOPER < 2)
-	(building-type-count-total BLDG-POWERCORE > 0)
-	(can-build-with-escrow BLDG-TRAINTROOPER)
-	(not (goal buildpause YES))
-=>
-	(release-escrow carbon)
-	(build BLDG-TRAINTROOPER)
-)
-
-; --- TL3 post-spine Troop Center scaling ---
-(defrule
-	(current-age == tech-level-3)
-	(building-type-count-total BLDG-SPACEPORT > 0)
-	(building-type-count-total BLDG-WARCTR > 0)
-	(building-type-count-total BLDG-MAIN >= 2)
+	(building-type-count-total BLDG-MAIN >= 3)
 	(building-type-count-total BLDG-TRAINTROOPER < 3)
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-TRAINTROOPER)
-	(carbon-amount > 600)
 	(not (goal buildpause YES))
-	(not (too-many-unpowered-buildings))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINTROOPER)
 )
 
-; --- Troop package ---
 (defrule
-	(current-age == tech-level-4)
+	(current-age >= tech-level-3)
 	(or
 		(goal combat-arm TROOP)
 		(or
 			(goal combat-arm TROOP/HW)
-			(goal support-grenadiers YES)
+			(goal combat-arm AIR)
 		)
 	)
-	(building-type-count-total BLDG-TRAINTROOPER < 5)
+	(building-type-count-total BLDG-MAIN >= 4)
+	(building-type-count-total BLDG-TRAINTROOPER < 6)
 	(building-type-count-total BLDG-RESCTR >= 1)
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-TRAINTROOPER)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINTROOPER)
 )
 
-; Rich TL4 forward troop scaling. Add extra forward queues only when the bank
-; is already huge.
 (defrule
 	(current-age == tech-level-4)
+	(goal support-grenadiers YES)
+	(building-type-count-total BLDG-MAIN >= 4)
 	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(goal support-grenadiers YES)
-		)
+		(building-type-count-total BLDG-TRAINMECH >= 3)
+		(building-type-count-total BLDG-TRAINAIR >= 3)
 	)
-	(building-type-count-total BLDG-TRAINTROOPER >= 5)
-	(building-type-count-total BLDG-TRAINTROOPER < 7)
+	(building-type-count-total BLDG-TRAINTROOPER < 3)
 	(building-type-count-total BLDG-RESCTR >= 1)
 	(building-type-count-total BLDG-POWERCORE > 0)
-	(military-population >= MIL_POP_B)
-	(carbon-amount > 2500)
-	(food-amount > 1200)
-	(nova-amount > 500)
 	(can-build-with-escrow BLDG-TRAINTROOPER)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
-	(build-forward BLDG-TRAINTROOPER)
+	(build BLDG-TRAINTROOPER)
 )
 
 ;=====================================================
@@ -173,6 +355,7 @@
 ; --- Trooper upgrades ---
 (defrule
 	(can-research-with-escrow ut-laser-2)
+	(current-age >= tech-level-2)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -181,9 +364,11 @@
 
 (defrule
 	(can-research-with-escrow ut-laser-3)
+	(current-age >= tech-level-3)
+	(goal support-repeater YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(research-completed ut-laser-2)
+		(not (research-available ut-laser-2))
 	)
 =>
 	(release-escrow food)
@@ -193,9 +378,11 @@
 
 (defrule
 	(can-research-with-escrow ut-laser-4)
+	(current-age >= tech-level-4)
+	(goal support-repeater YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(research-completed ut-laser-3)
+		(not (research-available ut-laser-3))
 	)
 =>
 	(release-escrow food)
@@ -206,7 +393,9 @@
 ; --- Mounted Trooper upgrades ---
 (defrule
 	(can-research-with-escrow ut-mounted-2)
+	(current-age >= tech-level-2)
 	(research-completed rt-macrobinoculars)
+	(unit-type-count-total UNIT-MOUNTED-LINE >= TL2-mounted-core-p1)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -215,22 +404,13 @@
 
 (defrule
 	(can-research-with-escrow ut-mounted-3)
-	(research-completed rt-portable-scanners)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research ut-mounted-3)
-)
-
-(defrule
 	(current-age >= tech-level-3)
 	(goal support-mounted YES)
-	(research-completed rt-portable-scanners)
-	(can-research-with-escrow ut-mounted-3)
+	(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-supp-p1)
+	(or
+		(research-completed ut-mounted-2)
+		(not (research-available ut-mounted-2))
+	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -239,7 +419,9 @@
 
 ; --- AA Trooper upgrade ---
 (defrule
+	(current-age >= tech-level-3)
 	(can-research-with-escrow ut-missile-troop-2)
+	(research-completed rt-portable-scanners)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -249,54 +431,61 @@
 (defrule
 	; Lighter Armor
 	(can-research-with-escrow rt-lighter-armor)
+	(current-age >= tech-level-3)
 	(or
-		(goal combat-arm TROOP)
+		(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p1)
 		(or
-			(goal combat-arm TROOP/HW)
+			(unit-type-count-total UNIT-MOUNTED-LINE >= TL3-mounted-core-p1)
 			(or
-				(goal support-mounted YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
+				(unit-type-count-total UNIT-GRENADE-LINE >= TL3-grenade-core-p1)
+				(goal uu-kind TROOP)
 			)
 		)
 	)
+	(or
+		(goal support-repeater YES)
+		(or
+			(goal support-mounted YES)
+			(or
+				(goal support-grenadiers YES)
+				(goal uu-kind TROOP)
+			)
+		)
+	)
+	(or
+		(research-completed ut-mounted-3)
+		(research-completed ut-laser-3)
+	)
+	(research-completed rt-portable-scanners)
 =>
 	(release-escrow food)
 	(research rt-lighter-armor)
 )
 
 (defrule
-    ; Integrated Rangefinder, Trooper Range TL4
-	(can-research-with-escrow rt-integrated-rgefinder)
+	; Dexterity
+	(can-research-with-escrow rt-dexterity)
+	(current-age >= tech-level-4)
 	(or
-		(goal combat-arm TROOP)
+		(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2)
 		(or
-			(goal combat-arm TROOP/HW)
+			(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-supp-p2)
+			(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p2)
+		)
+	)
+	(or
+		(goal support-repeater YES)
+		(or
+			(goal support-mounted YES)
 			(or
 				(goal support-grenadiers YES)
-				(goal uu-kind UU-TROOPER)
+				(goal uu-kind TROOP)
 			)
 		)
 	)
-=>
-	(release-escrow food)
-	(research rt-integrated-rgefinder)
-)
-
-(defrule
-	; Dexterity
-	(can-research-with-escrow rt-dexterity)
 	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-grenadiers YES)
-				(goal uu-kind UU-TROOPER)
-			)
-		)
+		(research-completed ut-mounted-3)
+		(research-completed ut-laser-4)
 	)
 	(not (research-available rt-integrated-rgefinder))
 =>
@@ -306,77 +495,76 @@
 )
 
 (defrule
-	; Dexterity for mounted support
-	(can-research-with-escrow rt-dexterity)
-	(goal support-mounted YES)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-dexterity)
-)
-
-(defrule
     ; MacroBinoculars, Trooper Range TL2
+	(current-age >= tech-level-2)
 	(can-research-with-escrow rt-macrobinoculars)
 =>
 	(release-escrow food)
 	(research rt-macrobinoculars)
 )
 
-(defrule 
+(defrule
     ; Portable Scanners, Trooper Range TL3
-	(or
-		(and
-			(not (goal openingstyle STYLE-DEFENSIVE))
-			(current-age >= tech-level-3)
-		)
-		(and
-			(goal openingstyle STYLE-DEFENSIVE)
-			(current-age >= tech-level-4)
-		)
-	)
-	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-grenadiers YES)
-				(goal uu-kind UU-TROOPER)
-			)
-		)
-	)
 	(can-research-with-escrow rt-portable-scanners)
+	(current-age >= tech-level-3)
+	(or
+		(research-completed rt-macrobinoculars)
+		(not (research-available rt-macrobinoculars))
+	)
+	(or
+		(goal support-repeater YES)
+		(or
+			(goal support-grenadiers YES)
+			(goal uu-kind TROOP)
+		)
+	)
 =>
 	(release-escrow food)
 	(research rt-portable-scanners)
 )
 
 (defrule
-    ; Droid Assistants
-	(can-research-with-escrow rt-assembly-droids)
+    ; Integrated Rangefinder, Trooper Range TL4
+	(can-research-with-escrow rt-integrated-rgefinder)
+	(current-age >= tech-level-4)
 	(or
-		(and
-			(not (goal openingstyle STYLE-DEFENSIVE))
-			(current-age >= tech-level-3)
-		)
-		(and
-			(goal openingstyle STYLE-DEFENSIVE)
-			(current-age >= tech-level-4)
-		)
+		(research-completed rt-portable-scanners)
+		(not (research-available rt-portable-scanners))
 	)
 	(or
-		(goal combat-arm TROOP)
+		(goal support-repeater YES)
 		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-mounted YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
-			)
+			(goal support-grenadiers YES)
+			(goal uu-kind TROOP)
 		)
 	)
+=>
+	(release-escrow food)
+	(research rt-integrated-rgefinder)
+)
+
+(defrule
+    ; Droid Assistants
+	(current-age >= tech-level-3)
+	(or
+		(goal support-repeater YES)
+		(or
+			(goal support-mounted YES)
+			(goal support-grenadiers YES)
+		)
+	)
+	(or
+		(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1)
+		(or
+			(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-supp-p1)
+			(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1)
+		)
+	)
+	(or
+		(research-completed rt-lighter-armor)
+		(not (research-available rt-lighter-armor))
+	)
+	(can-research-with-escrow rt-assembly-droids)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -384,17 +572,32 @@
 )
 
 (defrule
+	; Explosive Yields Increased
+	(can-research-with-escrow rt-explosive-yields-inc)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1)
+	(or
+		(goal support-grenadiers YES)
+		(civ-selected ZANN)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-explosive-yields-inc)
+)
+
+(defrule
     ; GN Binoculars
+	(current-age >= tech-level-4)
+	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1)
 	(can-research-with-escrow rt-farseein-binoculars)
 	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-grenadiers YES)
-				(goal uu-kind UU-TROOPER)
-			)
-		)
+		(goal support-repeater YES)
+		(goal support-grenadiers YES)
+	)
+	(or
+		(research-completed rt-explosive-yields-inc)
+		(not (research-available rt-explosive-yields-inc))
 	)
 =>
 	(release-escrow food)
@@ -403,10 +606,11 @@
 
 (defrule
 	; RA Plasma Detonators
-	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-plasma-detonators)
-	(unit-type-count-total UNIT-GRENADE-LINE > 0)
-	(goal importantT4research DONE)
+	(current-age >= tech-level-4)
+	(goal support-grenadiers YES)
+	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1)
+	(research-completed rt-explosive-yields-inc)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -415,20 +619,18 @@
 
 (defrule
 	; NR Veterancy
-	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-veterancy)
+	(current-age >= tech-level-4)
 	(or
-		(goal combat-arm TROOP)
+		(goal support-repeater YES)
 		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-mounted YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
-			)
+			(goal support-mounted YES)
+			(goal support-grenadiers YES)
 		)
+	)
+	(or
+		(research-completed rt-lighter-armor)
+		(not (research-available rt-lighter-armor))
 	)
 =>
 	(release-escrow food)
@@ -438,18 +640,9 @@
 
 (defrule
 	; BS Mag-Det Enforcers
-	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-magdetenforcers)
-	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-grenadiers YES)
-				(goal uu-kind UU-TROOPER)
-			)
-		)
-	)
+	(current-age >= tech-level-3)
+	(goal support-grenadiers YES)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -458,13 +651,14 @@
 
 (defrule
 	; BS Disruptors
-	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-disruptors)
+	(current-age >= tech-level-4)
+	(research-completed ut-laser-4)
+	(goal support-repeater YES)
 	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
+		(research-completed rt-integrated-rgefinder)
+		(not (research-available rt-integrated-rgefinder))
 	)
-	(goal importantT4research DONE)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -474,8 +668,25 @@
 (defrule
 	; FO Indoctrination
 	(current-age >= tech-level-4)
+	(or
+		(goal support-repeater YES)
+		(or
+			(goal support-mounted YES)
+			(goal support-grenadiers YES)
+		)
+	)
+	(or
+		(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1)
+		(or
+			(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-supp-p1)
+			(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1)
+		)
+	)
+	(or
+		(research-completed rt-veterancy)
+		(not (research-available rt-veterancy))
+	)
 	(can-research-with-escrow rt-indoctrination)
-	(goal importantT4research DONE)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -486,7 +697,12 @@
 	; FO Conflagrine-14
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-conflagrine)
-	(goal importantT4research DONE)
+	(goal support-mounted YES)
+	(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-supp-p1)
+	(or
+		(research-completed ut-mounted-3)
+		(not (research-available ut-mounted-3))
+	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -495,19 +711,25 @@
 
 (defrule
 	; GO Enhanced Dexterity
+	(current-age >= tech-level-4)
+	(or
+		(goal support-repeater YES)
+		(or
+			(goal support-mounted YES)
+			(goal support-grenadiers YES)
+		)
+	)
+	(or
+		(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p1)
+		(or
+			(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-supp-p1)
+			(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1)
+		)
+	)
 	(can-research-with-escrow rt-enh-dexterity)
 	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-mounted YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
-			)
-		)
+		(research-completed rt-dexterity)
+		(not (research-available rt-dexterity))
 	)
 =>
 	(release-escrow food)
@@ -515,40 +737,54 @@
 	(research rt-enh-dexterity)
 )
 
-(defrule
-	; Explosive Yields Increased
-	(current-age >= tech-level-3)
-	(can-research-with-escrow rt-explosive-yields-inc)
-	(goal importantT3research DONE)
-	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-grenadiers YES)
-				(civ-selected ZANN)
-			)
-		)
-	)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-explosive-yields-inc)
-)
-
 ;=====================================================
 ; CHAPTER 3: TL1 / TL2 OPENING UNITS
 ;=====================================================
+
+(defrule
+	(current-age == tech-level-1)
+	(goal agingup YES)
+	(unit-type-count-total UNIT-LASER-LINE < TL2-trooper-core-p1)
+	(can-train UNIT-LASER-LINE)
+=>
+	(train UNIT-LASER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(not (goal openingstyle STYLE-RUSH))
+	(unit-type-count-total UNIT-LASER-LINE < TL2-trooper-core-p4)
+	(can-train UNIT-LASER-LINE)
+=>
+	(train UNIT-LASER-LINE)
+)
 
 ; --- TL1 Gremlin Trick ---
 (defrule
 	(current-age == tech-level-1)
 	(not (goal openingstyle STYLE-AGGRESSIVE))
 	(goal gremlintrick NO)
+	(or (goal openingstyle STYLE-RUSH) (goal raid-defensive-roll 2))
 =>
 	(set-goal gremlintrick GREMLINTRICK-ACTIVE)
 	(disable-self)
 )
+
+
+; A small TL3 core floor makes the normal wave composition checks attainable.
+; Retain larger existing packages and keep small-cap games on their old targets.
+#load-if-not-defined POPULATION-CAP-25
+#load-if-not-defined POPULATION-CAP-50
+(defrule
+	(current-age == tech-level-3)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(unit-type-count-total UNIT-LASER-LINE < 8)
+	(can-train UNIT-LASER-LINE)
+=>
+	(train UNIT-LASER-LINE)
+)
+#end-if
+#end-if
 
 (defrule
 	(current-age == tech-level-1)
@@ -641,6 +877,7 @@
 	(research-completed ut-laser-2)
 	(research-completed rt-macrobinoculars)
 	(can-train UNIT-LASER-LINE)
+	(goal openingstyle STYLE-RUSH)
 =>
 	(train UNIT-LASER-LINE)
 )
@@ -653,6 +890,7 @@
 	(research-completed ut-laser-2)
 	(research-completed rt-macrobinoculars)
 	(can-train UNIT-LASER-LINE)
+	(goal openingstyle STYLE-RUSH)
 =>
 	(train UNIT-LASER-LINE)
 )
@@ -665,6 +903,7 @@
 	(research-completed ut-laser-2)
 	(research-completed rt-macrobinoculars)
 	(can-train UNIT-LASER-LINE)
+	(goal openingstyle STYLE-RUSH)
 =>
 	(train UNIT-LASER-LINE)
 )
@@ -678,6 +917,7 @@
 	(research-completed ut-laser-2)
 	(research-completed rt-macrobinoculars)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal openingstyle STYLE-RUSH)
 =>
 	(train UNIT-MOUNTED-LINE)
 )
@@ -691,6 +931,7 @@
 	(research-completed ut-laser-2)
 	(research-completed rt-macrobinoculars)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal openingstyle STYLE-RUSH)
 =>
 	(train UNIT-MOUNTED-LINE)
 )
@@ -704,6 +945,7 @@
 	(research-completed ut-laser-2)
 	(research-completed rt-macrobinoculars)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal openingstyle STYLE-RUSH)
 =>
 	(train UNIT-MOUNTED-LINE)
 )
@@ -718,7 +960,7 @@
 		(goal combat-arm TROOP)
 		(goal combat-arm TROOP/HW)
 	)
-	(not (goal support-aircraft YES))
+	(goal openingstyle STYLE-RUSH)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -734,7 +976,23 @@
 		(goal combat-arm TROOP)
 		(goal combat-arm TROOP/HW)
 	)
-	(not (goal support-aircraft YES))
+	(goal openingstyle STYLE-RUSH)
+=>
+	(train UNIT-MISSILE-LINE)
+)
+
+; --- TL2 AA Trooper air-alert danger ---
+(defrule
+	(current-age == tech-level-2)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-MISSILE-LINE < TL2-aa-trooper-detect-air-alert-guard-p3)
+	(can-train UNIT-MISSILE-LINE)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(goal openingstyle STYLE-RUSH)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -749,15 +1007,11 @@
 
 ; --- TL3 AA Trooper air-alert low ---
 (defrule
+	(can-train UNIT-MISSILE-LINE)
 	(current-age == tech-level-3)
 	(goal enemyairsighted AIR-ALERT-LOW)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL3-aa-trooper-arm-air-alert-low-p1)
-	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -768,17 +1022,13 @@
 	(or
 		(goal enemyairsighted AIR-ALERT-LOW)
 		(or
-			(strategic-number snc-enemy-regular-air >= 1)
-			(strategic-number snc-enemy-scn-air >= 1)
+			(not (goal air-regular-level 0))
+			(not (goal air-scenario-level 0))
 		)
 	)
-	(unit-type-count-total UNIT-MISSILE-LINE < 3)
+	(unit-type-count-total UNIT-MISSILE-LINE < 6)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -790,11 +1040,19 @@
 	(not (goal passiveage YES))
 	(unit-type-count-total UNIT-MISSILE-LINE < TL3-aa-trooper-arm-air-alert-guard-p2)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
+=>
+	(train UNIT-MISSILE-LINE)
+)
+
+; --- TL3 AA Trooper air-alert danger ---
+(defrule
+	(current-age == tech-level-3)
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(not (goal passiveage YES))
+	(unit-type-count-total UNIT-MISSILE-LINE < TL3-aa-trooper-arm-air-alert-guard-p3)
+	(can-train UNIT-MISSILE-LINE)
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -809,10 +1067,7 @@
 	(goal special-map LAND)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p1)
 	(unit-type-count-total UNIT-MECH1-LINE > 0)
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
+	(goal support-repeater YES)
 	(research-completed ut-laser-3)
 	(research-completed rt-portable-scanners)
 	(can-train UNIT-LASER-LINE)
@@ -825,10 +1080,7 @@
 	(goal special-map WATER)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p1-water)
 	(unit-type-count-total UNIT-MECH1-LINE > 0)
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
+	(goal support-repeater YES)
 	(research-completed ut-laser-3)
 	(research-completed rt-portable-scanners)
 	(can-train UNIT-LASER-LINE)
@@ -841,10 +1093,7 @@
 	(goal special-map ASTEROID)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p1-asteroid)
 	(unit-type-count-total UNIT-MECH1-LINE > 0)
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
+	(goal support-repeater YES)
 	(research-completed ut-laser-3)
 	(research-completed rt-portable-scanners)
 	(can-train UNIT-LASER-LINE)
@@ -857,10 +1106,7 @@
 	(goal special-map HYBRID)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p1-hybrid)
 	(unit-type-count-total UNIT-MECH1-LINE > 0)
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
+	(goal support-repeater YES)
 	(research-completed ut-laser-3)
 	(research-completed rt-portable-scanners)
 	(can-train UNIT-LASER-LINE)
@@ -872,13 +1118,9 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal special-map LAND)
-	(goal importantT3research DONE)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p2)
 	(not (goal passiveage YES))
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
+	(goal support-repeater YES)
 	(can-train UNIT-LASER-LINE)
 =>
 	(train UNIT-LASER-LINE)
@@ -887,13 +1129,9 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal special-map WATER)
-	(goal importantT3research DONE)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p2-water)
 	(not (goal passiveage YES))
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
+	(goal support-repeater YES)
 	(can-train UNIT-LASER-LINE)
 =>
 	(train UNIT-LASER-LINE)
@@ -902,13 +1140,9 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal special-map ASTEROID)
-	(goal importantT3research DONE)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p2-asteroid)
 	(not (goal passiveage YES))
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
+	(goal support-repeater YES)
 	(can-train UNIT-LASER-LINE)
 =>
 	(train UNIT-LASER-LINE)
@@ -917,13 +1151,9 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal special-map HYBRID)
-	(goal importantT3research DONE)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p2-hybrid)
 	(not (goal passiveage YES))
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
+	(goal support-repeater YES)
 	(can-train UNIT-LASER-LINE)
 =>
 	(train UNIT-LASER-LINE)
@@ -938,14 +1168,21 @@
 	(current-age == tech-level-3)
 	(goal special-map LAND)
 	(not (goal passiveage YES))
+	(goal support-grenadiers YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(goal enemymechsighted MECH-ALERT-P1)
+		(or
+			(goal enemymechsighted MECH-ALERT-P2)
+			(or
+				(goal enemymechsighted MECH-ALERT-P3)
+				(goal enemymechsighted MECH-ALERT-P4)
+			)
+		)
 	)
 	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p1)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL3-grenade-core-p1)
-	(research-completed ut-laser-3)
 	(research-completed rt-portable-scanners)
+	
 	(can-train UNIT-GRENADE-LINE)
 =>
 	(train UNIT-GRENADE-LINE)
@@ -955,9 +1192,16 @@
 	(current-age == tech-level-3)
 	(goal special-map WATER)
 	(not (goal passiveage YES))
+	(goal support-grenadiers YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(goal enemymechsighted MECH-ALERT-P1)
+		(or
+			(goal enemymechsighted MECH-ALERT-P2)
+			(or
+				(goal enemymechsighted MECH-ALERT-P3)
+				(goal enemymechsighted MECH-ALERT-P4)
+			)
+		)
 	)
 	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p1-water)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL3-grenade-core-p1-water)
@@ -972,9 +1216,16 @@
 	(current-age == tech-level-3)
 	(goal special-map ASTEROID)
 	(not (goal passiveage YES))
+	(goal support-grenadiers YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(goal enemymechsighted MECH-ALERT-P1)
+		(or
+			(goal enemymechsighted MECH-ALERT-P2)
+			(or
+				(goal enemymechsighted MECH-ALERT-P3)
+				(goal enemymechsighted MECH-ALERT-P4)
+			)
+		)
 	)
 	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p1-asteroid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL3-grenade-core-p1-asteroid)
@@ -989,9 +1240,16 @@
 	(current-age == tech-level-3)
 	(goal special-map HYBRID)
 	(not (goal passiveage YES))
+	(goal support-grenadiers YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(goal enemymechsighted MECH-ALERT-P1)
+		(or
+			(goal enemymechsighted MECH-ALERT-P2)
+			(or
+				(goal enemymechsighted MECH-ALERT-P3)
+				(goal enemymechsighted MECH-ALERT-P4)
+			)
+		)
 	)
 	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p1-hybrid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL3-grenade-core-p1-hybrid)
@@ -1007,9 +1265,16 @@
 	(current-age == tech-level-3)
 	(goal special-map LAND)
 	(not (goal passiveage YES))
+	(goal support-grenadiers YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(goal enemymechsighted MECH-ALERT-P1)
+		(or
+			(goal enemymechsighted MECH-ALERT-P2)
+			(or
+				(goal enemymechsighted MECH-ALERT-P3)
+				(goal enemymechsighted MECH-ALERT-P4)
+			)
+		)
 	)
 	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL3-grenade-core-p2)
@@ -1022,9 +1287,16 @@
 	(current-age == tech-level-3)
 	(goal special-map WATER)
 	(not (goal passiveage YES))
+	(goal support-grenadiers YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(goal enemymechsighted MECH-ALERT-P1)
+		(or
+			(goal enemymechsighted MECH-ALERT-P2)
+			(or
+				(goal enemymechsighted MECH-ALERT-P3)
+				(goal enemymechsighted MECH-ALERT-P4)
+			)
+		)
 	)
 	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2-water)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL3-grenade-core-p2-water)
@@ -1037,9 +1309,16 @@
 	(current-age == tech-level-3)
 	(goal special-map ASTEROID)
 	(not (goal passiveage YES))
+	(goal support-grenadiers YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(goal enemymechsighted MECH-ALERT-P1)
+		(or
+			(goal enemymechsighted MECH-ALERT-P2)
+			(or
+				(goal enemymechsighted MECH-ALERT-P3)
+				(goal enemymechsighted MECH-ALERT-P4)
+			)
+		)
 	)
 	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2-asteroid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL3-grenade-core-p2-asteroid)
@@ -1052,9 +1331,16 @@
 	(current-age == tech-level-3)
 	(goal special-map HYBRID)
 	(not (goal passiveage YES))
+	(goal support-grenadiers YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(goal enemymechsighted MECH-ALERT-P1)
+		(or
+			(goal enemymechsighted MECH-ALERT-P2)
+			(or
+				(goal enemymechsighted MECH-ALERT-P3)
+				(goal enemymechsighted MECH-ALERT-P4)
+			)
+		)
 	)
 	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2-hybrid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL3-grenade-core-p2-hybrid)
@@ -1072,14 +1358,8 @@
 	(current-age == tech-level-3)
 	(goal special-map LAND)
 	(not (goal passiveage YES))
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
-	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p1)
+	(goal support-mounted YES)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1)
-	(research-completed ut-laser-3)
-	(research-completed rt-portable-scanners)
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1089,14 +1369,8 @@
 	(current-age == tech-level-3)
 	(goal special-map WATER)
 	(not (goal passiveage YES))
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
-	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p1-water)
+	(goal support-mounted YES)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1-water)
-	(research-completed ut-laser-3)
-	(research-completed rt-portable-scanners)
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1106,14 +1380,8 @@
 	(current-age == tech-level-3)
 	(goal special-map ASTEROID)
 	(not (goal passiveage YES))
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
-	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p1-asteroid)
+	(goal support-mounted YES)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1-asteroid)
-	(research-completed ut-laser-3)
-	(research-completed rt-portable-scanners)
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1123,14 +1391,8 @@
 	(current-age == tech-level-3)
 	(goal special-map HYBRID)
 	(not (goal passiveage YES))
-	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
-	)
-	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p1-hybrid)
+	(goal support-mounted YES)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1-hybrid)
-	(research-completed ut-laser-3)
-	(research-completed rt-portable-scanners)
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1141,14 +1403,12 @@
 	(current-age == tech-level-3)
 	(goal special-map LAND)
 	(not (goal passiveage YES))
+	(goal support-mounted YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2)
+		(goal combat-arm AIR)
 	)
-	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2)
-	(research-completed ut-laser-3)
-	(research-completed rt-portable-scanners)
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1158,14 +1418,12 @@
 	(current-age == tech-level-3)
 	(goal special-map WATER)
 	(not (goal passiveage YES))
+	(goal support-mounted YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2-water)
+		(goal combat-arm AIR)
 	)
-	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2-water)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2-water)
-	(research-completed ut-laser-3)
-	(research-completed rt-portable-scanners)
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1175,14 +1433,12 @@
 	(current-age == tech-level-3)
 	(goal special-map ASTEROID)
 	(not (goal passiveage YES))
+	(goal support-mounted YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2-asteroid)
+		(goal combat-arm AIR)
 	)
-	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2-asteroid)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2-asteroid)
-	(research-completed ut-laser-3)
-	(research-completed rt-portable-scanners)
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1192,120 +1448,12 @@
 	(current-age == tech-level-3)
 	(goal special-map HYBRID)
 	(not (goal passiveage YES))
+	(goal support-mounted YES)
 	(or
-		(goal combat-arm TROOP/HW)
-		(goal combat-arm TROOP)
+		(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2-hybrid)
+		(goal combat-arm AIR)
 	)
-	(unit-type-count-total UNIT-LASER-LINE >= TL3-trooper-core-p2-hybrid)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2-hybrid)
-	(research-completed ut-laser-3)
-	(research-completed rt-portable-scanners)
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
-; --- TL3 Mounted support p1 ---
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map LAND)
-	(goal support-mounted YES)
-	(not (goal passiveage YES))
-	(military-population >= 8)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1)
-	(research-completed rt-portable-scanners)
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map WATER)
-	(goal support-mounted YES)
-	(not (goal passiveage YES))
-	(military-population >= 8)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1-water)
-	(research-completed rt-portable-scanners)
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map ASTEROID)
-	(goal support-mounted YES)
-	(not (goal passiveage YES))
-	(military-population >= 8)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1-asteroid)
-	(research-completed rt-portable-scanners)
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map HYBRID)
-	(goal support-mounted YES)
-	(not (goal passiveage YES))
-	(military-population >= 8)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1-hybrid)
-	(research-completed rt-portable-scanners)
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
-; --- TL3 Mounted support p2 ---
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map LAND)
-	(goal support-mounted YES)
-	(not (goal passiveage YES))
-	(military-population >= 16)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2)
-	(research-completed rt-portable-scanners)
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map WATER)
-	(goal support-mounted YES)
-	(not (goal passiveage YES))
-	(military-population >= 16)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2-water)
-	(research-completed rt-portable-scanners)
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map ASTEROID)
-	(goal support-mounted YES)
-	(not (goal passiveage YES))
-	(military-population >= 16)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2-asteroid)
-	(research-completed rt-portable-scanners)
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map HYBRID)
-	(goal support-mounted YES)
-	(not (goal passiveage YES))
-	(military-population >= 16)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2-hybrid)
-	(research-completed rt-portable-scanners)
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1326,11 +1474,8 @@
 	(goal enemyairsighted AIR-ALERT-LOW)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-low-p1)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
+	
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1341,11 +1486,7 @@
 	(goal enemyairsighted AIR-ALERT-LOW)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-low-p1-water)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1356,11 +1497,7 @@
 	(goal enemyairsighted AIR-ALERT-LOW)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-low-p1-asteroid)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1371,11 +1508,7 @@
 	(goal enemyairsighted AIR-ALERT-LOW)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-low-p1-hybrid)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1387,11 +1520,7 @@
 	(goal enemyairsighted AIR-ALERT-GUARD)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-guard-p2)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1402,11 +1531,7 @@
 	(goal enemyairsighted AIR-ALERT-GUARD)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-guard-p2-water)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1417,11 +1542,7 @@
 	(goal enemyairsighted AIR-ALERT-GUARD)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-guard-p2-asteroid)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1432,11 +1553,7 @@
 	(goal enemyairsighted AIR-ALERT-GUARD)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-guard-p2-hybrid)
 	(can-train UNIT-MISSILE-LINE)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1445,14 +1562,10 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map LAND)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
 	(goal enemyairsighted AIR-ALERT-DANGER)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-guard-p3)
 	(can-train UNIT-MISSILE-LINE)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1460,14 +1573,10 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map WATER)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
 	(goal enemyairsighted AIR-ALERT-DANGER)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-guard-p3-water)
 	(can-train UNIT-MISSILE-LINE)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1475,14 +1584,10 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
 	(goal enemyairsighted AIR-ALERT-DANGER)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-guard-p3-asteroid)
 	(can-train UNIT-MISSILE-LINE)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1490,14 +1595,10 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
 	(goal enemyairsighted AIR-ALERT-DANGER)
 	(unit-type-count-total UNIT-MISSILE-LINE < TL4-aa-trooper-arm-air-alert-guard-p3-hybrid)
 	(can-train UNIT-MISSILE-LINE)
-	(not (goal support-aircraft YES))
+	(research-completed ut-missile-troop-2)
 =>
 	(train UNIT-MISSILE-LINE)
 )
@@ -1510,11 +1611,7 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map LAND)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (research-available ut-laser-4))
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p1)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1524,11 +1621,7 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map WATER)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (research-available ut-laser-4))
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p1-water)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1538,11 +1631,7 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (research-available ut-laser-4))
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p1-asteroid)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1552,11 +1641,7 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
-	(or
-		(goal combat-arm TROOP)
-		(goal combat-arm TROOP/HW)
-	)
-	(not (research-available ut-laser-4))
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p1-hybrid)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1568,6 +1653,7 @@
 	(current-age == tech-level-4)
 	(goal special-map LAND)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p2)
 	(can-train UNIT-LASER-LINE)
@@ -1579,6 +1665,7 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1-water)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p2-water)
 	(can-train UNIT-LASER-LINE)
@@ -1590,6 +1677,7 @@
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1-asteroid)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p2-asteroid)
 	(can-train UNIT-LASER-LINE)
@@ -1601,6 +1689,7 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p1-hybrid)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p2-hybrid)
 	(can-train UNIT-LASER-LINE)
@@ -1611,8 +1700,8 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map LAND)
-	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1)
+	(not (goal combat-arm TROOP))
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p2)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1622,8 +1711,8 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map WATER)
-	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1-water)
+	(not (goal combat-arm TROOP))
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p2-water)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1633,8 +1722,8 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
-	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1-asteroid)
+	(not (goal combat-arm TROOP))
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p2-asteroid)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1644,8 +1733,8 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
-	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p1-hybrid)
+	(not (goal combat-arm TROOP))
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p2-hybrid)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1657,6 +1746,7 @@
 	(current-age == tech-level-4)
 	(goal special-map LAND)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p2)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p3)
 	(can-train UNIT-LASER-LINE)
@@ -1668,6 +1758,7 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p2-water)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p3-water)
 	(can-train UNIT-LASER-LINE)
@@ -1679,6 +1770,7 @@
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p2-asteroid)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p3-asteroid)
 	(can-train UNIT-LASER-LINE)
@@ -1690,6 +1782,7 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p2-hybrid)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p3-hybrid)
 	(can-train UNIT-LASER-LINE)
@@ -1701,7 +1794,7 @@
 	(current-age == tech-level-4)
 	(goal special-map LAND)
 	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p3)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1712,7 +1805,7 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p3-water)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1723,7 +1816,7 @@
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
 	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p3-asteroid)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1734,7 +1827,7 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p3-hybrid)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1746,6 +1839,7 @@
 	(current-age == tech-level-4)
 	(goal special-map LAND)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p3)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p4)
 	(can-train UNIT-LASER-LINE)
@@ -1757,6 +1851,7 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p3-water)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p4-water)
 	(can-train UNIT-LASER-LINE)
@@ -1768,6 +1863,7 @@
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p3-asteroid)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p4-asteroid)
 	(can-train UNIT-LASER-LINE)
@@ -1779,6 +1875,7 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal combat-arm TROOP)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-GRENADE-LINE >= TL4-grenade-arm-p3-hybrid)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p4-hybrid)
 	(can-train UNIT-LASER-LINE)
@@ -1790,7 +1887,7 @@
 	(current-age == tech-level-4)
 	(goal special-map LAND)
 	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p4)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1801,7 +1898,7 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3-water)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p4-water)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1812,7 +1909,7 @@
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
 	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3-asteroid)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p4-asteroid)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1823,7 +1920,7 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal combat-arm TROOP/HW)
-	(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3-hybrid)
+	(goal support-repeater YES)
 	(unit-type-count-total UNIT-LASER-LINE < TL4-trooper-arm-p4-hybrid)
 	(can-train UNIT-LASER-LINE)
 =>
@@ -1834,42 +1931,12 @@
 ; MOUNTED SUPPORT
 ; -----------------------
 
-; --- AIR core Mounties p1 ---
-(defrule
-	(current-age == tech-level-4)
-	(goal combat-arm AIR)
-	(goal support-mounted YES)
-	(military-population >= MIL_POP_A)
-	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-arm-p1)
-	(not (research-available ut-mounted-3))
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
-; --- AIR core Mounties p2 ---
-(defrule
-	(current-age == tech-level-4)
-	(goal combat-arm AIR)
-	(goal support-mounted YES)
-	(military-population >= MIL_POP_B)
-	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p1)
-	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-arm-p2)
-	(not (research-available ut-mounted-3))
-	(can-train UNIT-MOUNTED-LINE)
-=>
-	(train UNIT-MOUNTED-LINE)
-)
-
 ; --- Mounted support p2 ---
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map LAND)
 	(goal support-mounted YES)
-	(military-population >= 20)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p2)
-	(not (research-available ut-mounted-3))
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1879,9 +1946,7 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal support-mounted YES)
-	(military-population >= 20)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p2-water)
-	(not (research-available ut-mounted-3))
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1891,9 +1956,7 @@
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
 	(goal support-mounted YES)
-	(military-population >= 20)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p2-asteroid)
-	(not (research-available ut-mounted-3))
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
@@ -1903,13 +1966,135 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal support-mounted YES)
-	(military-population >= 20)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p2-hybrid)
-	(not (research-available ut-mounted-3))
 	(can-train UNIT-MOUNTED-LINE)
 =>
 	(train UNIT-MOUNTED-LINE)
 )
+
+; --- AIR Mounted support p3: follow Attacker or mixed AIR strength ---
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map LAND)
+	(goal combat-arm AIR)
+	(goal support-mounted YES)
+	(or
+		(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p3)
+		(goal t4-air-core-p3-ready YES)
+	)
+	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p3)
+	(can-train UNIT-MOUNTED-LINE)
+=>
+	(train UNIT-MOUNTED-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(goal combat-arm AIR)
+	(goal support-mounted YES)
+	(or
+		(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p3)
+		(goal t4-air-core-p3-ready YES)
+	)
+	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p3-water)
+	(can-train UNIT-MOUNTED-LINE)
+=>
+	(train UNIT-MOUNTED-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map ASTEROID)
+	(goal combat-arm AIR)
+	(goal support-mounted YES)
+	(or
+		(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p3)
+		(goal t4-air-core-p3-ready YES)
+	)
+	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p3-asteroid)
+	(can-train UNIT-MOUNTED-LINE)
+=>
+	(train UNIT-MOUNTED-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map HYBRID)
+	(goal combat-arm AIR)
+	(goal support-mounted YES)
+	(or
+		(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p3)
+		(goal t4-air-core-p3-ready YES)
+	)
+	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p3-hybrid)
+	(can-train UNIT-MOUNTED-LINE)
+=>
+	(train UNIT-MOUNTED-LINE)
+)
+
+; --- AIR Mounted support p4: follow Attacker or mixed AIR strength ---
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map LAND)
+	(goal combat-arm AIR)
+	(goal support-mounted YES)
+	(or
+		(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p4)
+		(goal t4-air-core-p4-ready YES)
+	)
+	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p4)
+	(can-train UNIT-MOUNTED-LINE)
+=>
+	(train UNIT-MOUNTED-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(goal combat-arm AIR)
+	(goal support-mounted YES)
+	(or
+		(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p4)
+		(goal t4-air-core-p4-ready YES)
+	)
+	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p4-water)
+	(can-train UNIT-MOUNTED-LINE)
+=>
+	(train UNIT-MOUNTED-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map ASTEROID)
+	(goal combat-arm AIR)
+	(goal support-mounted YES)
+	(or
+		(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p4)
+		(goal t4-air-core-p4-ready YES)
+	)
+	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p4-asteroid)
+	(can-train UNIT-MOUNTED-LINE)
+=>
+	(train UNIT-MOUNTED-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map HYBRID)
+	(goal combat-arm AIR)
+	(goal support-mounted YES)
+	(or
+		(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p4)
+		(goal t4-air-core-p4-ready YES)
+	)
+	(unit-type-count-total UNIT-MOUNTED-LINE < TL4-mounted-supp-p4-hybrid)
+	(can-train UNIT-MOUNTED-LINE)
+=>
+	(train UNIT-MOUNTED-LINE)
+)
+
+
 
 ;=========================
 ; GRENADIERS
@@ -1965,7 +2150,6 @@
 	(current-age == tech-level-4)
 	(goal special-map LAND)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p2)
 	(can-train UNIT-GRENADE-LINE)
@@ -1977,7 +2161,6 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-water)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p2-water)
 	(can-train UNIT-GRENADE-LINE)
@@ -1989,7 +2172,6 @@
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-asteroid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p2-asteroid)
 	(can-train UNIT-GRENADE-LINE)
@@ -2001,7 +2183,6 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p2-hybrid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p2-hybrid)
 	(can-train UNIT-GRENADE-LINE)
@@ -2014,7 +2195,6 @@
 	(current-age == tech-level-4)
 	(goal special-map LAND)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p3)
 	(can-train UNIT-GRENADE-LINE)
@@ -2026,7 +2206,6 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-water)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p3-water)
 	(can-train UNIT-GRENADE-LINE)
@@ -2038,7 +2217,6 @@
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-asteroid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p3-asteroid)
 	(can-train UNIT-GRENADE-LINE)
@@ -2050,7 +2228,6 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p3-hybrid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p3-hybrid)
 	(can-train UNIT-GRENADE-LINE)
@@ -2063,7 +2240,6 @@
 	(current-age == tech-level-4)
 	(goal special-map LAND)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p4)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p4)
 	(can-train UNIT-GRENADE-LINE)
@@ -2075,7 +2251,6 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p4-water)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p4-water)
 	(can-train UNIT-GRENADE-LINE)
@@ -2087,7 +2262,6 @@
 	(current-age == tech-level-4)
 	(goal special-map ASTEROID)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p4-asteroid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p4-asteroid)
 	(can-train UNIT-GRENADE-LINE)
@@ -2099,7 +2273,6 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal combat-arm TROOP)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-LASER-LINE >= TL4-trooper-arm-p4-hybrid)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-arm-p4-hybrid)
 	(can-train UNIT-GRENADE-LINE)
@@ -2160,7 +2333,6 @@
 	(goal special-map LAND)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P2)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p2)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2172,7 +2344,6 @@
 	(goal special-map WATER)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P2)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p2-water)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2184,7 +2355,6 @@
 	(goal special-map ASTEROID)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P2)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p2-asteroid)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2196,7 +2366,6 @@
 	(goal special-map HYBRID)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P2)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p2-hybrid)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2209,7 +2378,6 @@
 	(goal special-map LAND)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P3)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p3)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2221,7 +2389,6 @@
 	(goal special-map WATER)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P3)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p3-water)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2233,7 +2400,6 @@
 	(goal special-map ASTEROID)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P3)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p3-asteroid)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2245,7 +2411,6 @@
 	(goal special-map HYBRID)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P3)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p3-hybrid)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2257,7 +2422,6 @@
 	(goal special-map LAND)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P4)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p4)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2269,7 +2433,6 @@
 	(goal special-map WATER)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P4)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p4-water)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2281,7 +2444,6 @@
 	(goal special-map ASTEROID)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P4)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p4-asteroid)
 	(can-train UNIT-GRENADE-LINE)
 =>
@@ -2293,7 +2455,6 @@
 	(goal special-map HYBRID)
 	(goal support-grenadiers YES)
 	(goal enemymechsighted MECH-ALERT-P4)
-	(goal importantT4research DONE)
 	(unit-type-count-total UNIT-GRENADE-LINE < TL4-grenade-supp-p4-hybrid)
 	(can-train UNIT-GRENADE-LINE)
 =>

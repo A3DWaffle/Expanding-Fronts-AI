@@ -209,31 +209,109 @@
 ; Escrow is used for research, not defensive construction.
 
 ; --- TL2 laser turret shell ---
+(defrule
+	(current-age == tech-level-2)
+	(can-build-with-escrow BLDG-TURRET-LINE)
+	(not (goal raid-turret-query 1))
+=>
+	(set-goal raid-turret-query 1)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(not (can-build-with-escrow BLDG-TURRET-LINE))
+	(not (goal raid-turret-query 2))
+=>
+	(set-goal raid-turret-query 2)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal raid-build-open NO)
+=>
+	(set-builders-type 79 8)
+	(set-builders-type 234 8)
+	(set-builders-type 235 8)
+	(set-builders-type 3599 8)
+	(set-builders-type 3600 8)
+	(set-builders-type 3601 8)
+	(set-builders-type 7088 8)
+)
+
+(defrule
+	(current-age >= tech-level-2)
+	(goal raid-build-open YES)
+=>
+	(set-builders-type 79 5)
+	(set-builders-type 234 5)
+	(set-builders-type 235 5)
+	(set-builders-type 3599 5)
+	(set-builders-type 3600 5)
+	(set-builders-type 3601 5)
+	(set-builders-type 7088 5)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal raid-build-open NO)
+	(not (goal raid-builder-mode 8))
+=>
+	(set-goal raid-builder-mode 8)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal raid-build-open YES)
+	(not (goal raid-builder-mode 5))
+=>
+	(set-goal raid-builder-mode 5)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal raid-build-open NO)
+	(not (goal buildpause YES))
+	(building-type-count-total BLDG-TURRET-LINE < 3)
+	(can-build-with-escrow BLDG-TURRET-LINE)
+=>
+	(release-escrow carbon)
+	(release-escrow metal)
+	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+
 
 ; Give Defensive extra builders on laser turrets before the first turret rule
 ; can even fire. If this sits below the build rule, the first turret starts
 ; with the old/default builder count and the whole shell comes in late.
-(defrule
-	(current-age == tech-level-2)
-=>
-	(set-builders-type BDEF-TURRET 3)
-	(disable-self)
-)
+
 
 (defrule
 	(building-type-count-total BLDG-TURRET-LINE < 4)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
 	(building-type-count-total BLDG-TURRET-LINE < 2)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 ; Defensive should lean on laser turrets as its primary TL2 protection instead
@@ -243,9 +321,11 @@
 	(goal openingstyle STYLE-DEFENSIVE)
 	(building-type-count-total BLDG-TURRET-LINE < 6)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
@@ -253,9 +333,11 @@
 	(goal openingstyle STYLE-DEFENSIVE)
 	(building-type-count-total BLDG-TURRET-LINE < 4)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 ; --- TL3 fortress and static AA shell ---
@@ -273,7 +355,8 @@
 		)
 	)
 	(can-build BLDG-GOVTCTR)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -291,7 +374,8 @@
 		)
 	)
 	(can-build BLDG-MISSILE-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -315,7 +399,8 @@
 	)
 	(can-build BLDG-MISSILE-LINE)
 	(metal-amount >= 350)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -335,7 +420,8 @@
 	)
 	(can-build BLDG-MISSILE-LINE)
 	(metal-amount < 350)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(cc-add-resource metal 30)
 	(build BLDG-MISSILE-LINE)
@@ -351,7 +437,8 @@
 	(building-type-count-total BLDG-MISSILE-LINE < 4) 
 	(building-type-count-total BLDG-MAIN > 1)
 	(can-build BLDG-MISSILE-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -362,19 +449,21 @@
     (building-type-count-total BLDG-SHLDGEN == 0)
 	(building-type-count-total BLDG-MAIN > 1)
     (can-build BLDG-SHLDGEN)
-	(goal buildpause NO)
-        =>
+	(not (goal buildpause YES))
+        	(goal raid-build-open YES)
+=>
     (build BLDG-SHLDGEN)
 )
 
-; Once AA turrets are mostly done, allow the second fortress.
+; Once AA turrets are mostly done, allow second and third fortresses.
 
 (defrule
 	(building-type-count-total BLDG-MISSILE-LINE > 2)
-	(building-type-count-total BLDG-GOVTCTR < 2)
+	(building-type-count-total BLDG-GOVTCTR < 3)
 	(building-type-count-total BLDG-MAIN > 1)
 	(can-build BLDG-GOVTCTR)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -386,7 +475,8 @@
 	(building-type-count-total BLDG-MISSILE-LINE < 5)
 	(building-type-count-total BLDG-GOVTCTR > 1)
 	(can-build BLDG-MISSILE-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -395,28 +485,33 @@
 	(building-type-count-total BLDG-TURRET-LINE < 4)
 	(building-type-count-total BLDG-GOVTCTR > 1)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
 	(building-type-count-total BLDG-TURRET-LINE < 2)
 	(building-type-count-total BLDG-GOVTCTR > 1)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 
-; Keep the standard defensive shell capped at two fortresses.
+; Allow up to five fortresses once the defensive shell is established.
 (defrule
 	(building-type-count-total BLDG-MISSILE-LINE > 4)
 	(building-type-count-total BLDG-TURRET-LINE > 2)
-	(building-type-count-total BLDG-GOVTCTR < 2)
+	(building-type-count-total BLDG-GOVTCTR < 3)
 	(can-build BLDG-GOVTCTR)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -428,8 +523,9 @@
 	(building-type-count-total BLDG-GOVTCTR > 2)
 	(building-type-count-total BLDG-SHLDGEN < 2)
 	(can-build BLDG-SHLDGEN)
-	(goal buildpause NO)
-	=>
+	(not (goal buildpause YES))
+		(goal raid-build-open YES)
+=>
 	(build BLDG-SHLDGEN)
 )
 
@@ -437,9 +533,31 @@
 	(building-type-count-total BLDG-GOVTCTR > 3)
 	(building-type-count-total BLDG-SHLDGEN < 4)
 	(can-build BLDG-SHLDGEN)
-	(goal buildpause NO)
-	=>
+	(not (goal buildpause YES))
+		(goal raid-build-open YES)
+=>
 	(build BLDG-SHLDGEN)
+)
+
+; Troop armies need earlier forward shield cover once they can hold a position.
+(defrule
+	(current-age == tech-level-4)
+	(current-age-time > 420)
+	(or
+		(goal combat-arm TROOP)
+		(goal combat-arm TROOP/HW)
+	)
+	(building-type-count-total BLDG-SHLDGEN < 5)
+	(military-population >= MIL_POP_A)
+	(carbon-amount > 900)
+	(nova-amount > 250)
+	(can-build-with-escrow BLDG-SHLDGEN)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(build-forward BLDG-SHLDGEN)
 )
 
 ; Rich TL4 forward Shield Generator starter. Do not wait for three home shields
@@ -447,11 +565,13 @@
 (defrule
 	(current-age == tech-level-4)
 	(current-age-time > 600)
+	(goal forward-ground-core YES)
 	(military-population >= MIL_POP_B)
 	(carbon-amount > 1500)
 	(nova-amount > 400)
 	(can-build-with-escrow BLDG-SHLDGEN)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -463,11 +583,13 @@
 (defrule
 	(current-age == tech-level-4)
 	(current-age-time > 600)
+	(goal forward-ground-core YES)
 	(military-population >= MIL_POP_B)
 	(carbon-amount > 2500)
 	(nova-amount > 600)
 	(can-build-with-escrow BLDG-SHLDGEN)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -480,7 +602,8 @@
 	(building-type-count-total BLDG-GOVTCTR > 4)
 	(building-type-count-total BLDG-MISSILE-LINE < 8)
 	(can-build BLDG-MISSILE-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -493,10 +616,11 @@
 ; Hard and Hardest expand the static shell further while TSA is active.
 
 (defrule 
-	(building-type-count-total BLDG-GOVTCTR < 2)
+	(building-type-count-total BLDG-GOVTCTR < 3) 
 	(can-build BLDG-GOVTCTR)
 	(not (goal attackTSAhold EXHAUSTED))
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -507,7 +631,8 @@
 	(building-type-count-total BLDG-SHLDGEN > 1)
 	(not (goal attackTSAhold EXHAUSTED))
 	(can-build BLDG-MISSILE-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -516,7 +641,8 @@
 	(building-type-count-total BLDG-MISSILE-LINE < 15) 
 	(not (goal attackTSAhold EXHAUSTED))
 	(can-build BLDG-MISSILE-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -527,9 +653,11 @@
 	(not (goal openingstyle STYLE-DEFENSIVE))
 	(not (goal attackTSAhold EXHAUSTED))
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
@@ -538,9 +666,11 @@
 	(not (goal openingstyle STYLE-DEFENSIVE))
 	(not (goal attackTSAhold EXHAUSTED))
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
@@ -549,9 +679,11 @@
 	(not (goal openingstyle STYLE-DEFENSIVE))
 	(not (goal attackTSAhold EXHAUSTED))
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
@@ -560,17 +692,20 @@
 	(not (goal openingstyle STYLE-DEFENSIVE))
 	(not (goal attackTSAhold EXHAUSTED))
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 ; Outside TSA, keep a smaller home shell.
 (defrule
-	(building-type-count-total BLDG-GOVTCTR < 2)
+	(building-type-count-total BLDG-GOVTCTR < 3)
 	(goal attackTSAhold EXHAUSTED)
 	(can-build BLDG-GOVTCTR)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-GOVTCTR)
 )
@@ -581,7 +716,8 @@
 	(building-type-count-total BLDG-SHLDGEN > 1)
 	(goal attackTSAhold EXHAUSTED)
 	(can-build BLDG-MISSILE-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-MISSILE-LINE)
 )
@@ -592,9 +728,11 @@
 	(building-type-count-total BLDG-SHLDGEN > 1)
 	(goal attackTSAhold EXHAUSTED)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
@@ -603,9 +741,11 @@
 	(building-type-count-total BLDG-SHLDGEN > 1)
 	(goal attackTSAhold EXHAUSTED)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 ; Defensive fortification plan should top out at six laser turrets instead of
@@ -614,30 +754,35 @@
 	(goal openingstyle STYLE-DEFENSIVE)
 	(building-type-count-total BLDG-TURRET-LINE < 6)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
 	(goal openingstyle STYLE-DEFENSIVE)
 	(building-type-count-total BLDG-TURRET-LINE < 4)
 	(can-build BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TURRET-LINE)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 ; Rich TL4 forward laser turret support for established forward bases.
 (defrule
 	(current-age == tech-level-4)
 	(current-age-time > 600)
+	(goal forward-ground-core YES)
 	(building-type-count-total BLDG-POWERCORE >= 5)
 	(building-type-count-total BLDG-TURRET-LINE < 14)
 	(military-population >= MIL_POP_B)
 	(carbon-amount > 1800)
 	(can-build-with-escrow BLDG-TURRET-LINE)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
 	(build-forward BLDG-TURRET-LINE)
@@ -659,36 +804,38 @@
 
 (defrule
 	(can-build BLDG-AABATTERY)
-	(building-type-count-total BLDG-AABATTERY < 2)
+	(building-type-count-total BLDG-AABATTERY < 3)
 	(or
 		(not (town-under-attack))
 		(goal openingstyle STYLE-DEFENSIVE)
 	)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-AABATTERY)
 )
 
 #load-if-not-defined DIFFICULTY-EASIEST
 
-; Higher difficulties maintain three in TL3 and four in TL4.
+; Higher difficulties maintain four in TL3 and six in TL4.
 (defrule
 	(can-build BLDG-AABATTERY)
 	(or
 		(and
 			(current-age == tech-level-3)
-			(building-type-count-total BLDG-AABATTERY < 3)
+			(building-type-count-total BLDG-AABATTERY < 4)
 		)
 		(and
 			(current-age == tech-level-4)
-			(building-type-count-total BLDG-AABATTERY < 4)
+			(building-type-count-total BLDG-AABATTERY < 6)
 		)
 	)
 	(or
 		(not (town-under-attack))
 		(goal openingstyle STYLE-DEFENSIVE)
 	)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-AABATTERY)
 )
@@ -700,9 +847,33 @@
 (defrule
 	(can-build BLDG-AABATTERY)
 	(not (goal attackTSAhold EXHAUSTED))
-	(building-type-count-total BLDG-AABATTERY < 6)
-	(goal buildpause NO)
+	(building-type-count-total BLDG-AABATTERY < 10)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
+	(build BLDG-AABATTERY)
+)
+
+; Air alerts punch through escrow so the AI actually throws down the battery net.
+(defrule
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(building-type-count-total BLDG-AABATTERY < 8)
+	(can-build-with-escrow BLDG-AABATTERY)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
+=>
+	(release-escrow carbon)
+	(build BLDG-AABATTERY)
+)
+
+(defrule
+	(goal enemyairsighted AIR-ALERT-DANGER)
+	(building-type-count-total BLDG-AABATTERY < 12)
+	(can-build-with-escrow BLDG-AABATTERY)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
+=>
+	(release-escrow carbon)
 	(build BLDG-AABATTERY)
 )
 
@@ -711,13 +882,15 @@
 (defrule
 	(current-age == tech-level-4)
 	(current-age-time > 600)
+	(goal forward-ground-core YES)
 	(building-type-count-total BLDG-POWERCORE >= 5)
 	(building-type-count-total BLDG-AABATTERY >= 3)
-	(building-type-count-total BLDG-AABATTERY < 8)
+	(building-type-count-total BLDG-AABATTERY < 12)
 	(military-population >= MIL_POP_B)
 	(carbon-amount > 2000)
 	(can-build-with-escrow BLDG-AABATTERY)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build-forward BLDG-AABATTERY)
@@ -875,3 +1048,116 @@
 
 ; wall-completed-percentage goes up to exactly 50% it seems, no higher
 ; it also counts foundations, so if all the foundations are laid, wall-completed-percentage reports 100
+
+; TL2 mine defense; placement is engine controlled.
+; Count spawned mines by explicit owner. Do not mix construction objects with
+; live mines or depend on the native self unit-count path for spawned units.
+(defrule
+	(true)
+=>
+	(set-goal raid-mine-open NO)
+)
+
+(defrule
+	(player-number 1)
+	(cc-players-unit-type-count 1 RAID-MINE-UNIT < 5)
+=>
+	(set-goal raid-mine-open YES)
+)
+
+(defrule
+	(player-number 2)
+	(cc-players-unit-type-count 2 RAID-MINE-UNIT < 5)
+=>
+	(set-goal raid-mine-open YES)
+)
+
+(defrule
+	(player-number 3)
+	(cc-players-unit-type-count 3 RAID-MINE-UNIT < 5)
+=>
+	(set-goal raid-mine-open YES)
+)
+
+(defrule
+	(player-number 4)
+	(cc-players-unit-type-count 4 RAID-MINE-UNIT < 5)
+=>
+	(set-goal raid-mine-open YES)
+)
+
+(defrule
+	(player-number 5)
+	(cc-players-unit-type-count 5 RAID-MINE-UNIT < 5)
+=>
+	(set-goal raid-mine-open YES)
+)
+
+(defrule
+	(player-number 6)
+	(cc-players-unit-type-count 6 RAID-MINE-UNIT < 5)
+=>
+	(set-goal raid-mine-open YES)
+)
+
+(defrule
+	(player-number 7)
+	(cc-players-unit-type-count 7 RAID-MINE-UNIT < 5)
+=>
+	(set-goal raid-mine-open YES)
+)
+
+(defrule
+	(player-number 8)
+	(cc-players-unit-type-count 8 RAID-MINE-UNIT < 5)
+=>
+	(set-goal raid-mine-open YES)
+)
+
+
+(defrule
+	(current-age == tech-level-2)
+	(goal raid-build-open YES)
+	(or
+		(building-type-count BLDG-DROPCARBON >= 1)
+		(or
+			(building-type-count BLDG-DROPNOVA >= 1)
+			(building-type-count BLDG-TURRET-LINE >= 1)
+		)
+	)
+	(not (goal buildpause YES))
+	(carbon-amount > 300)
+	(goal raid-mine-open YES)
+	(can-build RAID-MINE)
+=>
+	(set-builders-type RAID-MINE 1)
+	(build RAID-MINE)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(building-type-count BLDG-TURRET-LINE >= 1)
+	(goal raid-turret-progress 0)
+=>
+	(set-goal raid-turret-progress 1)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(building-type-count BLDG-TURRET-LINE >= 2)
+	(goal raid-turret-progress 1)
+=>
+	(set-goal raid-turret-progress 2)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(building-type-count BLDG-TURRET-LINE >= 3)
+	(goal raid-turret-progress 2)
+=>
+	(set-goal raid-turret-progress 3)
+	(do-nothing) ; RAID diagnostics disabled
+)
+

@@ -9,6 +9,7 @@
 ;
 ;	Chapter 0: SETUP
 ;	Chapter 1: STRATEGIC NUMBERS
+;	Chapter 2: MIXED AIR CORE READINESS
 ;
 ; =====================================================
 ; *** Chapter 0: SETUP ***
@@ -42,3 +43,660 @@
 	(set-strategic-number sn-scale-minimum-attack-group-size 0)
 	(disable-self)
 )
+
+; =====================================================
+; *** Chapter 2: MIXED AIR CORE READINESS ***
+; =====================================================
+; This file loads after military-population and military-population-hard.
+; Keep package-dependent rules here: constants.per loads before those targets.
+
+; Recompute mixed-core support readiness before production modules run.
+; Targets count existing plus queued units, matching the old Attacker prerequisites.
+; Normal AIR: Fighters p2 / Attackers p4. P1: p3/p3. P2: p4/p2.
+(defrule
+	(true)
+=>
+	(set-goal t4-air-core-p3-ready NO)
+	(set-goal t4-air-core-p4-ready NO)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm AIR)
+	(goal support-aircraft YES)
+	(not (goal enemytroopersighted TROOPER-ALERT-NONE))
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL4-fighter-arm-p3)
+	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p2)
+=>
+	(set-goal t4-air-core-p3-ready YES)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm AIR)
+	(goal support-aircraft YES)
+	(goal enemytroopersighted TROOPER-ALERT-P1)
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL4-fighter-arm-p3)
+	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p3)
+=>
+	(set-goal t4-air-core-p4-ready YES)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal combat-arm AIR)
+	(goal support-aircraft YES)
+	(goal enemytroopersighted TROOPER-ALERT-P2)
+	(unit-type-count-total UNIT-FIGHTER-LINE >= TL4-fighter-arm-p4)
+	(unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p2)
+=>
+	(set-goal t4-air-core-p4-ready YES)
+)
+
+
+; RAID EXPERIMENT: early policies and independent memory heartbeat.
+; RAID: initialize
+(defrule
+	(true)
+=>
+	(set-goal raid-attack-memory 0)
+	(set-goal raid-worker-memory 0)
+	(set-goal raid-phase 0)
+	(set-goal raid-launch-open 0)
+	(set-goal raid-build-open 0)
+	(set-goal raid-defensive-roll 0)
+	(disable-self)
+)
+
+; RAID: initialize
+(defrule
+	(true)
+=>
+	(set-goal raid-ever-attacked 0)
+	(set-goal raid-signal-last 0)
+	(set-goal raid-worker-last 0)
+	(set-goal raid-builder-mode 0)
+	(set-goal raid-diagnostic-pause 0)
+	(set-goal raid-turret-progress 0)
+	(set-goal raid-cooldown 0)
+	(set-goal raid-turret-query 0)
+	(set-goal raid-worker-query 0)
+	(disable-self)
+)
+
+(defrule
+	(true)
+=>
+	(enable-timer t-raid-memory 5)
+	(do-nothing) ; RAID diagnostics disabled
+	(disable-self)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-attack-memory 1)
+=>
+	(set-goal raid-attack-memory 0)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-attack-memory 2)
+=>
+	(set-goal raid-attack-memory 1)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-attack-memory 3)
+=>
+	(set-goal raid-attack-memory 2)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-attack-memory 4)
+=>
+	(set-goal raid-attack-memory 3)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-attack-memory 5)
+=>
+	(set-goal raid-attack-memory 4)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-attack-memory 6)
+=>
+	(set-goal raid-attack-memory 5)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-worker-memory 1)
+=>
+	(set-goal raid-worker-memory 0)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-worker-memory 2)
+=>
+	(set-goal raid-worker-memory 1)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-worker-memory 3)
+=>
+	(set-goal raid-worker-memory 2)
+)
+
+
+
+
+
+
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cooldown 1)
+=>
+	(set-goal raid-cooldown 0)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cooldown 2)
+=>
+	(set-goal raid-cooldown 1)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cooldown 3)
+=>
+	(set-goal raid-cooldown 2)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cooldown 4)
+=>
+	(set-goal raid-cooldown 3)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cooldown 5)
+=>
+	(set-goal raid-cooldown 4)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cooldown 6)
+=>
+	(set-goal raid-cooldown 5)
+)
+
+; Cannon orders share a 13-tick cooldown: about 60-65 game seconds.
+(defrule
+	(true)
+=>
+	(set-goal raid-cannon-cooldown 0)
+	(disable-self)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 1)
+=>
+	(set-goal raid-cannon-cooldown 0)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 2)
+=>
+	(set-goal raid-cannon-cooldown 1)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 3)
+=>
+	(set-goal raid-cannon-cooldown 2)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 4)
+=>
+	(set-goal raid-cannon-cooldown 3)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 5)
+=>
+	(set-goal raid-cannon-cooldown 4)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 6)
+=>
+	(set-goal raid-cannon-cooldown 5)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 7)
+=>
+	(set-goal raid-cannon-cooldown 6)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 8)
+=>
+	(set-goal raid-cannon-cooldown 7)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 9)
+=>
+	(set-goal raid-cannon-cooldown 8)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 10)
+=>
+	(set-goal raid-cannon-cooldown 9)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 11)
+=>
+	(set-goal raid-cannon-cooldown 10)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 12)
+=>
+	(set-goal raid-cannon-cooldown 11)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-cannon-cooldown 13)
+=>
+	(set-goal raid-cannon-cooldown 12)
+)
+
+; Raid lifecycle counters share the heartbeat and never claim a new timer.
+(defrule
+	(true)
+=>
+	(set-goal raid-empty-ticks 0)
+	(set-goal raid-recall-timeout 0)
+	(disable-self)
+)
+
+(defrule
+	(attack-soldier-count > 0)
+=>
+	(set-goal raid-empty-ticks 0)
+)
+
+; Descending increments prevent two empty ticks from cascading in one scan.
+(defrule
+	(timer-triggered t-raid-memory)
+	(current-age == tech-level-1)
+	(goal raid-phase 1)
+	(attack-soldier-count == 0)
+	(goal raid-empty-ticks 1)
+=>
+	(set-goal raid-empty-ticks 2)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(current-age == tech-level-1)
+	(goal raid-phase 1)
+	(attack-soldier-count == 0)
+	(goal raid-empty-ticks 0)
+=>
+	(set-goal raid-empty-ticks 1)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 1)
+=>
+	(set-goal raid-recall-timeout 0)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 2)
+=>
+	(set-goal raid-recall-timeout 1)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 3)
+=>
+	(set-goal raid-recall-timeout 2)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 4)
+=>
+	(set-goal raid-recall-timeout 3)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 5)
+=>
+	(set-goal raid-recall-timeout 4)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 6)
+=>
+	(set-goal raid-recall-timeout 5)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 7)
+=>
+	(set-goal raid-recall-timeout 6)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 8)
+=>
+	(set-goal raid-recall-timeout 7)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 9)
+=>
+	(set-goal raid-recall-timeout 8)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 10)
+=>
+	(set-goal raid-recall-timeout 9)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 11)
+=>
+	(set-goal raid-recall-timeout 10)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 12)
+=>
+	(set-goal raid-recall-timeout 11)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+	(goal raid-recall-timeout 13)
+=>
+	(set-goal raid-recall-timeout 12)
+)
+
+(defrule
+	(timer-triggered t-raid-memory)
+=>
+	(disable-timer t-raid-memory)
+	(enable-timer t-raid-memory 5)
+)
+
+(defrule
+	(town-under-attack)
+=>
+	(set-goal raid-attack-memory 6)
+	(set-goal raid-ever-attacked YES)
+)
+
+(defrule
+	(players-unit-type-count any-enemy UNIT-WORKER > 0)
+=>
+	(set-goal raid-worker-memory 3)
+)
+
+(defrule
+	(town-under-attack)
+	(not (goal raid-signal-last YES))
+=>
+	(set-goal raid-signal-last YES)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(not (town-under-attack))
+	(not (goal raid-signal-last NO))
+=>
+	(set-goal raid-signal-last NO)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(players-unit-type-count any-enemy UNIT-WORKER > 0)
+	(not (goal raid-worker-last YES))
+=>
+	(set-goal raid-worker-last YES)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(not (players-unit-type-count any-enemy UNIT-WORKER > 0))
+	(not (goal raid-worker-last NO))
+=>
+	(set-goal raid-worker-last NO)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(players-unit-type-count any-enemy UNIT-WORKER < 0)
+	(goal raid-worker-query NO)
+=>
+	(do-nothing) ; RAID diagnostics disabled
+	(set-goal raid-worker-query YES)
+)
+
+; Release an ended raid after two empty heartbeat samples, before gate vetoes.
+(defrule
+	(current-age == tech-level-1)
+	(goal raid-phase 1)
+	(attack-soldier-count == 0)
+	(goal raid-empty-ticks 2)
+=>
+	(set-goal raid-phase 0)
+	(set-goal raid-empty-ticks 0)
+	(set-strategic-number sn-number-attack-groups 1)
+)
+
+; Raid phases belong to TL1; neither may strand scouting after age-up.
+(defrule
+	(current-age >= tech-level-2)
+	(or (goal raid-phase 1) (goal raid-phase 2))
+=>
+	(set-goal raid-phase 0)
+	(set-goal raid-empty-ticks 0)
+	(set-goal raid-recall-timeout 0)
+	(set-strategic-number sn-number-attack-groups 1)
+)
+
+; Recall recovery exits before the gate reset so permission updates this scan.
+(defrule
+	(current-age == tech-level-1)
+	(goal raid-phase 2)
+	(goal raid-cooldown 0)
+	(or
+		(attack-soldier-count == 0)
+		(goal raid-recall-timeout 0)
+	)
+=>
+	(set-goal raid-phase 0)
+	(set-strategic-number sn-number-attack-groups 1)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(true)
+=>
+	(set-goal raid-scout-open YES)
+	(set-goal raid-build-open YES)
+	(set-goal raid-launch-open YES)
+)
+
+(defrule
+	(not (goal raid-attack-memory 0))
+=>
+	(set-goal raid-scout-open NO)
+)
+
+(defrule
+	(attack-soldier-count > 0)
+=>
+	(set-goal raid-scout-open NO)
+)
+
+(defrule
+	(attack-air-count > 0)
+=>
+	(set-goal raid-scout-open NO)
+)
+
+(defrule
+	(attack-warboat-count > 0)
+=>
+	(set-goal raid-scout-open NO)
+)
+
+(defrule
+	(goal raid-phase 1)
+=>
+	(set-goal raid-scout-open NO)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+=>
+	(set-goal raid-scout-open NO)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(building-type-count BLDG-TURRET-LINE < 3)
+=>
+	(set-goal raid-build-open NO)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+=>
+	(set-goal raid-launch-open NO)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(goal raid-ever-attacked NO)
+=>
+	(set-goal raid-launch-open NO)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(not (goal raid-defensive-roll 2))
+=>
+	(set-goal raid-launch-open NO)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(not (goal raid-cooldown 0))
+=>
+	(set-goal raid-launch-open NO)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(not (goal raid-attack-memory 0))
+	(goal raid-worker-memory 0)
+=>
+	(set-goal raid-launch-open NO)
+)
+
+; Recall an active TL1 raid after damage memory when worker memory is empty.
+(defrule
+	(current-age == tech-level-1)
+	(goal raid-phase 1)
+	(not (goal raid-attack-memory 0))
+	(goal raid-worker-memory 0)
+=>
+	(set-goal raid-phase 2)
+	(set-goal raid-cooldown 6)
+	(set-goal raid-recall-timeout 13)
+	(set-goal aready NO)
+	(set-strategic-number sn-number-attack-groups 0)
+	(set-strategic-number sn-percent-attack-soldiers 0)
+	(set-strategic-number sn-gather-defense-units 1)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(goal raid-phase 2)
+=>
+	(set-goal raid-launch-open NO)
+)
+
+; Recall recovery exit runs above the gate reset.
+
+; Age-up phase cleanup runs above the gate reset.
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal raid-build-open NO)
+=>
+	(set-builders-type 79 8)
+	(set-builders-type 234 8)
+	(set-builders-type 235 8)
+	(set-builders-type 3599 8)
+	(set-builders-type 3600 8)
+	(set-builders-type 3601 8)
+	(set-builders-type 7088 8)
+)
+

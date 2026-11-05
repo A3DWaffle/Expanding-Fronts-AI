@@ -66,35 +66,84 @@
 	(building-type-count-total BLDG-MAIN > 0)
 	(can-build-with-escrow BLDG-ADVRANGE2)
 	(building-type-count-total BLDG-ADVRANGE2 == 0)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-ADVRANGE2)
 )
 
+; RAID: split oversized prerequisite list
 (defrule
-	(goal advinfcen YES)
-	(or
-		(current-age == tech-level-3)
-		(current-age == tech-level-4)
-	)
-	(not
-		(or
-			(civ-selected GUNGANS)
-			(or
-				(civ-selected RESISTANCE)
-				(civ-selected NEWREPUBLIC)
-			)
-		)
-	)
-	(building-type-count-total BLDG-MAIN > 0)
-	(can-build-with-escrow BLDG-ADVRANGE2)
-	(building-type-count-total BLDG-ADVRANGE2 < 2) 
-	(goal buildpause NO)
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal advinfcen YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (current-age == tech-level-3) (current-age == tech-level-4)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (or (civ-selected GUNGANS) (or (civ-selected RESISTANCE) (civ-selected NEWREPUBLIC)))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-MAIN > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (can-build-with-escrow BLDG-ADVRANGE2))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-ADVRANGE2 < 2))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal buildpause YES)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-build-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-ADVRANGE2)
 )
+
+
 
 (defrule
 	(goal advinfcen YES)
@@ -106,33 +155,84 @@
 		(civ-selected EMPIRE)
 	)
 	(can-build-with-escrow BLDG-ADVRANGE2)
-	(goal buildpause NO)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-ADVRANGE2)
 )
 
+; RAID: split oversized prerequisite list
 (defrule
-	(goal advinfcen YES)
-	(current-age == tech-level-4)
-	(building-type-count-total BLDG-MAIN > 0)
-	(building-type-count-total BLDG-ADVRANGE2 < 4) 
-	(or
-		(civ-selected CONFEDERACY)
-		(or
-			(civ-selected FIRSTORDER)
-			(or
-				(civ-selected GEONOSIANS)
-				(civ-selected IMPERIALREMNANT)
-			)
-		)
-	)
-	(can-build-with-escrow BLDG-ADVRANGE2)
-	(goal buildpause NO)
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal advinfcen YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (current-age == tech-level-4))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-MAIN > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-ADVRANGE2 < 4))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (civ-selected CONFEDERACY) (or (civ-selected FIRSTORDER) (or (civ-selected GEONOSIANS) (civ-selected IMPERIALREMNANT)))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (can-build-with-escrow BLDG-ADVRANGE2))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal buildpause YES)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-build-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-ADVRANGE2)
 )
+
+
 
 
 ; =====================================================

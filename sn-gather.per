@@ -69,6 +69,7 @@
 	(building-type-count-total BLDG-DROPANIM < 1)
 	(goal savetheanimals-nursery ONE)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon) ; needed for later TL starts
     (build BLDG-DROPANIM)
@@ -81,6 +82,7 @@
 	(building-type-count-total BLDG-DROPANIM < 2)
 	(goal savetheanimals-nursery TWO)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
     (build BLDG-DROPANIM)
@@ -93,6 +95,7 @@
 	(building-type-count-total BLDG-DROPANIM < 3)
 	(goal savetheanimals-nursery THREE)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
     (build BLDG-DROPANIM)
@@ -105,6 +108,7 @@
 	(building-type-count-total BLDG-DROPANIM < 4)
 	(goal savetheanimals-nursery FOUR)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
     (build BLDG-DROPANIM)
@@ -117,6 +121,7 @@
 	(building-type-count-total BLDG-DROPANIM < 5)
 	(goal savetheanimals-nursery FIVE)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
     (build BLDG-DROPANIM)
@@ -131,6 +136,7 @@
 		(unit-type-count GAIA-ANIMAL-HERD-LINE > 40) ; map with bananas nerf gen
 	)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
     (build BLDG-DROPANIM) ; generic non-save-the-animals check for if they get some lategame and yes they have to be escrow'd
@@ -143,6 +149,7 @@
 	(building-type-count-total BLDG-DROPANIM == 0)
 	(not (current-age == tech-level-1))
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
     (build BLDG-DROPANIM)
 	(disable-self)
@@ -164,6 +171,7 @@
 	(game-time > 120)
     (can-build-with-escrow BLDG-DROPANIM)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
     (build BLDG-DROPANIM)
@@ -415,6 +423,31 @@
 =>
 	(set-strategic-number sn-carbon-gatherer-percentage 55)
 	(set-strategic-number sn-food-gatherer-percentage 35)
+	(set-strategic-number sn-nova-gatherer-percentage 0)
+	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
+
+; Lure-food starts should keep eating local animals before the farm/carbon
+; economy takes over. Keep enough carbon for the spine, then bias back to food.
+(defrule
+	(current-age == tech-level-1)
+	(goal hunt-present YES)
+	(strategic-number snc-lure-amount > 0)
+	(unit-type-count GAIA-ANIMAL-LURE-LINE > 0)
+	(building-type-count-total BLDG-MAIN > 0)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-DROPCHOW > 0)
+	(or
+		(building-type-count-total BLDG-POWERCORE > 0)
+		(carbon-amount > 220)
+	)
+	(game-time > 120)
+	(not (goal savetheanimals YES))
+	(not (goal savetheanimals WAITING))
+	(not (strategic-number sn-food-gatherer-percentage == 65))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 25)
+	(set-strategic-number sn-food-gatherer-percentage 65)
 	(set-strategic-number sn-nova-gatherer-percentage 0)
 	(set-strategic-number sn-metal-gatherer-percentage 0)
 )
@@ -1157,6 +1190,23 @@
 	(set-strategic-number sn-food-gatherer-percentage 40)
 	(set-strategic-number sn-nova-gatherer-percentage 30)
 	(set-strategic-number sn-metal-gatherer-percentage 0)
+)
+
+; TL3 prep: before the age-up is affordable, food can be ready while nova is
+; still lagging. Pull a little harder onto nova so tech-level-3 can queue.
+(defrule
+	(current-age == tech-level-2)
+	(goal agingup NO)
+	(unit-type-count-total UNIT-WORKER > 18)
+	(food-amount > 650)
+	(nova-amount < 250)
+	(building-type-count-total BLDG-DROPNOVA > 0)
+	(not (strategic-number sn-nova-gatherer-percentage == 35))
+=>
+	(set-strategic-number sn-carbon-gatherer-percentage 25)
+	(set-strategic-number sn-food-gatherer-percentage 35)
+	(set-strategic-number sn-nova-gatherer-percentage 35)
+	(set-strategic-number sn-metal-gatherer-percentage 5)
 )
 
 ;tech 3

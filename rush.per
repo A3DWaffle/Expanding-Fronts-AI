@@ -108,3 +108,18 @@
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 60)
 )
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-RUSH)
+	(goal support-masters YES)
+	(or
+		(goal combat-arm AIR)
+		(goal combat-arm TROOP)
+	)
+	(goal padawanattack PADAWANATTACK-NO)
+	(unit-type-count-total UNIT-JEDI-LINE >= 1)
+=>
+	(set-goal holocroncollectionservices HOLOCRON-DISABLED)
+	(set-goal padawanattack PADAWANATTACK-READY)
+)

@@ -109,7 +109,6 @@
 	(enable-timer t-resign 240)
 	(set-goal ResignCountdown YES)
 	(set-goal Resign YES)
-	;(chat-to-all "Waffle: Resign Countdown")
 )
 
 (defrule
@@ -117,7 +116,6 @@
 	(goal ResignCountdown YES)
 =>
 	(set-goal ResignCountdown NO)
-	;(chat-to-all "Waffle: Aborting Countdown")
 )
 
 (defrule
@@ -132,7 +130,6 @@
 	(goal Resign YES)
 =>
 	(set-goal Resign NO)
-	;(chat-to-all "Waffle: Resign NO")
 )
 
 ; resign start rule

@@ -53,25 +53,8 @@
 	(can-build-with-escrow BLDG-DROPCHOW)
 	(or
 		(not (goal savetheanimals YES))
-		(or
-			(goal allowgarbage LOWLUREFOOD)
-			(strategic-number snc-lure-amount > 0)
-		)
+		(goal allowgarbage LOWLUREFOOD)
 	)
-	(not (goal buildpause YES))
-=>
-	(release-escrow carbon)
-	(set-goal resourcerefund cfoodproc)
-	(build BLDG-DROPCHOW)
-)
-
-(defrule
-	(game-time > 150)
-	(current-age == tech-level-1)
-	(goal hunt-present YES)
-	(strategic-number snc-lure-amount > 0)
-	(building-type-count-total BLDG-DROPCHOW == 0)
-	(can-build-with-escrow BLDG-DROPCHOW)
 	(not (goal buildpause YES))
 =>
 	(release-escrow carbon)
@@ -481,13 +464,8 @@
 ; =====================================================
 
 (defrule
-	(or
-		(current-age >= tech-level-3)
-		(and
-			(current-age == tech-level-2)
-			(goal agingup YES)
-		)
-	)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-irrigation)
 =>
 	(release-escrow food)
@@ -497,6 +475,7 @@
 
 (defrule 
 	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-harvesting)
 =>
 	(release-escrow food)
@@ -505,7 +484,8 @@
 )
 
 (defrule
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-adv-harvesting)
 =>
 	(release-escrow food)

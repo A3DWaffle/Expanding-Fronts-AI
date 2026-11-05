@@ -9,7 +9,6 @@
 ;
 ;	Chapter 0: SETUP
 ;	Chapter 1: MAP SUPPORT FLAGS
-;	Chapter 2: DEBUG MESSAGES
 ;	Chapter 3: SUPPORT FALLBACKS
 ;	Chapter 4: CIV MATRICES
 ;
@@ -69,294 +68,43 @@
 	(set-strategic-number sn-task-ungrouped-soldiers 1)
 )
 
-(defrule
-	(goal special-map WATER)
-	(goal support-artillery YES)
-=>
-	(set-goal support-artillery NO)
-)
-
-; =====================================================
-; *** Chapter 2: DEBUG MESSAGES ***
-; =====================================================
-
-; Test-game messages expose which core and support package rolled.
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal combat-arm TROOP)
-;=>
-;	; (chat-to-all "WAFFLE: Core arm TROOP")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal combat-arm TROOP)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: core TROOP")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal combat-arm TROOP/HW)
-;=>
-;	; (chat-to-all "WAFFLE: Core arm TROOP/HW")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal combat-arm TROOP/HW)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: core TROOP/HW")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal combat-arm MECH)
-;=>
-;	; (chat-to-all "WAFFLE: Core arm MECH")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal combat-arm MECH)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: core MECH")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal combat-arm MECH/HW)
-;=>
-;	; (chat-to-all "WAFFLE: Core arm MECH/HW")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal combat-arm MECH/HW)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: core MECH/HW")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal combat-arm AIR)
-;=>
-;	; (chat-to-all "WAFFLE: Core arm AIR")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal combat-arm AIR)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: core AIR")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal combat-arm SEA)
-;=>
-;	; (chat-to-all "WAFFLE: Core arm SEA")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal combat-arm SEA)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: core SEA")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-sea YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support SEA")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-sea YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support SEA")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-sealift YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support SEALIFT")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-sealift YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support SEALIFT")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-airlift YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support AIRLIFT")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-airlift YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support AIRLIFT")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-masters YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support MASTERS")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-masters YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support MASTERS")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-uu YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support UU")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-uu YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support UU")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-assault-mech YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support ASSAULT-MECH")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-assault-mech YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support ASSAULT-MECH")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-artillery YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support ARTILLERY")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-artillery YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support ARTILLERY")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-grenadiers YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support GRENADIERS")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-grenadiers YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support GRENADIERS")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-aircraft YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support AIRCRAFT")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-aircraft YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support AIRCRAFT")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-mounted YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support MOUNTED")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-mounted YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support MOUNTED")
-;	(disable-self)
-;)
-
-;(defrule
-;	(not (goal combat-arm NOTICE))
-;	(goal support-acklay YES)
-;=>
-;	; (chat-to-all "WAFFLE: Support ACKLAY")
-;	(disable-self)
-;)
-
-;(defrule
-;	(timer-triggered t-debug)
-;	(goal support-acklay YES)
-;=>
-;	; (chat-to-all "WAFFLE: Core strategy reminder: support ACKLAY")
-;	(disable-self)
-;)
-
 ; =====================================================
 ; *** Chapter 3: SUPPORT FALLBACKS ***
 ; =====================================================
+	
+(defrule
+	(false) ; This is an example rule to be copy/pasted.
+=>
+	; There are 6 lineups, select only one. Special thanks to LuckyLlama for helping me with these.
+	(set-goal combat-arm TROOP) 		; This lineup priotizes Repeaters/Grenadiers.
+	(set-goal combat-arm TROOP/HW) 		; This lineup priotizes Repeaters/Artillery.
+	(set-goal combat-arm STRIKE/HW) 	; This lineup priotizes Strike Mechs/Artillery.
+	(set-goal combat-arm MECHBALL) 		; This lineup priotizes Mech Destroyers/Artillery.
+	(set-goal combat-arm DEATHBALL) 	; This lineup priotizes Mech Destroyers/Assault Mechs.
+	(set-goal combat-arm AIR) 			; This lineup priotizes Attackers/Mounted Units.
+	; A-mechs and Art can never be in same line-up. It's OP.
+
+	; Mainline
+	; (set-goal support-artillery YES/NO)
+	; (set-goal support-assault-mech YES/NO)
+
+	; Troop Center
+	; (set-goal support-repeater YES/NO)
+	; (set-goal support-grenadiers YES/NO)
+	; (set-goal support-mounted YES/NO)
+
+	; Mech Factory
+	; (set-goal support-strike YES/NO)
+	; (set-goal support-destroyer YES/NO)
+	; (set-goal support-apc YES/NO)
+
+	; Extras
+	; (set-goal support-sam YES/NO)
+	; (set-goal support-aircraft YES/NO)
+	; (set-goal support-uu YES/NO)
+	; (set-goal support-masters YES/NO)
+	(disable-self)
+)
 
 ; =====================================================
 ; *** Chapter 4: CIV MATRICES ***
@@ -369,10 +117,22 @@
 	(random-number <= 25)
 =>
 	(set-goal combat-arm TROOP/HW)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
 	(set-goal support-aircraft YES)
-	(set-goal support-assault-mech YES)
-	(set-goal support-masters YES)
 	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
@@ -381,11 +141,22 @@
 	(random-number > 25)
 	(random-number <= 50)
 =>
-	(set-goal combat-arm MECH)
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
 	(set-goal support-artillery YES)
-	(set-goal support-assault-mech YES)
-	(set-goal support-masters YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
@@ -394,9 +165,20 @@
 	(random-number > 50)
 	(random-number <= 75)
 =>
-	(set-goal combat-arm MECH/HW)
+	(set-goal combat-arm STRIKE/HW)
+	; Mainline
+	(set-goal support-strike YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft YES)
 	(set-goal support-masters YES)
-	(set-goal support-assault-mech YES)
 	(disable-self)
 )
 
@@ -404,10 +186,23 @@
 	(goal combat-arm NOTICE)
 	(random-number > 75)
 =>
-	(set-goal combat-arm TROOP/HW)
-	(set-goal support-aircraft YES)
-	(set-goal support-masters YES)
+	(set-goal combat-arm DEATHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
 	(set-goal support-assault-mech YES)
+	(set-goal support-artillery NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
@@ -417,34 +212,48 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number <= 40)
+	(random-number <= 50)
 =>
 	(set-goal combat-arm TROOP)
+	; Mainline
+	(set-goal support-grenadiers YES)
+	(set-goal support-repeater YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
 	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
 	(set-goal support-masters YES)
-	(set-goal support-uu YES)
-	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 40)
-	(random-number <= 70)
-=>
-	(set-goal combat-arm TROOP/HW)
-	(set-goal support-aircraft YES)
-	(set-goal support-uu YES)
-	(disable-self)
-)
-
-(defrule
-	(goal combat-arm NOTICE)
-	(random-number > 70)
+	(random-number > 50)
 =>
 	(set-goal combat-arm AIR)
+	; Mainline
 	(set-goal support-aircraft YES)
 	(set-goal support-mounted YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
@@ -456,7 +265,19 @@
 	(goal combat-arm NOTICE)
 	(random-number <= 65)
 =>
-	(set-goal combat-arm MECH)
+	(set-goal combat-arm DEATHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
 	(set-goal support-aircraft YES)
 	(set-goal support-masters YES)
 	(set-goal support-uu YES)
@@ -468,8 +289,20 @@
 	(random-number > 65)
 =>
 	(set-goal combat-arm AIR)
+	; Mainline
 	(set-goal support-aircraft YES)
 	(set-goal support-mounted YES)
+	(set-goal support-assault-mech NO)
+	(set-goal support-artillery NO)
+	; Troop Center
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-destroyer NO)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
 	(set-goal support-masters YES)
 	(set-goal support-uu YES)
 	(disable-self)
@@ -482,20 +315,74 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number <= 50)
+	(random-number <= 33)
 =>
-	(set-goal combat-arm MECH)
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
 	(set-goal support-artillery YES)
-	(set-goal support-assault-mech YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 50)
+	(random-number > 33)
+	(random-number <= 66)
 =>
-	(set-goal combat-arm MECH/HW)
+	(set-goal combat-arm STRIKE/HW)
+	; Mainline
+	(set-goal support-strike YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 66)
+=>
+	(set-goal combat-arm DEATHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery NO)
 	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -506,13 +393,74 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number <= 100)
+	(random-number <= 33)
 =>
-	(set-goal combat-arm MECH/HW)
+	(set-goal combat-arm STRIKE/HW)
+	; Mainline
+	(set-goal support-strike YES)
 	(set-goal support-artillery YES)
-	(set-goal support-assault-mech YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
 	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES) 
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters NO)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 33)
+	(random-number <= 66)
+=>
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 66)
+=>
+	(set-goal combat-arm DEATHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -525,8 +473,23 @@
 	(goal combat-arm NOTICE)
 	(random-number <= 33)
 =>
-	(set-goal combat-arm TROOP/HW)
+	(set-goal combat-arm TROOP)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc YES)
+	; Extras
+	(set-goal support-sam YES)
 	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -536,7 +499,22 @@
 	(random-number <= 66)
 =>
 	(set-goal combat-arm TROOP/HW)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc YES)
+	; Extras
+	(set-goal support-sam YES)
 	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -545,8 +523,22 @@
 	(random-number > 66)
 =>
 	(set-goal combat-arm AIR)
+	; Mainline
 	(set-goal support-aircraft YES)
 	(set-goal support-mounted YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -557,33 +549,48 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number <= 35)
+	(random-number <= 50)
 =>
 	(set-goal combat-arm TROOP)
-	(set-goal support-aircraft YES)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers YES)
 	(set-goal support-assault-mech YES)
-	(set-goal support-masters YES)
-	(disable-self)
-)
-
-(defrule
-	(goal combat-arm NOTICE)
-	(random-number > 35)
-	(random-number <= 70)
-=>
-	(set-goal combat-arm TROOP/HW)
+	(set-goal support-artillery NO)
+	; Troop Center
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc YES)
+	; Extras
+	(set-goal support-sam NO)
 	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
 	(set-goal support-masters YES)
 	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 70)
+	(random-number > 50)
 =>
 	(set-goal combat-arm AIR)
+	; Mainline
 	(set-goal support-aircraft YES)
 	(set-goal support-mounted YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer NO)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
+	(set-goal support-uu YES)
 	(set-goal support-masters YES)
 	(disable-self)
 )
@@ -598,8 +605,22 @@
 	(random-number <= 40)
 =>
 	(set-goal combat-arm TROOP)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers YES)
 	(set-goal support-assault-mech YES)
+	(set-goal support-artillery NO)
+	; Troop Center
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc YES)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -608,11 +629,23 @@
 	(random-number > 40)
 	(random-number <= 65)
 =>
-	(set-goal combat-arm MECH)
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
 	(set-goal support-artillery YES)
-	(set-goal support-assault-mech YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
 	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -621,9 +654,21 @@
 	(random-number > 65)
 	(random-number <= 85)
 =>
-	(set-goal combat-arm MECH/HW)
-	(set-goal support-assault-mech YES)
+	(set-goal combat-arm STRIKE/HW)
+	; Mainline
+	(set-goal support-strike YES)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -632,8 +677,22 @@
 	(random-number > 85)
 =>
 	(set-goal combat-arm TROOP/HW)
-	(set-goal support-assault-mech YES)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers YES)
+	(set-goal support-assault-mech NO)
+	(set-goal support-artillery YES)
+	; Troop Center
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc YES)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -644,21 +703,74 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number <= 50)
+	(random-number <= 33)
 =>
-	(set-goal combat-arm MECH)
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
 	(set-goal support-artillery YES)
-	(set-goal support-assault-mech YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 50)
+	(random-number > 33)
+	(random-number <= 66)
 =>
-	(set-goal combat-arm MECH/HW)
+	(set-goal combat-arm STRIKE/HW)
+	; Mainline
+	(set-goal support-strike YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 66)
+=>
+	(set-goal combat-arm DEATHBALL)
+	; Mainline
+	(set-goal support-strike YES)
+	(set-goal support-artillery NO)
 	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -672,8 +784,22 @@
 	(random-number <= 20)
 =>
 	(set-goal combat-arm TROOP/HW)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted YES)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc YES)
+	; Extras
+	(set-goal support-sam YES)
 	(set-goal support-aircraft YES)
-	(set-goal support-assault-mech YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -682,11 +808,23 @@
 	(random-number > 20)
 	(random-number <= 45)
 =>
-	(set-goal combat-arm MECH)
-	(set-goal support-aircraft YES)
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
 	(set-goal support-artillery YES)
-	(set-goal support-assault-mech YES)
-	(set-goal support-grenadiers YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(set-goal support-acklay YES)
 	(disable-self)
 )
@@ -696,8 +834,24 @@
 	(random-number > 45)
 	(random-number <= 65)
 =>
-	(set-goal combat-arm TROOP/HW)
+	(set-goal combat-arm DEATHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
 	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
+	(set-goal support-acklay YES)
 	(disable-self)
 )
 
@@ -706,9 +860,23 @@
 	(random-number > 65)
 	(random-number <= 85)
 =>
-	(set-goal combat-arm MECH/HW)
+	(set-goal combat-arm STRIKE/HW)
+	; Mainline
+	(set-goal support-strike YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
 	(set-goal support-aircraft YES)
-	(set-goal support-assault-mech YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -717,8 +885,22 @@
 	(random-number > 85)
 =>
 	(set-goal combat-arm AIR)
+	; Mainline
 	(set-goal support-aircraft YES)
 	(set-goal support-mounted YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-destroyer NO)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(set-goal support-acklay YES)
 	(disable-self)
 )
@@ -730,33 +912,99 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number <= 33)
+	(random-number <= 25)
 =>
 	(set-goal combat-arm TROOP)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-artillery NO)
 	(set-goal support-assault-mech YES)
-	(set-goal support-uu YES)
-	(disable-self)
-)
-
-(defrule
-	(goal combat-arm NOTICE)
-	(random-number > 33)
-	(random-number <= 66)
-=>
-	(set-goal combat-arm MECH)
-	(set-goal support-artillery YES)
-	(set-goal support-assault-mech YES)
+	; Troop Center
 	(set-goal support-grenadiers YES)
+	(set-goal support-mounted YES)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc YES)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 66)
+	(random-number > 25)
+	(random-number <= 50)
+=>
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted YES)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 50)
+	(random-number <= 75)
+=>
+	(set-goal combat-arm DEATHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted YES)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters NO)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 75)
 =>
 	(set-goal combat-arm TROOP/HW)
-	(set-goal support-assault-mech YES)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters NO)
 	(disable-self)
 )
 
@@ -767,53 +1015,99 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number <= 20)
+	(random-number <= 25)
 =>
 	(set-goal combat-arm TROOP/HW)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
 	(set-goal support-aircraft YES)
 	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 20)
-	(random-number <= 45)
+	(random-number > 25)
+	(random-number <= 50)
 =>
-	(set-goal combat-arm MECH)
-	(set-goal support-aircraft YES)
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
 	(set-goal support-artillery YES)
-	(set-goal support-grenadiers YES)
-	(disable-self)
-)
-
-(defrule
-	(goal combat-arm NOTICE)
-	(random-number > 45)
-	(random-number <= 65)
-=>
-	(set-goal combat-arm TROOP/HW)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
 	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 65)
-	(random-number <= 85)
+	(random-number > 50)
+	(random-number <= 75)
 =>
-	(set-goal combat-arm MECH/HW)
+	(set-goal combat-arm STRIKE/HW)
+	; Mainline
+	(set-goal support-strike YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
 	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 85)
+	(random-number > 75)
 =>
 	(set-goal combat-arm AIR)
+	; Mainline
 	(set-goal support-aircraft YES)
 	(set-goal support-mounted YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-destroyer NO)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
@@ -824,23 +1118,74 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number <= 50)
+	(random-number <= 33)
 =>
-	(set-goal combat-arm MECH)
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
 	(set-goal support-artillery YES)
-	(set-goal support-assault-mech YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
 	(set-goal support-masters YES)
 	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 50)
+	(random-number > 33)
+	(random-number <= 66)
 =>
-	(set-goal combat-arm MECH/HW)
-	(set-goal support-masters YES)
-	(set-goal support-assault-mech YES)
+	(set-goal combat-arm STRIKE/HW)
+	; Mainline
+	(set-goal support-strike YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters YES)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 66)
+=>
+	(set-goal combat-arm DEATHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
+	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
@@ -851,34 +1196,23 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number <= 15)
+	(random-number <= 16)
 =>
 	(set-goal combat-arm TROOP)
-	(set-goal support-aircraft YES)
-	(set-goal support-masters YES)
-	(disable-self)
-)
-
-(defrule
-	(goal combat-arm NOTICE)
-	(random-number > 15)
-	(random-number <= 45)
-=>
-	(set-goal combat-arm TROOP/HW)
-	(set-goal support-aircraft YES)
-	(set-goal support-masters YES)
-	(disable-self)
-)
-
-(defrule
-	(goal combat-arm NOTICE)
-	(random-number > 45)
-	(random-number <= 70)
-=>
-	(set-goal combat-arm MECH)
-	(set-goal support-aircraft YES)
-	(set-goal support-artillery YES)
+	; Mainline
+	(set-goal support-repeater YES)
 	(set-goal support-grenadiers YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc YES)
+	; Extras
+	(set-goal support-sam NO)
+	(set-goal support-aircraft YES)
 	(set-goal support-uu YES)
 	(set-goal support-masters YES)
 	(disable-self)
@@ -886,28 +1220,129 @@
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 70)
-	(random-number <= 85)
+	(random-number > 16)
+	(random-number <= 33)
 =>
-	(set-goal combat-arm MECH/HW)
+	(set-goal combat-arm TROOP/HW)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-grenadiers YES)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
 	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
 	(set-goal support-masters YES)
 	(disable-self)
 )
 
 (defrule
 	(goal combat-arm NOTICE)
-	(random-number > 85)
+	(random-number > 33)
+	(random-number <= 50)
+=>
+	(set-goal combat-arm MECHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
+	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters YES)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 50)
+	(random-number <= 67)
+=>
+	(set-goal combat-arm DEATHBALL)
+	; Mainline
+	(set-goal support-destroyer YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
+	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters YES)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 67)
+	(random-number <= 84)
+=>
+	(set-goal combat-arm STRIKE/HW)
+	; Mainline
+	(set-goal support-strike YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater NO)
+	(set-goal support-grenadiers NO)
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam NO)
+	(set-goal support-aircraft YES)
+	(set-goal support-uu YES)
+	(set-goal support-masters YES)
+	(disable-self)
+)
+
+(defrule
+	(goal combat-arm NOTICE)
+	(random-number > 84)
 =>
 	(set-goal combat-arm AIR)
+	; Mainline
 	(set-goal support-aircraft YES)
 	(set-goal support-mounted YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech NO)
+	; Troop Center
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers NO)
+	; Mech Factory
+	(set-goal support-strike YES)
+	(set-goal support-destroyer NO)
+	(set-goal support-apc NO)
+; Extras
+	(set-goal support-sam NO)
+	(set-goal support-uu YES)
 	(set-goal support-masters YES)
 	(disable-self)
 )
 
 #end-if
-
 
 #load-if-defined BLACKSUN
 
@@ -916,8 +1351,22 @@
 	(random-number <= 50)
 =>
 	(set-goal combat-arm TROOP)
-	(set-goal support-masters YES)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-grenadiers YES)
+	(set-goal support-artillery NO)
+	(set-goal support-assault-mech YES)
+	; Troop Center
+	(set-goal support-mounted NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
@@ -926,11 +1375,20 @@
 	(random-number > 50)
 =>
 	(set-goal combat-arm TROOP/HW)
-	(set-goal support-masters YES)
+	; Mainline
+	(set-goal support-repeater YES)
+	(set-goal support-artillery YES)
+	(set-goal support-assault-mech NO)
+	; Mech Factory
+	(set-goal support-strike NO)
+	(set-goal support-destroyer YES)
+	(set-goal support-apc NO)
+	; Extras
+	(set-goal support-sam YES)
+	(set-goal support-aircraft NO)
 	(set-goal support-uu YES)
+	(set-goal support-masters YES)
 	(disable-self)
 )
 
 #end-if
-
-

@@ -180,7 +180,7 @@
 ; sell excess
 
 (defrule
-	(current-age == tech-level-4)
+	(current-age >= tech-level-3)
 	(carbon-amount >= 3200)
 	(not (can-research rt-galactic-trade-comm))
 	(can-sell-commodity carbon)
@@ -189,7 +189,7 @@
 )
 
 (defrule
-	(current-age == tech-level-4)
+	(current-age >= tech-level-3)
 	(food-amount >= 1500)
 	(not (can-research rt-galactic-trade-comm))
 	(can-sell-commodity food)
@@ -198,7 +198,7 @@
 )
 
 (defrule
-	(current-age == tech-level-4)
+	(current-age >= tech-level-3)
 	(metal-amount >= 3300)
 	(not (can-research rt-galactic-trade-comm))
 	(can-sell-commodity metal)
@@ -209,7 +209,7 @@
 ; buy as needed
 
 (defrule
-	(current-age == tech-level-4)
+	(current-age >= tech-level-3)
 	(nova-amount >= 3000)
 	(metal-amount <= 3000)
 	(not (can-research rt-galactic-trade-comm))
@@ -231,7 +231,7 @@
 ; )
 
 (defrule
-	(current-age == tech-level-4)
+	(current-age >= tech-level-3)
 	(nova-amount >= 3000)
 	(metal-amount >= 3000)
 	(carbon-amount <= 3000)
@@ -527,6 +527,7 @@
 
 (defrule
 	; Basic Training
+	(current-age >= tech-level-1)
 	(can-research rt-basic-training)
 	(unit-type-count 224 > 0) ; dead worker
 =>
@@ -534,6 +535,7 @@
 )
 
 (defrule
+        (current-age >= tech-level-3)
         (can-research-with-escrow rt-upgraded-motivator)
 =>
         (release-escrow carbon)
@@ -542,6 +544,7 @@
 )
 
 (defrule
+        (current-age >= tech-level-3)
         (can-research-with-escrow rt-optimized-motivator)
 =>
         (release-escrow carbon)
@@ -562,7 +565,7 @@
 
 (defrule
 	; Stimulants
-	(current-age >= tech-level-2)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-stimulants)
 =>
 	(release-escrow food)
@@ -582,7 +585,7 @@
 
 (defrule
 	; Cloning
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-cloning)
 =>
 	(release-escrow food)
@@ -592,7 +595,7 @@
 
 (defrule
 	; RP Kaminoan Refit
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-kamino-refit)
 =>
 	(release-escrow carbon)
@@ -602,7 +605,7 @@
 ; --- 5c: NOVA RESEARCH ---
 
 (defrule
-	(current-age >= tech-level-2)
+	(current-age >= tech-level-3)
     (can-research rt-beamdrill-nova-mining)
 =>
     (research rt-beamdrill-nova-mining)
@@ -617,7 +620,7 @@
 
 (defrule
     ; CF Fusion Extractor Nova, TL4
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
     (can-research rt-nova-fusion-extractor)
 =>
    	(research rt-nova-fusion-extractor)
@@ -641,7 +644,7 @@
 
 (defrule        
     ; TF Fusion Extractor Ore, TL4
-    (current-age >= tech-level-4)
+    (current-age >= tech-level-3)
     (can-research rt-fusion-extractor)
 =>
     (research rt-fusion-extractor)
@@ -652,7 +655,7 @@
 ; ------------------
 
 (defrule
-	(current-age >= tech-level-2)
+	(current-age >= tech-level-3)
     (can-research-with-escrow rt-fusion-cutter)
 =>      
 	(release-escrow carbon)
@@ -670,7 +673,7 @@
 )
 
 (defrule
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
     (can-research-with-escrow rt-heavy-fusion-cutter)
 =>
     (release-escrow carbon)
@@ -690,6 +693,7 @@
 ; --- 5f: FOOD PROC CENTER ---
 
 (defrule
+    (current-age >= tech-level-3)
     (can-research-with-escrow rt-irrigation)
 =>
 	(release-escrow food)
@@ -698,6 +702,7 @@
 )
 
 (defrule
+    (current-age >= tech-level-3)
     (can-research-with-escrow rt-harvesting)
 =>
 	(release-escrow food)
@@ -706,6 +711,7 @@
 )
 
 (defrule
+    (current-age >= tech-level-3)
     (can-research-with-escrow rt-adv-harvesting)
 =>
 	(release-escrow food)
@@ -719,6 +725,7 @@
 	; Holonet Transceiver
 	(player-in-game any-ally)
 	(research-completed rt-upgraded-motivator)
+	(current-age >= tech-level-2)
 	(can-research-with-escrow rt-holonet)
 =>
 	(release-escrow nova)
@@ -727,7 +734,7 @@
 
 (defrule
 	; Galactic Trade Commission
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-galactic-trade-comm)
 =>      
 	(release-escrow food)
@@ -737,7 +744,7 @@
 
 (defrule
 	; TF Neimoidian Endorsement
-	(current-age >= tech-level-2)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-neimoidian-endorse)
 =>
 	(release-escrow food)
@@ -767,7 +774,7 @@
 
 (defrule
 	; TF Market Control
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-market-control)
 =>
 	(release-escrow food)
@@ -777,7 +784,7 @@
 
 (defrule
 	; GE Altered Bargains
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-altered-bargains)
 =>
 	(release-escrow food)
@@ -809,6 +816,7 @@
 
 ; (defrule ; no longer researched as it doesn't usually make sense to
 ; 	; Efficient Buildings
+; (current-age >= tech-level-3)
 ; 	(can-research-with-escrow rt-effbldgs)
 ; =>
 ; 	(release-escrow nova)
@@ -908,6 +916,7 @@
 	(building-type-count BLDG-MAIN > 0)
 	(housing-headroom < 5)			; "do we need a house" check
 	(population-headroom > 0)		; check for if you still have headroom against the pop limit
+	(building-type-count-total BLDG-PREFAB < prefab-shelter-limit)
 	(can-build-with-escrow BLDG-PREFAB)
 	(not (goal buildpause YES))
 =>
@@ -920,6 +929,7 @@
 	(current-age == tech-level-2)
 	(housing-headroom < 10)	
 	(population-headroom > 0)
+	(building-type-count-total BLDG-PREFAB < prefab-shelter-limit)
 	(can-build-with-escrow BLDG-PREFAB)
 	(not (goal buildpause YES))
 =>
@@ -932,6 +942,7 @@
 	(current-age >= tech-level-3)
 	(housing-headroom < 15) ; build lots of extra prefabs to prevent production from being capped
 	(population-headroom > 0)
+	(building-type-count-total BLDG-PREFAB < prefab-shelter-limit)
 	(can-build-with-escrow BLDG-PREFAB)
 	(not (goal buildpause YES))
 =>
@@ -944,6 +955,7 @@
 (defrule
 	(building-type-count BLDG-MAIN > 0)
 	(housing-headroom < 1)
+	(building-type-count-total BLDG-PREFAB < prefab-shelter-limit)
 	(can-build-with-escrow BLDG-PREFAB)
 =>
 	(release-escrow carbon)
@@ -3290,6 +3302,7 @@
 ; MECH
 (defrule
     ; Elevation Tracking, Mech Range TL2
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-elevation-tracking)
 	(goal get-mad DOOMSDAY)
 =>
@@ -3299,6 +3312,7 @@
 
 (defrule
     ; External Sensor Pod, Mech Range TL3
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-external-sensor-pod)
 	(goal get-mad DOOMSDAY)
 =>
@@ -3309,6 +3323,7 @@
 
 (defrule
     ; Targeting Sensor, Mech Range TL4
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-targetting-sensors)
 	(goal get-mad DOOMSDAY)
 =>
@@ -3320,6 +3335,7 @@
 ; TROOPER
 (defrule
     ; MacroBinoculars, Trooper Range TL2
+	(current-age >= tech-level-2)
 	(can-research-with-escrow rt-macrobinoculars)
 	(goal get-mad DOOMSDAY)
 =>
@@ -3329,6 +3345,7 @@
 
 (defrule 
     ; Portable Scanners, Trooper Range TL3
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-portable-scanners)
 	(goal get-mad DOOMSDAY)
 =>
@@ -3415,6 +3432,7 @@
 
 (defrule
     ; Cooling Sleeves, Damage TL3
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-cooling-sleeves)
 	(goal get-mad DOOMSDAY)
 =>
@@ -3693,6 +3711,7 @@
 ; 10e-i: Troop Center
 
 (defrule
+	(current-age >= tech-level-2)
 	(can-research-with-escrow ut-laser-2) ; trooper
 	(unit-type-count-total UNIT-LASER-LINE > 0)
 	(goal get-mad DOOMSDAY)
@@ -3703,6 +3722,7 @@
 )
 
 (defrule
+	(current-age >= tech-level-3)
 	(can-research-with-escrow ut-laser-3) ; hvy trooper
 	(unit-type-count-total UNIT-LASER-LINE > 0)
 	(goal get-mad DOOMSDAY)
@@ -3723,6 +3743,7 @@
 )
 
 (defrule
+	(current-age >= tech-level-2)
 	(can-research-with-escrow ut-mounted-2) ; hvy mounted
 	(unit-type-count-total UNIT-MOUNTED-LINE > 0)
 	(goal get-mad DOOMSDAY)
@@ -3743,6 +3764,7 @@
 )
 
 (defrule
+	(current-age >= tech-level-3)
 	(can-research ut-missile-troop-2) ; hvy aa trooper
 	(goal get-mad DOOMSDAY)
 =>
@@ -4115,3 +4137,13 @@
 ; 10d-vi: Shipyard
 
 ; random junk-unit shipyard training removed
+; (defrule
+; (current-age >= tech-level-3)
+;         (nova-amount >= 3000)
+; 		(metal-amount >= 3000)
+; 		(food-amount <= 3000)
+; 		(not (can-research rt-galactic-trade-comm))
+; 		(can-buy-commodity food)
+; =>
+; 		(buy-commodity food)
+; )

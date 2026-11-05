@@ -292,6 +292,8 @@
 (defrule
 	(goal scouting scoutCCnotseen) ; initial
 	(goal scn-detected NO)
+	(goal raid-scout-open YES)
+	(not (and (current-age == tech-level-2) (goal openingstyle STYLE-DEFENSIVE)))
 =>
 	(set-strategic-number sn-number-explore-groups 1) ; initial scout  (after scenario detection goes off)
     (set-strategic-number sn-minimum-explore-group-size 1)
@@ -305,6 +307,8 @@
 	(unit-type-count UNIT-MOUNTED-LINE > 0)
 	(current-age < tech-level-3)
 	(goal scn-detected NO)
+	(goal raid-scout-open YES)
+	(not (and (current-age == tech-level-2) (goal openingstyle STYLE-DEFENSIVE)))
 =>
 	(set-strategic-number sn-number-explore-groups 1)
     (set-strategic-number sn-minimum-explore-group-size 1)
@@ -314,48 +318,131 @@
 
 
 
+; RAID: split oversized prerequisite list
 (defrule
-	(goal scn-detected NO)
-	(or
-		(or
-			(goal scouting YES)					; other general scouting behaviour
-			(false)								; nothing here for now
-		)
-		(or
-			(goal scouting PULSEYES)			; bodge to pulse scouting lategame
-			(goal scouting PULSEYESA)			; ditto
-		)
-	)
-	(not (strategic-number sn-number-explore-groups == 1))
-	(player-in-game any-ally)
-	
+	(true)
 =>
-    (set-strategic-number sn-number-explore-groups 1)
-    (set-strategic-number sn-minimum-explore-group-size 1)
-	(set-strategic-number sn-maximum-explore-group-size 1)
+	(set-goal raid-rule-check YES)
 )
 
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal scn-detected NO))
+=>
+	(set-goal raid-rule-check NO)
+)
 
 (defrule
-	(goal scn-detected NO)
-	(or
-		(or
-			(goal scouting YES)					; other general scouting behaviour
-			(false)								; 
-		)
-		(or
-			(goal scouting PULSEYES)			; bodge to pulse scouting lategame
-			(goal scouting PULSEYESA)			; ditto
-		)
-	)
-	(not (strategic-number sn-number-explore-groups == 2))
+	(goal raid-rule-check YES)
+	(not (or (or (goal scouting YES) (false)) (or (goal scouting PULSEYES) (goal scouting PULSEYESA))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (strategic-number sn-number-explore-groups == 1)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 	(not (player-in-game any-ally))
-	(current-age >= tech-level-3)
 =>
-    (set-strategic-number sn-number-explore-groups 2) ; allow more scouts
-    (set-strategic-number sn-minimum-explore-group-size 1)
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-scout-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (and (current-age == tech-level-2) (goal openingstyle STYLE-DEFENSIVE))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+=>
+	(set-strategic-number sn-number-explore-groups 1)
+	(set-strategic-number sn-minimum-explore-group-size 1)
 	(set-strategic-number sn-maximum-explore-group-size 1)
 )
+
+
+
+
+; RAID: split oversized prerequisite list
+(defrule
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal scn-detected NO))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (or (goal scouting YES) (false)) (or (goal scouting PULSEYES) (goal scouting PULSEYESA))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (strategic-number sn-number-explore-groups == 2)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (player-in-game any-ally)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (current-age >= tech-level-3))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-scout-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (and (current-age == tech-level-2) (goal openingstyle STYLE-DEFENSIVE))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+=>
+	(set-strategic-number sn-number-explore-groups 2)
+	(set-strategic-number sn-minimum-explore-group-size 1)
+	(set-strategic-number sn-maximum-explore-group-size 1)
+)
+
+
 
 (defrule
 	(goal scouting NO) ; basically only ever fires T3 onwards
@@ -422,21 +509,60 @@
 ; BONUS SCOUT RULES
 ; ACTIVATED DURING LATEGAME TSA
 
+; RAID: split oversized prerequisite list
 (defrule
-	(or
-		(goal attackTSAhold HOLDING-HIGH)
-		(goal attackTSAhold HOLDING-LOW)
-	)
-	(goal attackTSAlevel 11)
-	(not (strategic-number sn-number-explore-groups == 5))
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (goal attackTSAhold HOLDING-HIGH) (goal attackTSAhold HOLDING-LOW)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal attackTSAlevel 11))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (strategic-number sn-number-explore-groups == 5)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-scout-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (and (current-age == tech-level-2) (goal openingstyle STYLE-DEFENSIVE))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 =>
 	(set-strategic-number sn-number-explore-groups 5)
-    (set-strategic-number sn-minimum-explore-group-size 2)
+	(set-strategic-number sn-minimum-explore-group-size 2)
 	(set-strategic-number sn-maximum-explore-group-size 2)
-	(set-strategic-number sn-blot-exploration-map 1) ; allow rescouting
+	(set-strategic-number sn-blot-exploration-map 1)
 	(set-strategic-number sn-blot-size 25)
-	(set-goal scouting 6) ; can't be bothered constanting something for this rn
+	(set-goal scouting 6)
 )
+
+
 
 ; SCENARIO LOGIC
 
@@ -453,6 +579,8 @@
 (defrule
 	;(goal scn-detected YES) ; if under ANY circumstances the AI has a scout, it will scout
 	(unit-type-count UNIT-FASTBIKE-LINE > 0) 
+	(goal raid-scout-open YES)
+	(not (and (current-age == tech-level-2) (goal openingstyle STYLE-DEFENSIVE)))
 =>
 	;(set-goal scouting YES)  ; actually, this can interfere with ccseen above
 	(set-strategic-number sn-number-explore-groups 1)
@@ -460,3 +588,20 @@
 	(set-strategic-number sn-maximum-explore-group-size 1)
 	(disable-self)
 )
+(defrule
+	(not (goal raid-scout-open YES))
+=>
+	(set-strategic-number sn-number-explore-groups 0)
+	(set-strategic-number sn-minimum-explore-group-size 0)
+	(set-strategic-number sn-maximum-explore-group-size 0)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+=>
+	(set-strategic-number sn-number-explore-groups 0)
+	(set-strategic-number sn-minimum-explore-group-size 0)
+	(set-strategic-number sn-maximum-explore-group-size 0)
+)
+

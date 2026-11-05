@@ -26,6 +26,7 @@
     (building-type-count-total BLDG-SPACEPORT == 0)
     (can-build-with-escrow BLDG-SPACEPORT)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
     (release-escrow carbon)
     (build BLDG-SPACEPORT)
@@ -827,7 +828,7 @@
 (defrule
 	; Hutt Endorsement
 	(player-in-game any-ally)
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-hutt-endorsement)
 	(goal importantT4research DONE)
 	(military-population >= MIL_POP_B)
@@ -852,7 +853,7 @@
 
 (defrule
 	; Galactic Trade Commission
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-galactic-trade-comm)
 =>      
 	(release-escrow food)
@@ -863,6 +864,7 @@
 (defrule
 	; TF Neimoidian Endorsement
 	(current-age >= tech-level-2)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-neimoidian-endorse)
 =>
 	(release-escrow food)
@@ -882,7 +884,7 @@
 
 (defrule
 	; TF Market Control
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-market-control)
 =>
 	(release-escrow food)
@@ -893,7 +895,7 @@
 (defrule
 	; GE Altered Bargains
 	(goal get-mad DOOMSDAY)
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-altered-bargains)
 =>
 	(release-escrow food)
@@ -904,6 +906,7 @@
 (defrule
 	; CF Confederacy Alliance
 	(current-age >= tech-level-4)
+	(unit-type-count-total UNIT-CARGO-GROUND-LINE > 0)
 	(can-research-with-escrow rt-confalli)
 	(player-in-game any-ally)
 =>
@@ -915,6 +918,7 @@
 (defrule
 	; ZC Piracy
 	(current-age >= tech-level-3)
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-piracy)
 	(player-in-game any-ally)
 	(goal importantT3research DONE)
@@ -939,6 +943,7 @@
 (defrule
 	; BS Cloaked Smuggling
 	(current-age == tech-level-4)
+	(unit-type-count-total UNIT-CARGO-GROUND-LINE > 0)
 	(can-research-with-escrow rt-cloakedsmug)
 	(player-in-game any-ally) 
 	(goal importantT4research DONE)

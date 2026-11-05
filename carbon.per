@@ -94,13 +94,8 @@
 
 (defrule
 	; Handheld CarbonExtractor
-	(or
-		(current-age >= tech-level-3)
-		(and
-			(current-age == tech-level-2)
-			(goal agingup YES)
-		)
-	)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-fusion-cutter)
 =>
 	(release-escrow food)
@@ -111,6 +106,7 @@
 (defrule
 	; Enhanced CarbonExtractor
 	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-enh-fusion-cutter)
 =>
 	(release-escrow food)
@@ -120,7 +116,8 @@
 
 (defrule
 	; Hvy Duty CarbonExtractor
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-heavy-fusion-cutter)
 =>
 	(release-escrow food)
@@ -131,6 +128,7 @@
 (defrule
 	; WK People of the Trees
 	(current-age >= tech-level-4)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow ut-peopleoftrees)
 	(goal importantT4research DONE)
 =>

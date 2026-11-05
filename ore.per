@@ -63,6 +63,24 @@
 	(build BLDG-DROPMETAL)
 )
 
+; Shared first ore drop-off: all personalities need a mining path as cheats shrink.
+; Available during the defensive production gate so ore cannot deadlock turrets.
+(defrule
+	(current-age >= tech-level-2)
+	(goal ore-found YES)
+	(building-type-count-total BLDG-DROPMETAL < 1)
+	(building-type-count BLDG-DROPCARBON > 0)
+	(building-type-count BLDG-TRAINTROOPER > 0)
+	(building-type-count BLDG-POWERCORE > 0)
+	(metal-amount < 150)
+	(carbon-amount > 200)
+	(can-build BLDG-DROPMETAL)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cmetalproc)
+	(build BLDG-DROPMETAL)
+)
+
 ; T3+ rule
 (defrule
 	(current-age >= tech-level-3)
@@ -139,31 +157,21 @@
 
 (defrule
     ; Beamdrill Mining Ore
-	(or
-		(current-age >= tech-level-3)
-		(and
-			(current-age == tech-level-2)
-			(goal agingup YES)
-		)
-	)
+	(current-age >= tech-level-3)
 	(can-research rt-beamdrill-metal)
 	(or
 		(goal agingup YES)
 		(food-amount > 800)
 	)
+	(unit-type-count-total UNIT-WORKER >= 15)
 =>
 	(research rt-beamdrill-metal) ; allow researching without escrow if affordable
 )
 
 (defrule
     ; Beamdrill Mining Ore ALT
-	(or
-		(current-age >= tech-level-3)
-		(and
-			(current-age == tech-level-2)
-			(goal agingup YES)
-		)
-	)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
     (can-research-with-escrow rt-beamdrill-metal)
 =>
 	(release-escrow food)
@@ -174,6 +182,7 @@
 (defrule
     ; Beamdrill Mining Ore, TL3
     (current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
     (can-research-with-escrow rt-heavy-beamdrill-metal)
 =>
 	(release-escrow food)
@@ -183,7 +192,8 @@
 
 (defrule        
     ; TF Fusion Extractor Ore, TL4
-    (current-age >= tech-level-4)
+    (current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
     (can-research-with-escrow rt-fusion-extractor)
 	(goal importantT4research DONE)
 =>
@@ -268,7 +278,8 @@
 
 (defrule
 	; TF Fusion Extractor (Ore)
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-fusion-extractor)
 	(goal importantT4research DONE)
 =>

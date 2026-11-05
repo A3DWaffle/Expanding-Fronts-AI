@@ -18,10 +18,11 @@
 
 (defrule
 	(current-age >= tech-level-3)
-	(building-type-count BLDG-MAIN > 2)
-	(building-type-count-total BLDG-RESCTR < 1)
+	(building-type-count BLDG-MAIN > 3)
+	(building-type-count-total BLDG-RESCTR == 0)
 	(can-build-with-escrow BLDG-RESCTR)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-RESCTR)
@@ -30,8 +31,13 @@
 (defrule
 	(current-age == tech-level-4)
 	(building-type-count-total BLDG-RESCTR == 1)
+	(or
+		(military-population >= MIL_POP_A)
+		(current-age-time > 360)
+	)
 	(can-build-with-escrow BLDG-RESCTR)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-RESCTR)
@@ -43,6 +49,8 @@
 
 (defrule
     ; Homing Sensors
+	(current-age >= tech-level-4)
+	(not (goal enemyairsighted AIR-ALERT-LOW))
 	(can-research-with-escrow rt-homing-sensors)
 =>
 	(release-escrow food)
@@ -53,6 +61,7 @@
 (defrule
     ; Tracking and Targeting Computers
 	(current-age >= tech-level-3)
+	(military-population >= MIL_POP_A)
 	(can-research-with-escrow rt-tracking-computer)
 =>
 	(release-escrow carbon)
@@ -65,7 +74,6 @@
 	(current-age >= tech-level-4)
 	(building-type-count-total BLDG-GOVTCTR > 0)
 	(can-research-with-escrow rt-durasteel)
-	(goal importantT4research DONE)
 	(military-population >= MIL_POP_B)
 =>
 	(release-escrow food)
@@ -77,7 +85,6 @@
     ; Permacite Plating
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-permacite-plating)
-	(goal importantT4research DONE)
 	(military-population >= MIL_POP_B)
 =>
 	(release-escrow metal)
@@ -88,20 +95,103 @@
 (defrule
     ; Power Calibrator
 	(current-age >= tech-level-4)
+	(military-population >= MIL_POP_B)
 	(can-research-with-escrow rt-power-calibrator)
-	(goal importantT4research DONE)
 =>
 	(release-escrow food)
 	(release-escrow metal)
 	(research rt-power-calibrator)
 )
 
+; Hvy Weapons Engineers: existing Artillery/AA packages OR the map's Cannon P1.
+; Cannons come from Fortresses and do not require a Heavy Weapons Factory.
+; Existing and queued units count, matching the original upgrade prerequisites.
 (defrule
-	; Hvy Weapons Engineers
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-hvy-weapons-engineers)
-	(building-type-count-total BLDG-TRAINHEAVY > 0)
-	(goal importantT4research DONE)
+	(goal special-map LAND)
+	(or
+		(and
+			(or
+				(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+				(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-low-p2)
+			)
+			(building-type-count-total BLDG-TRAINHEAVY > 0)
+		)
+		(and
+			(unit-type-count-total SIEGE-CANNON-LINE > 0)
+			(unit-type-count-total SIEGE-CANNON-LINE >= TL4-cannon-arm-p1)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(research rt-hvy-weapons-engineers)
+)
+
+(defrule
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-hvy-weapons-engineers)
+	(goal special-map WATER)
+	(or
+		(and
+			(or
+				(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+				(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-low-p2)
+			)
+			(building-type-count-total BLDG-TRAINHEAVY > 0)
+		)
+		(and
+			(unit-type-count-total SIEGE-CANNON-LINE > 0)
+			(unit-type-count-total SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-water)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(research rt-hvy-weapons-engineers)
+)
+
+(defrule
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-hvy-weapons-engineers)
+	(goal special-map ASTEROID)
+	(or
+		(and
+			(or
+				(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+				(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-low-p2)
+			)
+			(building-type-count-total BLDG-TRAINHEAVY > 0)
+		)
+		(and
+			(unit-type-count-total SIEGE-CANNON-LINE > 0)
+			(unit-type-count-total SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-asteroid)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow carbon)
+	(research rt-hvy-weapons-engineers)
+)
+
+(defrule
+	(current-age >= tech-level-4)
+	(can-research-with-escrow rt-hvy-weapons-engineers)
+	(goal special-map HYBRID)
+	(or
+		(and
+			(or
+				(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+				(unit-type-count-total SIEGE-MISSILE-LINE >= TL4-aa-mobile-detect-air-alert-low-p2)
+			)
+			(building-type-count-total BLDG-TRAINHEAVY > 0)
+		)
+		(and
+			(unit-type-count-total SIEGE-CANNON-LINE > 0)
+			(unit-type-count-total SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-hybrid)
+		)
+	)
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -116,20 +206,6 @@
     ; CF Droid Upgrades
     (current-age >= tech-level-4)
     (can-research-with-escrow rt-droidupg)
-	(goal importantT4research DONE)
-	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal combat-arm MECH)
-				(or
-					(goal combat-arm MECH/HW)
-					(goal support-assault-mech YES)
-				)
-			)
-		)
-	)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -139,9 +215,8 @@
 (defrule
     ; RA Evacuation Protocols
 	(current-age >= tech-level-4)
+	(military-population >= MIL_POP_B)
 	(can-research-with-escrow rt-evac)
-	(goal importantT4research DONE)
-	(military-population >= MIL_POP_A)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -151,9 +226,8 @@
 (defrule
     ; IR Fortress Worlds
 	(current-age >= tech-level-4)
+	(military-population >= MIL_POP_B)
 	(can-research-with-escrow rt-fortressworlds)
-	(goal importantT4research DONE)
-	(military-population >= MIL_POP_A)
 =>
 	(release-escrow carbon)
 	(release-escrow metal)
@@ -164,7 +238,6 @@
     ; FO Advanced Torpedoes
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-adv-torpedoes)
-	(goal importantT4research DONE)
 	(not (goal enemyairsighted AIR-ALERT-NONE))
 =>
 	(release-escrow carbon)
@@ -179,12 +252,8 @@
 (defrule
 	; Rotation Bearings
 	(current-age >= tech-level-3)
+	(military-population >= MIL_POP_B)
 	(can-research-with-escrow rt-rotation-bearings)
-	(military-population >= MIL_POP_A)
-	(or
-		(goal importantT4research DONE)
-		(goal openingstyle STYLE-DEFENSIVE)
-	)
 =>
 	(release-escrow food)
 	(release-escrow metal)
@@ -196,10 +265,6 @@
 	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-ion-accelerator)
 	(military-population >= MIL_POP_A)
-	(or
-		(goal importantT4research DONE)
-		(goal openingstyle STYLE-DEFENSIVE)
-	)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
