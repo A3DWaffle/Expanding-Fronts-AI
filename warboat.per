@@ -36,20 +36,37 @@
 
 (defrule
 	(goal lategamecannon TWO)						; option a: as part of 10min timer lategame
-	(unit-type-count-total SIEGE-CANNON-LINE < 2) 
-	(can-train-with-escrow SIEGE-CANNON-LINE)
+	(unit-type-count-total SIEGE-CANNON-LINE < 1) 
+	(current-age == tech-level-4)
+	(goal bounty-priority NO)
+	(can-train SIEGE-CANNON-LINE)
+	(goal raid-cannon-cooldown 0)
 =>
-	(release-escrow carbon)
-	(release-escrow nova)
 	(train SIEGE-CANNON-LINE)
-	; (chat-local-to-self "WAFFLE: Escrow cannon: up to two")
+	(set-goal raid-cannon-cooldown 13)
+	; Late-game fallback provides at most one cannon, using spendable resources.
 )
 
 (defrule
-	(unit-type-count-total SIEGE-CANNON-LINE >= 2)
+	(unit-type-count-total SIEGE-CANNON-LINE >= 1)
 	(goal lategamecannon TWO)
 =>
 	(set-goal lategamecannon NO)
+)
+
+; The late-game one-Master fallback also waits for completed P1 Cannons.
+(defrule
+	(goal lategamemaster ALLOW)
+	(unit-type-count-total UNIT-MASTER-LINE < 1)
+	(can-train-with-escrow UNIT-MASTER-LINE)
+	(research-completed rt-jedi-concentration)
+	(goal special-map LAND)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p1)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(train UNIT-MASTER-LINE)
 )
 
 (defrule
@@ -57,11 +74,41 @@
 	(unit-type-count-total UNIT-MASTER-LINE < 1)
 	(can-train-with-escrow UNIT-MASTER-LINE)
 	(research-completed rt-jedi-concentration)
+	(goal special-map WATER)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-water)
 =>
 	(release-escrow food)
 	(release-escrow nova)
 	(train UNIT-MASTER-LINE)
-	; (chat-local-to-self "WAFFLE: Escrow master")
+)
+
+(defrule
+	(goal lategamemaster ALLOW)
+	(unit-type-count-total UNIT-MASTER-LINE < 1)
+	(can-train-with-escrow UNIT-MASTER-LINE)
+	(research-completed rt-jedi-concentration)
+	(goal special-map ASTEROID)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-asteroid)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(goal lategamemaster ALLOW)
+	(unit-type-count-total UNIT-MASTER-LINE < 1)
+	(can-train-with-escrow UNIT-MASTER-LINE)
+	(research-completed rt-jedi-concentration)
+	(goal special-map HYBRID)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-hybrid)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(train UNIT-MASTER-LINE)
 )
 
 ; ore

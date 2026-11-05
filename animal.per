@@ -17,6 +17,7 @@
 
 (defrule
 	; Stimulants
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-stimulants)
 	(current-age >= tech-level-3)
 =>
@@ -28,6 +29,7 @@
 (defrule
 	; Genetics
 	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-genetics)
 =>
 	(release-escrow food)
@@ -37,7 +39,8 @@
 
 (defrule
 	; Cloning
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-cloning)
 =>
 	(release-escrow food)
@@ -49,7 +52,10 @@
 	; GO Beast Training
 	(current-age >= tech-level-4)
 	(goal importantT4research DONE)
-	(goal support-acklay YES)
+	(or
+		(goal support-acklay YES)
+		(unit-type-count-total UNIT-MOUNTED-LINE >= TL4-mounted-supp-p1)
+	)
 	(can-research-with-escrow rt-beast-training) ; this does not need to be so high priority but it's okay
 =>
 	(release-escrow food)
@@ -59,7 +65,8 @@
 
 (defrule
 	; RP Kaminoan Refit
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-kamino-refit)
 	(goal importantT4research DONE)
 	(building-type-count BLDG-DROPANIM > 0)
@@ -87,6 +94,7 @@
 	(building-type-count BLDG-DROPANIM < 3)
     (can-build BLDG-DROPANIM)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
     (build BLDG-DROPANIM)
 )

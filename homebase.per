@@ -28,6 +28,7 @@
 	(building-type-count-total BLDG-MAIN == 0)
 	(can-build-with-escrow BLDG-MAIN)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(release-escrow metal)
@@ -35,28 +36,19 @@
 )
 
 ; TL3-CCs and TL4-CCs are set in building-count before this file loads.
-
-; Defensive should spend its first clean TL3 on infrastructure, including its
-; early CC shell before broad production scaling.
 (defrule
 	(current-age == tech-level-3)
-	(goal openingstyle STYLE-DEFENSIVE)
 	(building-type-count-total BLDG-MAIN < 3)
-	(building-type-count-total BLDG-TRAINAIR >= 2)
+	(or
+		(building-type-count-total BLDG-TRAINHEAVY >= 1)
+		(or
+			(building-type-count-total BLDG-TRAINMECH >= 2)
+			(building-type-count-total BLDG-TRAINAIR >= 2)
+		)
+	)
 	(can-build-with-escrow BLDG-MAIN)
 	(not (goal buildpause YES))
-=>
-	(release-escrow carbon)
-	(release-escrow metal)
-	(build BLDG-MAIN)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(not (goal openingstyle STYLE-DEFENSIVE))
-	(building-type-count-total BLDG-MAIN < TL3-CCs)
-	(can-build-with-escrow BLDG-MAIN)
-	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(release-escrow metal)
@@ -69,12 +61,11 @@
 	(can-build-with-escrow BLDG-MAIN)
 	(metal-amount > 110) ; try to not release escrow in T4
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-MAIN)
 )
-
-
 
 (defrule
 	(current-age == tech-level-4)
@@ -89,6 +80,7 @@
 		(goal attackTSAlevel 4)
 	)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-MAIN)
@@ -105,6 +97,7 @@
 	(metal-amount > 110)
 	(goal attackTSAlevel 5)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-MAIN)
@@ -121,6 +114,7 @@
 	(metal-amount > 110)
 	(goal attackTSAlevel 6)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-MAIN)
@@ -137,6 +131,7 @@
 	(metal-amount > 110)
 	(goal attackTSAlevel 7)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-MAIN)
@@ -153,6 +148,7 @@
 	(metal-amount > 110)
 	(goal attackTSAlevel 8)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-MAIN)
@@ -170,6 +166,7 @@
 	(metal-amount > 110)
 	(goal attackTSAlevel 9)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-MAIN)
@@ -185,13 +182,10 @@
 ; CC construction stays above research so age-up momentum does not get stolen.
 
 (defrule
-	(current-age >= tech-level-2)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 30)
 	(can-research-with-escrow rt-upgraded-motivator)
-	(goal agingup NO)
-	(or
-		(current-age >= tech-level-3)
-		(game-time > 540)
-	)
+	(game-time > 300) ; avoid immediate research before worker training stabilizes
 =>
 	(release-escrow food)
 	(release-escrow carbon)
@@ -200,6 +194,7 @@
 
 (defrule
 	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 30)
 	(can-research-with-escrow rt-optimized-motivator)
 	(game-time > 300)
 =>
@@ -212,17 +207,17 @@
 	; Basic Training
 	(can-research rt-basic-training)
 	(or
-		(not (can-train UNIT-WORKER) )
+		(not (can-train UNIT-WORKER))
 		(or
 			(civilian-population > 14)
 			(unit-type-count 224 > 0) ; dead worker
 		)
 	)
+	(current-age >= tech-level-1)
+	(unit-type-count-total UNIT-WORKER >= 10)
 =>
 	(research rt-basic-training)
 )
-
-
 
 ; =====================================================
 ; *** Chapter 3: WORKERS ***
@@ -372,11 +367,13 @@
 ; *** Chapter 4: PREFABS ***
 ; =====================================================
 
-; as-needed
+; Build as needed, with a ceiling of five slots per prefab after the first CC.
+; Actual headroom accounts for housing supplied by other buildings.
 (defrule
 	(building-type-count BLDG-MAIN > 0)
 	(housing-headroom < 5)			; "do we need a house" check
 	(population-headroom > 0)		; normal timing: stop at the true pop cap
+	(building-type-count-total BLDG-PREFAB < prefab-shelter-limit)
 	(can-build-with-escrow BLDG-PREFAB)
 	(not (goal buildpause YES))
 =>
@@ -389,6 +386,7 @@
 	(current-age == tech-level-2)
 	(housing-headroom < 10)	
 	(population-headroom > 0)
+	(building-type-count-total BLDG-PREFAB < prefab-shelter-limit)
 	(can-build-with-escrow BLDG-PREFAB)
 	(not (goal buildpause YES))
 =>
@@ -402,6 +400,7 @@
 	(goal agingup YES)
 	(housing-headroom < 15)	
 	(population-headroom > 0)
+	(building-type-count-total BLDG-PREFAB < prefab-shelter-limit)
 	(can-build-with-escrow BLDG-PREFAB)
 	(not (goal buildpause YES))
 =>
@@ -414,6 +413,7 @@
 	(current-age >= tech-level-3)
 	(housing-headroom < 20) ; build lots of extra prefabs to prevent production from being capped
 	(population-headroom > 0)
+	(building-type-count-total BLDG-PREFAB < prefab-shelter-limit)
 	(can-build-with-escrow BLDG-PREFAB)
 	(not (goal buildpause YES))
 =>
@@ -426,6 +426,7 @@
 (defrule
 	(building-type-count BLDG-MAIN > 0)
 	(housing-headroom < 1)
+	(building-type-count-total BLDG-PREFAB < prefab-shelter-limit)
 	(can-build-with-escrow BLDG-PREFAB)
 =>
 	(release-escrow carbon)
@@ -444,11 +445,37 @@
 ; *** Chapter 5: FARMS ***
 ; =====================================================
 
+; TL2 farms require a completed Spaceport and either a Jedi Temple or Mech Factory.
+
 (defrule
 	(true)
 =>
-	(set-goal allowfarm YES)
+	(set-goal allowfarm WAITING)
 	(disable-self)
+)
+
+; Do not let TL1 farms spend the carbon earmarked for the first nova processor.
+; If nova cannot be secured, unlock farms after a timeout or once TL2 starts.
+(defrule
+	(goal allowfarm WAITING)
+	(building-type-count-total BLDG-DROPNOVA > 0)
+=>
+	(set-goal allowfarm YES)
+)
+
+(defrule
+	(goal allowfarm WAITING)
+	(current-age == tech-level-1)
+	(current-age-time > 420)
+=>
+	(set-goal allowfarm YES)
+)
+
+(defrule
+	(goal allowfarm WAITING)
+	(current-age >= tech-level-2)
+=>
+	(set-goal allowfarm YES)
 )
 
 ; If no berries are present, build farms while spare assigned food gatherers hunt.
@@ -484,6 +511,7 @@
 		(unit-type-count GAIA-ANIMAL-HERD-LINE == 0)
 		(building-type-count-total BLDG-DROPANIM > 0)
 	)
+	(unit-type-count GAIA-ANIMAL-LURE-LINE == 0)
 	(idle-farm-count < 1)
 	(can-build BLDG-FARM)
 	(not (goal berries-present YES))
@@ -527,6 +555,7 @@
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(building-type-count-total BLDG-TRAINTROOPER > 0)
 	(building-type-count-total BLDG-FARM < 10)
+	(unit-type-count GAIA-ANIMAL-LURE-LINE == 0)
 	(idle-farm-count < 6)
 	(not (goal savetheanimals YES))
 	(not (goal savetheanimals WAITING))
@@ -590,6 +619,7 @@
 		(unit-type-count GAIA-ANIMAL-HERD-LINE == 0)
 		(building-type-count-total BLDG-DROPANIM > 0)
 	)
+	(unit-type-count GAIA-ANIMAL-LURE-LINE == 0)
 	(idle-farm-count < 1)
 	(can-build BLDG-FARM)
 	(or
@@ -605,6 +635,11 @@
 
 (defrule
 	(current-age == tech-level-2)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(or
+		(building-type-count BLDG-TRAINJEDI > 0)
+		(building-type-count BLDG-TRAINMECH > 0)
+	)
 	(food-amount < 150)
 	(carbon-amount > 450)
 	(unit-type-count-total UNIT-WORKER > 10)
@@ -621,6 +656,11 @@
 ; worker count is large enough to need stable food income.
 (defrule
 	(current-age == tech-level-2)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(or
+		(building-type-count BLDG-TRAINJEDI > 0)
+		(building-type-count BLDG-TRAINMECH > 0)
+	)
 	(unit-type-count-total UNIT-WORKER > 18)
 	(building-type-count-total BLDG-FARM < 8)
 	(building-type-count-total BLDG-DROPCHOW > 0)
@@ -634,6 +674,11 @@
 
 (defrule
 	(current-age == tech-level-2)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(or
+		(building-type-count BLDG-TRAINJEDI > 0)
+		(building-type-count BLDG-TRAINMECH > 0)
+	)
 	(goal hunt-present NO)
 	(building-type-count-total BLDG-FARM < 18)
 	(can-build BLDG-FARM)
@@ -645,6 +690,11 @@
 
 (defrule
 	(current-age == tech-level-2)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(or
+		(building-type-count BLDG-TRAINJEDI > 0)
+		(building-type-count BLDG-TRAINMECH > 0)
+	)
 	(goal hunt-present YES)
 	(current-age-time > 180)
 	(building-type-count-total BLDG-FARM < 12)
@@ -657,6 +707,11 @@
 
 (defrule
 	(current-age == tech-level-2)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(or
+		(building-type-count BLDG-TRAINJEDI > 0)
+		(building-type-count BLDG-TRAINMECH > 0)
+	)
 	(goal hunt-present YES)
 	(current-age-time > 420)
 	(building-type-count-total BLDG-FARM < 18)
@@ -669,6 +724,11 @@
 
 (defrule
 	(current-age == tech-level-2)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(or
+		(building-type-count BLDG-TRAINJEDI > 0)
+		(building-type-count BLDG-TRAINMECH > 0)
+	)
 	(goal agingup YES)
 	(building-type-count-total BLDG-FARM < 28)
 	(can-build BLDG-FARM)
@@ -680,6 +740,11 @@
 
 (defrule
 	(current-age == tech-level-2)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(or
+		(building-type-count BLDG-TRAINJEDI > 0)
+		(building-type-count BLDG-TRAINMECH > 0)
+	)
 	(goal agingup YES)
 	(building-type-count-total BLDG-FARM < 24)
 	(can-build BLDG-FARM)
@@ -850,6 +915,11 @@
 ; for total farm count to fall behind the age target.
 (defrule
 	(current-age == tech-level-2)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(or
+		(building-type-count BLDG-TRAINJEDI > 0)
+		(building-type-count BLDG-TRAINMECH > 0)
+	)
 	(idle-farm-count < 3)
 	(can-build BLDG-FARM)
 	(goal allowfarm YES)
@@ -870,7 +940,7 @@
 
 (defrule
 	(current-age == tech-level-4)
-	(idle-farm-count < 24)
+	(idle-farm-count < 50)
 	(can-build BLDG-FARM)
 	(goal allowfarm YES)
 	(not (goal buildpause YES))
@@ -881,7 +951,7 @@
 (defrule
 	(current-age == tech-level-4)
 	(game-time > 2400)
-	(idle-farm-count < 48)
+	(idle-farm-count < 50)
 	(can-build BLDG-FARM)
 	(goal allowfarm YES)
 	(not (goal buildpause YES))
@@ -1053,6 +1123,75 @@
 
 
 
+; TL2 production openings add Spaceport plus Mech/Jedi pressure before the
+; reactive unpowered-building rule catches up. Build a small power cushion.
+(defrule
+	(current-age == tech-level-2)
+	(current-age-time > 90)
+	(building-type-count-total BLDG-POWERCORE < 3)
+	(building-type-count BLDG-MAIN > 0)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(or
+		(building-type-count-total BLDG-TRAINMECH > 0)
+		(or
+			(building-type-count-total BLDG-TRAINJEDI > 0)
+			(building-type-count-total BLDG-TRAINTROOPER > 0)
+		)
+	)
+	(can-build-with-escrow BLDG-POWERCORE)
+	(or
+		(carbon-amount > 100)
+		(escrow-amount carbon > 150)
+	)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(set-goal resourcerefund cpowercore)
+	(build BLDG-POWERCORE)
+)
+
+; TL3 asks for the second Mech Factory or two Airbases before extra CCs, so get
+; another core down immediately instead of waiting for unpowered buildings.
+(defrule
+	(current-age == tech-level-3)
+	(current-age-time > 30)
+	(building-type-count-total BLDG-POWERCORE < 4)
+	(building-type-count BLDG-MAIN > 0)
+	(can-build-with-escrow BLDG-POWERCORE)
+	(or
+		(carbon-amount > 100)
+		(escrow-amount carbon > 150)
+	)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(set-goal resourcerefund cpowercore)
+	(build BLDG-POWERCORE)
+)
+
+; Once the first TL3 production package exists, carry enough power for follow-on
+; War Center/Research Center/Fortress tech buildings without brownouts.
+(defrule
+	(current-age == tech-level-3)
+	(current-age-time > 150)
+	(building-type-count-total BLDG-POWERCORE < 6)
+	(building-type-count BLDG-MAIN > 0)
+	(or
+		(building-type-count-total BLDG-TRAINMECH >= 2)
+		(building-type-count-total BLDG-TRAINAIR >= 2)
+	)
+	(can-build-with-escrow BLDG-POWERCORE)
+	(or
+		(carbon-amount > 150)
+		(escrow-amount carbon > 200)
+	)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(set-goal resourcerefund cpowercore)
+	(build BLDG-POWERCORE)
+)
+
 ; Emergency Power Core build. Tech-level caps keep the AI from overcorrecting.
 
 (defrule
@@ -1071,7 +1210,7 @@
 			)
 			(and
 				(current-age == tech-level-4)
-				(building-type-count-total BLDG-POWERCORE < 10)
+				(building-type-count-total BLDG-POWERCORE < 12)
 			)
 		)
 	)
@@ -1115,18 +1254,16 @@
 	
 )
 
-; TL3 post-spine Power Core helper. Once Spaceport + War Center are online,
-; allow extra power before production expansion stalls on unpowered buildings.
+; MIL_POP_A production expansion support. The extra core production buildings
+; need more power before the rich forward-core logic comes online.
 (defrule
-	(current-age == tech-level-3)
-	(building-type-count-total BLDG-SPACEPORT > 0)
-	(building-type-count-total BLDG-WARCTR > 0)
-	(building-type-count-total BLDG-MAIN >= 2)
-	(building-type-count-total BLDG-POWERCORE < 5)
+	(current-age == tech-level-4)
+	(military-population >= MIL_POP_A)
+	(building-type-count-total BLDG-POWERCORE < 7)
 	(can-build-with-escrow BLDG-POWERCORE)
 	(or
-		(carbon-amount > 500)
-		(escrow-amount carbon > 450)
+		(carbon-amount > 300)
+		(escrow-amount carbon > 250)
 	)
 	(not (goal buildpause YES))
 =>
@@ -1140,6 +1277,7 @@
 (defrule
 	(current-age == tech-level-4)
 	(current-age-time > 600)
+	(goal forward-ground-core YES)
 	(building-type-count-total BLDG-POWERCORE >= 5)
 	(building-type-count-total BLDG-POWERCORE < 8)
 	(military-population >= MIL_POP_B)

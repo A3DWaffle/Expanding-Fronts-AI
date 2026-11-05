@@ -348,6 +348,16 @@
 
 ; Only verified food lures should enable the hunt economy path. Some animals
 ; share lure-style classes but are not usable boar food starts.
+; Lava Flea: live unit 4303 (AGE ANIMAL-LAVAFLEA), not dead unit 4302.
+; Keep this separate so the existing nested animal check does not grow.
+(defrule
+	(cc-players-unit-type-count 0 4303 >= 4)
+=>
+	(set-goal allowgarbage LOWLUREFOOD)
+	(set-goal hunt-present YES)
+	(disable-self)
+)
+
 (defrule
 		(or
 	(cc-players-unit-type-count 0 4423 >= 4); Flit, 120f

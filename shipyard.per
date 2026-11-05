@@ -91,6 +91,7 @@
 	(can-build-with-escrow BLDG-TRAINBOAT)
 	(not (too-many-unpowered-buildings))
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
@@ -106,26 +107,118 @@
 	(can-build-with-escrow BLDG-TRAINBOAT)
 	(not (too-many-unpowered-buildings))
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
 	(set-goal resourcerefund cshipyard)
 )
 
+; RAID: split oversized prerequisite list
 (defrule
-	(not (goal fish-present NO))
-	(or
-		(goal special-map WATER)
-		(goal special-map HYBRID)
-	)
-	(building-type-count-total BLDG-DROPCARBON > 0)
-	(building-type-count-total BLDG-DROPCHOW > 0)
-	(building-type-count-total BLDG-TRAINTROOPER > 0)
-	(building-type-count-total BLDG-TRAINBOAT == 0)
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal fish-present NO)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (goal special-map WATER) (goal special-map HYBRID)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-DROPCARBON > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-DROPCHOW > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-TRAINTROOPER > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-TRAINBOAT == 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-POWERCORE > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (can-build-with-escrow BLDG-TRAINBOAT))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (too-many-unpowered-buildings)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal buildpause YES)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-build-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINBOAT)
+	(set-goal resourcerefund cshipyard)
+)
+
+
+
+; Hybrid's second Shipyard follows expansion to three Command Centers.
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map HYBRID)
+	(building-type-count-total BLDG-TRAINBOAT == 1)
+	(building-type-count BLDG-MAIN >= 3)
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-TRAINBOAT)
 	(not (too-many-unpowered-buildings))
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
@@ -143,50 +236,199 @@
 	(can-build BLDG-TRAINBOAT)
 	(not (too-many-unpowered-buildings))
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(build BLDG-TRAINBOAT)
 	(set-goal resourcerefund cshipyard)
 )
 
+; RAID: split oversized prerequisite list
 (defrule
-	(current-age == tech-level-2)
-	(goal special-map WATER)
-	(building-type-count-total BLDG-DROPCARBON > 0)
-	(building-type-count-total BLDG-TRAINMECH > 0)
-	(building-type-count-total BLDG-SPACEPORT > 0)
-	(building-type-count-total BLDG-TRAINBOAT < 2)
-	(building-type-count-total BLDG-POWERCORE > 0)
-	(goal importantT2research DONE)
-	(can-build-with-escrow BLDG-TRAINBOAT)
-	(not (too-many-unpowered-buildings))
-	(not (goal buildpause YES))
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (current-age == tech-level-2))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal special-map WATER))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-DROPCARBON > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-TRAINMECH > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-SPACEPORT > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-TRAINBOAT < 2))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-POWERCORE > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal importantT2research DONE))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (can-build-with-escrow BLDG-TRAINBOAT))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (too-many-unpowered-buildings)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal buildpause YES)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-build-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
 	(set-goal resourcerefund cshipyard)
 )
 
+
+
+; RAID: split oversized prerequisite list
 (defrule
-	(or
-		(current-age == tech-level-3)
-		(current-age == tech-level-4)
-	)
-	(goal special-map WATER)
-	(building-type-count-total BLDG-TRAINBOAT < 4)
-	(building-type-count-total BLDG-POWERCORE > 0)
-	(or
-		(building-type-count-total BLDG-MAIN > 2)
-		(building-type-count-total BLDG-TRAINAIR >= 2)
-	)
-	(goal importantT3research DONE)
-	(can-build-with-escrow BLDG-TRAINBOAT)
-	(not (too-many-unpowered-buildings))
-	(not (goal buildpause YES))
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (current-age == tech-level-3) (current-age == tech-level-4)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal special-map WATER))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-TRAINBOAT < 4))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (building-type-count-total BLDG-POWERCORE > 0))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (building-type-count-total BLDG-MAIN > 2) (building-type-count-total BLDG-TRAINAIR >= 2)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal importantT3research DONE))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (can-build-with-escrow BLDG-TRAINBOAT))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (too-many-unpowered-buildings)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (goal buildpause YES)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-build-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
 	(set-goal resourcerefund cshipyard)
 )
+
+
 
 (defrule
 	(current-age == tech-level-4)
@@ -198,6 +440,7 @@
 	(can-build-with-escrow BLDG-TRAINBOAT)
 	(not (too-many-unpowered-buildings))
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINBOAT)
@@ -241,6 +484,8 @@
 			(goal special-map HYBRID)
 		)
 	)
+	(current-age >= tech-level-2)
+	(unit-type-count-total BOAT-LASER-LINE >= TL2-frigate-core-p1-water)
 	(can-research-with-escrow ut-boat-laser-2)
 =>
 	(release-escrow carbon)
@@ -256,7 +501,13 @@
 			(goal special-map HYBRID)
 		)
 	)
+	(current-age >= tech-level-3)
+	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p1-water)
 	(can-research-with-escrow ut-boat-laser-3)
+	(or
+		(research-completed ut-boat-laser-2)
+		(not (research-available ut-boat-laser-2))
+	)
 	(goal importantT4research DONE)
 =>
 	(release-escrow carbon)
@@ -272,7 +523,13 @@
 			(goal special-map HYBRID)
 		)
 	)
+	(current-age >= tech-level-3)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p1-water)
 	(can-research-with-escrow ut-boat-cutlaser-2)
+	(or
+		(research-completed ut-boat-laser-2)
+		(not (research-available ut-boat-laser-2))
+	)
 	(goal importantT4research DONE)
 =>
 	(release-escrow carbon)
@@ -288,8 +545,28 @@
 			(goal special-map HYBRID)
 		)
 	)
+	(current-age >= tech-level-4)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p1-water)
+	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p1-water)
+	(not (goal special-map HYBRID))
 	(can-research-with-escrow ut-boat-missile-2)
+	(or
+		(research-completed ut-boat-cutlaser-2)
+		(not (research-available ut-boat-cutlaser-2))
+	)
 	(goal importantT4research DONE)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research ut-boat-missile-2)
+)
+
+; Hybrid's smaller fleet must not wait for WATER fleet counts or other boat upgrades.
+(defrule
+	(goal special-map HYBRID)
+	(current-age >= tech-level-4)
+	(unit-type-count-total BOAT-MISSILE-LINE >= 1)
+	(can-research-with-escrow ut-boat-missile-2)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -304,7 +581,13 @@
 			(goal special-map HYBRID)
 		)
 	)
+	(current-age >= tech-level-4)
+	(unit-type-count-total BOAT-ARTILLERY-LINE >= TL4-cruiser-arm-p1-water)
 	(can-research-with-escrow ut-boat-artillery-2)
+	(or
+		(research-completed ut-boat-missile-2)
+		(not (research-available ut-boat-missile-2))
+	)
 	(goal importantT4research DONE)
 =>
 	(release-escrow carbon)
@@ -320,7 +603,13 @@
 			(goal special-map HYBRID)
 		)
 	)
+	(current-age >= tech-level-4)
+	(unit-type-count-total BOAT-MONITOR-LINE >= TL4-monitor-detect-p1-water)
 	(can-research-with-escrow ut-boat-grenade-2)
+	(or
+		(research-completed ut-boat-artillery-2)
+		(not (research-available ut-boat-artillery-2))
+	)
 	(goal importantT4research DONE)
 =>
 	(release-escrow carbon)

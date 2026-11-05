@@ -66,6 +66,21 @@
 	(build BLDG-DROPNOVA)
 )
 
+; TL2 rule: build a second processor so nova pathing updates and workers can
+; reach a backup patch before TL3 is already affordable.
+(defrule
+	(current-age == tech-level-2)
+	(building-type-count-total BLDG-DROPCARBON > 0)
+	(building-type-count-total BLDG-DROPNOVA < 2)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-DROPNOVA)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(set-goal resourcerefund cnovaproc)
+	(build BLDG-DROPNOVA)
+)
+
 ; Generic rule for T3+, controlled by camplevel which is set in sn homebase
 ; Camplevel:
 ; 0: Game start (ignore)
@@ -149,31 +164,21 @@
 
 (defrule
     ; Beamdrill Mining Nova
-	(or
-		(current-age >= tech-level-3)
-		(and
-			(current-age == tech-level-2)
-			(goal agingup YES)
-		)
-	)
+	(current-age >= tech-level-3)
 	(can-research rt-beamdrill-nova-mining)
 	(or
 		(goal agingup YES)
 		(food-amount > 800)
 	)
+	(unit-type-count-total UNIT-WORKER >= 15)
 =>
 	(research rt-beamdrill-nova-mining)
 )
 
 (defrule
     ; Beamdrill Mining Nova Alt
-	(or
-		(current-age >= tech-level-3)
-		(and
-			(current-age == tech-level-2)
-			(goal agingup YES)
-		)
-	)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
     (can-research-with-escrow rt-beamdrill-nova-mining)
 =>
 	(release-escrow food)
@@ -184,6 +189,7 @@
 (defrule
     ; Hvy Beamdrill Mining Nova, TL3
 	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
     (can-research-with-escrow rt-hvy-beamdrill-nova)
 =>
 	(release-escrow food)
@@ -193,7 +199,8 @@
 
 (defrule
     ; CF Fusion Extractor Nova, TL4
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
     (can-research-with-escrow rt-nova-fusion-extractor)
 	(goal importantT4research DONE)
 =>
@@ -293,7 +300,8 @@
 
 (defrule
 	; CF Fusion Extractor (Nova)
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-WORKER >= 15)
 	(can-research-with-escrow rt-nova-fusion-extractor)
 	(goal importantT4research DONE)
 =>

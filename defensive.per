@@ -70,3 +70,102 @@
 	(set-goal rushsize RUSHHALT)
 )
 
+(defrule
+	(current-age >= tech-level-3)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal support-masters YES)
+	(or
+		(goal combat-arm AIR)
+		(goal combat-arm TROOP)
+	)
+	(goal padawanattack PADAWANATTACK-NO)
+	(research-completed ut-jedi-2)
+	(unit-type-count-total UNIT-JEDI-LINE >= TL3-knight-supp-p1)
+=>
+	(set-goal holocroncollectionservices HOLOCRON-DISABLED)
+	(set-goal padawanattack PADAWANATTACK-READY)
+	(set-goal attacksonhold-auto NO)
+)
+
+; Defensive TL4 should pull the rally point back together after a large army is
+; spent. This keeps new units from leaking across an oversized town radius.
+(defrule
+	(current-age == tech-level-4)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal defensive-rally NO)
+	(military-population >= 40)
+=>
+	(set-goal defensive-rally HOLDING-HIGH)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal defensive-rally HOLDING-HIGH)
+	(military-population <= 10)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal defensive-rally HOLDING-LOW)
+	(set-goal townsizetrackertwo WAITING)
+	(set-goal townsizetracker SMOL)
+	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	(disable-timer t-townsize)
+	(enable-timer t-townsize 240)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal defensive-rally HOLDING-LOW)
+	(goal attackTSAhold EXHAUSTED)
+	(not (strategic-number sn-maximum-town-size == TL4-townsize-smol))
+=>
+	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal defensive-rally HOLDING-LOW)
+	(or
+		(military-population >= 28)
+		(timer-triggered t-townsize)
+	)
+	(goal attackTSAhold EXHAUSTED)
+=>
+	(set-goal defensive-rally NO)
+	(set-goal townsizetrackertwo NULL)
+	(set-goal townsizetracker NORM)
+	(set-strategic-number sn-maximum-town-size TL4-townsize)
+	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
+	(disable-timer t-townsize)
+)
+
+
+; RAID EXPERIMENT: one 50/50 mounted-opening roll.
+(defrule
+	(goal openingstyle STYLE-DEFENSIVE)
+	(goal raid-defensive-roll 0)
+=>
+	(generate-random-number 2)
+	(set-goal raid-defensive-roll 1)
+)
+
+(defrule
+	(goal raid-defensive-roll 1)
+	(random-number == 1)
+=>
+	(set-goal raid-defensive-roll 2)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(goal raid-defensive-roll 1)
+	(random-number == 2)
+=>
+	(set-goal raid-defensive-roll 3)
+	(do-nothing) ; RAID diagnostics disabled
+)
+

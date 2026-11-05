@@ -1,3 +1,30 @@
+(defrule
+	(current-age == tech-level-1)
+	(goal raid-worker-memory 0)
+=>
+	(set-strategic-number sn-ignore-attack-group-under-attack 0)
+)
+
+(defrule
+	(current-age == tech-level-1)
+	(not (goal raid-worker-memory 0))
+=>
+	(set-strategic-number sn-ignore-attack-group-under-attack 1)
+)
+
+(defrule
+	(current-age >= tech-level-2)
+=>
+	(set-strategic-number sn-ignore-attack-group-under-attack 0)
+)
+
+(defrule
+	(current-age <= tech-level-2)
+=>
+	(set-strategic-number sn-special-attack-type2 UNIT-WORKER)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
+)
+
 ; Attack orchestration for regular games.
 
 ; TABLE OF CONTENTS
@@ -53,7 +80,6 @@
 	(goal opening-announced NO)
 	(goal openingstyle STYLE-AGGRESSIVE)
 =>
-	(chat-to-all "WAFFLE: Personality AGGRESSIVE")
 	(set-goal rushsize NORM)
 	(generate-random-number 10)
 	(set-goal opening-announced YES)
@@ -63,7 +89,6 @@
 	(goal opening-announced NO)
 	(goal openingstyle STYLE-DEFENSIVE)
 =>
-	(chat-to-all "WAFFLE: Personality DEFENSIVE")
 	(set-goal rushsize SMOL)
 	(generate-random-number 10)
 	(set-goal opening-announced YES)
@@ -73,7 +98,6 @@
 	(goal opening-announced NO)
 	(goal openingstyle STYLE-RUSH)
 =>
-	(chat-to-all "WAFFLE: Personality RUSH")
 	(set-goal rushsize BIG)
 	(generate-random-number 10)
 	(set-goal opening-announced YES)
@@ -81,47 +105,96 @@
 
 (defrule
 	(current-age == tech-level-3)
+	(or
+		(not (strategic-number sn-special-attack-type2 == UNIT-WORKER))
+		(not (strategic-number sn-special-attack-influence2 == 2147483647))
+	)
 =>
 	(set-strategic-number sn-special-attack-type2 UNIT-WORKER)
 	(set-strategic-number sn-special-attack-influence2 2147483647)
 	(set-goal opening-attack-target TARGET-WORKERS)
-	(disable-self)
+)
+
+; From TL4 onward, use special targeting to punish high-value threats first.
+; If those are not present, crack AA/power so follow-up groups have cleaner
+; paths instead of spending the whole attack on random fogged buildings.
+(defrule
+	(current-age == tech-level-4)
+	(players-unit-type-count any-enemy UNIT-MECH3-LINE > TL4-mech3-arm-p1)
+	(or
+		(not (strategic-number sn-special-attack-type2 == UNIT-MECH3-LINE))
+		(not (strategic-number sn-special-attack-influence2 == 2147483647))
+	)
+=>
+	(set-strategic-number sn-special-attack-type2 UNIT-MECH3-LINE)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(players-unit-type-count any-enemy UNIT-MECH3-LINE <= TL4-mech3-arm-p1)
+	(cc-players-unit-type-count any-enemy SIEGE-ARTILLERY-LINE > TL4-artillery-arm-p1)
+	(or
+		(not (strategic-number sn-special-attack-type2 == SIEGE-ARTILLERY-LINE))
+		(not (strategic-number sn-special-attack-influence2 == 2147483647))
+	)
+=>
+	(set-strategic-number sn-special-attack-type2 SIEGE-ARTILLERY-LINE)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(players-unit-type-count any-enemy UNIT-MECH3-LINE <= TL4-mech3-arm-p1)
+	(cc-players-unit-type-count any-enemy SIEGE-ARTILLERY-LINE <= TL4-artillery-arm-p1)
+	(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE > TL4-attacker-arm-p1)
+	(or
+		(not (strategic-number sn-special-attack-type2 == UNIT-ATTACKER-LINE))
+		(not (strategic-number sn-special-attack-influence2 == 2147483647))
+	)
+=>
+	(set-strategic-number sn-special-attack-type2 UNIT-ATTACKER-LINE)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(players-unit-type-count any-enemy UNIT-MECH3-LINE <= TL4-mech3-arm-p1)
+	(cc-players-unit-type-count any-enemy SIEGE-ARTILLERY-LINE <= TL4-artillery-arm-p1)
+	(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE <= TL4-attacker-arm-p1)
+	(cc-players-building-type-count any-enemy BLDG-MISSILE-LINE > 0)
+	(or
+		(not (strategic-number sn-special-attack-type2 == BLDG-MISSILE-LINE))
+		(not (strategic-number sn-special-attack-influence2 == 2147483647))
+	)
+=>
+	(set-strategic-number sn-special-attack-type2 BLDG-MISSILE-LINE)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(players-unit-type-count any-enemy UNIT-MECH3-LINE <= TL4-mech3-arm-p1)
+	(cc-players-unit-type-count any-enemy SIEGE-ARTILLERY-LINE <= TL4-artillery-arm-p1)
+	(cc-players-unit-type-count any-enemy UNIT-ATTACKER-LINE <= TL4-attacker-arm-p1)
+	(cc-players-building-type-count any-enemy BLDG-MISSILE-LINE == 0)
+	(cc-players-building-type-count any-enemy BLDG-POWERCORE > 0)
+	(or
+		(not (strategic-number sn-special-attack-type2 == BLDG-POWERCORE))
+		(not (strategic-number sn-special-attack-influence2 == 2147483647))
+	)
+=>
+	(set-strategic-number sn-special-attack-type2 BLDG-POWERCORE)
+	(set-strategic-number sn-special-attack-influence2 2147483647)
 )
 
 ; TL1/TL2 opening attacks roll a building target, weighted toward carbon, then
 ; swap back to workers after the first attack is launched.
-(defrule
-	(goal opening-announced YES)
-	(goal opening-attack-target TARGET-UNROLLED)
-	(current-age <= tech-level-2)
-	(random-number <= 7)
-=>
-	(set-strategic-number sn-special-attack-type2 BLDG-DROPCARBON)
-	(set-strategic-number sn-special-attack-influence2 2147483647)
-	(set-goal opening-attack-target TARGET-ROLLED)
-)
 
-(defrule
-	(goal opening-announced YES)
-	(goal opening-attack-target TARGET-UNROLLED)
-	(current-age <= tech-level-2)
-	(random-number == 8)
-=>
-	(set-strategic-number sn-special-attack-type2 BLDG-POWERCORE)
-	(set-strategic-number sn-special-attack-influence2 2147483647)
-	(set-goal opening-attack-target TARGET-ROLLED)
-)
 
-(defrule
-	(goal opening-announced YES)
-	(goal opening-attack-target TARGET-UNROLLED)
-	(current-age <= tech-level-2)
-	(random-number >= 9)
-=>
-	(set-strategic-number sn-special-attack-type2 BLDG-DROPANIM)
-	(set-strategic-number sn-special-attack-influence2 2147483647)
-	(set-goal opening-attack-target TARGET-ROLLED)
-)
+
+
+
 
 ; Restore worker targeting after the opening building-target attack launches.
 ; Keeping this separate prevents the TL1/TL2 attack launchers from exceeding
@@ -133,6 +206,130 @@
 	(set-strategic-number sn-special-attack-type2 UNIT-WORKER)
 	(set-strategic-number sn-special-attack-influence2 2147483647)
 	(disable-self)
+)
+
+; Remember observed enemy Fortresses and recompute siege readiness each pass.
+#load-if-not-defined MONUMENT-RACE
+(defrule
+	(goal enemy-fortress-seen NO)
+	(players-building-type-count any-enemy BLDG-GOVTCTR > 0)
+=>
+	(set-goal enemy-fortress-seen YES)
+)
+
+(defrule
+	(true)
+=>
+	(set-goal fortress-siege-hold NO)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal enemy-fortress-seen YES)
+=>
+	(set-goal fortress-siege-hold YES)
+)
+
+(defrule
+	(goal fortress-siege-hold YES)
+	(current-age == tech-level-3)
+	(goal special-map LAND)
+	(unit-type-count SIEGE-ARTILLERY-LINE >= TL3-artillery-core-p2)
+=>
+	(set-goal fortress-siege-hold NO)
+)
+
+(defrule
+	(goal fortress-siege-hold YES)
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(unit-type-count SIEGE-ARTILLERY-LINE >= TL3-artillery-core-p2-water)
+=>
+	(set-goal fortress-siege-hold NO)
+)
+
+(defrule
+	(goal fortress-siege-hold YES)
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(unit-type-count SIEGE-ARTILLERY-LINE >= TL3-artillery-core-p2-asteroid)
+=>
+	(set-goal fortress-siege-hold NO)
+)
+
+(defrule
+	(goal fortress-siege-hold YES)
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(unit-type-count SIEGE-ARTILLERY-LINE >= TL3-artillery-core-p2-hybrid)
+=>
+	(set-goal fortress-siege-hold NO)
+)
+
+(defrule
+	(goal fortress-siege-hold YES)
+	(current-age == tech-level-4)
+	(goal special-map LAND)
+	(or
+		(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p2)
+		(unit-type-count SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2)
+	)
+=>
+	(set-goal fortress-siege-hold NO)
+)
+
+(defrule
+	(goal fortress-siege-hold YES)
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(or
+		(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p2-water)
+		(unit-type-count SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-water)
+	)
+=>
+	(set-goal fortress-siege-hold NO)
+)
+
+(defrule
+	(goal fortress-siege-hold YES)
+	(current-age == tech-level-4)
+	(goal special-map ASTEROID)
+	(or
+		(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p2-asteroid)
+		(unit-type-count SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-asteroid)
+	)
+=>
+	(set-goal fortress-siege-hold NO)
+)
+
+(defrule
+	(goal fortress-siege-hold YES)
+	(current-age == tech-level-4)
+	(goal special-map HYBRID)
+	(or
+		(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p2-hybrid)
+		(unit-type-count SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p2-hybrid)
+	)
+=>
+	(set-goal fortress-siege-hold NO)
+)
+
+; Town Size Attack can form groups without an explicit attack-now.
+(defrule
+	(goal fortress-siege-hold YES)
+	(not (strategic-number sn-number-attack-groups == 0))
+=>
+	(set-strategic-number sn-number-attack-groups 0)
+)
+
+#end-if
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal fortress-siege-hold NO)
+	(strategic-number sn-number-attack-groups == 0)
+=>
+	(set-strategic-number sn-number-attack-groups 1)
 )
 
 ; -----------------------------------------------------
@@ -395,27 +592,78 @@
 	(set-goal gremlintrick GREMLINTRICK-DONE)
 )
 
+; RAID: split oversized prerequisite list
 (defrule
-	(goal aready YES)
-	(current-age == tech-level-1)
-	(goal attacksonhold-auto NO)
-	(goal attacksonhold-manual NO)
-	(goal attacksonhold-scn NO)
-	(or
-		(shared-goal treatytimer 0) ; treaty timer was never turned on
-		(shared-goal treatytimer 1) ; treaty timer expired
-	)
-	(or
-		(goal openingstyle STYLE-RUSH)
-		(goal openingstyle STYLE-DEFENSIVE)
-	)
-	(or
-		(goal gremlinstate GREMLIN-ONE)
-		(or
-			(goal gremlinstate GREMLIN-TWO)
-			(goal gremlinstate GREMLIN-DONE)
-		)
-	)
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal aready YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (current-age == tech-level-1))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal attacksonhold-auto NO))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal attacksonhold-manual NO))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal attacksonhold-scn NO))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (shared-goal treatytimer 0) (shared-goal treatytimer 1)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (goal openingstyle STYLE-RUSH) (goal openingstyle STYLE-DEFENSIVE)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (goal gremlinstate GREMLIN-ONE) (or (goal gremlinstate GREMLIN-TWO) (goal gremlinstate GREMLIN-DONE))))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-launch-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 =>
 	(set-goal reasonforattack attack-is-me)
 	(set-strategic-number sn-percent-attack-soldiers 100)
@@ -424,7 +672,10 @@
 	(attack-now)
 	(set-goal opening-attack-target TARGET-WORKERS)
 	(set-goal aready NO)
+	(do-nothing) ; RAID diagnostics disabled
 )
+
+
 
 (defrule
 	(current-age == tech-level-1)
@@ -467,6 +718,189 @@
 ; -----------------------------------------------------
 ; --- CHAPTER 3B: TL2 RUSH READINESS
 ; -----------------------------------------------------
+
+; TL3 Knights join a normal combined wave instead of firing a ground-only pulse.
+; The regular core/batch checks below can defer this request and retry it.
+(defrule
+	(current-age == tech-level-3)
+	(goal padawanattack PADAWANATTACK-READY)
+	(goal fortress-siege-hold NO)
+	(goal attacksonhold-auto NO)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(or (shared-goal treatytimer 0) (shared-goal treatytimer 1))
+=>
+	(set-goal holocroncollectionservices HOLOCRON-DISABLED)
+	(set-goal reasonforattack attack-is-me)
+	(set-goal aready YES)
+	(set-goal padawanattack PADAWANATTACK-DONE)
+)
+
+; RAID: split oversized prerequisite list
+(defrule
+	(true)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (not (current-age == tech-level-3)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal padawanattack PADAWANATTACK-READY))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal attacksonhold-auto NO))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal attacksonhold-manual NO))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal attacksonhold-scn NO))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (or (shared-goal treatytimer 0) (shared-goal treatytimer 1)))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(not (goal raid-launch-open YES))
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+	(goal fortress-siege-hold YES)
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(goal raid-rule-check YES)
+=>
+	(set-goal holocroncollectionservices HOLOCRON-DISABLED)
+	(set-goal reasonforattack attack-is-me)
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 0)
+	(set-strategic-number sn-percent-attack-boats 0)
+	(attack-now)
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 100)
+	(set-strategic-number sn-percent-attack-boats 100)
+	(set-goal padawanattack PADAWANATTACK-DONE)
+	(set-goal opening-attack-target TARGET-WORKERS)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+
+
+; Experimental late-game Jedi pulse.
+; Use one full ground-only attack-now when Masters appear. The previous tiny
+; commander-selection pulse was too easy for the attack group builder to miss.
+(defrule
+	(current-age == tech-level-4)
+	(goal jediattack JEDIATTACK-NO)
+	(goal support-masters YES)
+	(unit-type-count-total UNIT-MASTER-LINE >= 1)
+	(or
+		(shared-goal treatytimer 0)
+		(shared-goal treatytimer 1)
+	)
+=>
+	(set-goal holocroncollectionservices HOLOCRON-DISABLED)
+	(set-goal attacksonhold-auto NO)
+	(set-goal jediattack JEDIATTACK-READY)
+)
+
+(defrule
+	(goal jediattack JEDIATTACK-READY)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(goal raid-launch-open YES)
+	(goal fortress-siege-hold NO)
+=>
+	(set-goal holocroncollectionservices HOLOCRON-DISABLED)
+	(set-goal reasonforattack attack-is-me)
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 0)
+	(set-strategic-number sn-percent-attack-boats 0)
+	(attack-now)
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 100)
+	(set-strategic-number sn-percent-attack-boats 100)
+	(set-goal jediattack JEDIATTACK-DONE)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+; If the Master pulse did not create a real attack group, give it one bounded
+; retry. This catches support units the generic attack builder missed without
+; turning into a constant attack-now loop.
+(defrule
+	(current-age == tech-level-4)
+	(goal jediattack JEDIATTACK-DONE)
+	(goal support-masters YES)
+	(unit-type-count-total UNIT-MASTER-LINE >= 1)
+	(attack-soldier-count < 3)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(or
+		(shared-goal treatytimer 0)
+		(shared-goal treatytimer 1)
+	)
+=>
+	(set-goal jediattack JEDIATTACK-RETRY)
+)
+
+(defrule
+	(goal jediattack JEDIATTACK-RETRY)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(goal raid-launch-open YES)
+	(goal fortress-siege-hold NO)
+=>
+	(set-goal holocroncollectionservices HOLOCRON-DISABLED)
+	(set-goal reasonforattack attack-is-me)
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 0)
+	(set-strategic-number sn-percent-attack-boats 0)
+	(attack-now)
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 100)
+	(set-strategic-number sn-percent-attack-boats 100)
+	(set-goal jediattack JEDIATTACK-WAITING)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(goal jediattack JEDIATTACK-WAITING)
+	(unit-type-count-total UNIT-MASTER-LINE == 0)
+=>
+	(set-goal jediattack JEDIATTACK-NO)
+)
 
 ; some T2 logic that probably needs to be loaded before other logic
 
@@ -823,6 +1257,7 @@
 	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
+	(goal fortress-siege-hold NO)
 	=>
 	(disable-timer t-attackgroup-alt)
     (enable-timer t-attackgroup-alt 540) ; wait just a bit
@@ -836,6 +1271,7 @@
 	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
+	(goal fortress-siege-hold NO)
 	=>
 	(disable-timer t-attackgroup-alt)
     (enable-timer t-attackgroup-alt 720) ; was 540 which behaves better, HOWEVER TSA logic usually kicks which has its own timers so this is essentially a lower-force attack
@@ -863,6 +1299,7 @@
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	(goal attacktype TSA)
+	(goal fortress-siege-hold NO)
 =>
 	(set-goal aready YES) ; is what sends an attack off
 	(set-goal attackTSAhold HOLDING-HIGH)
@@ -876,6 +1313,7 @@
 	(goal attacksonhold-scn NO)
 	(goal attacktype NORM)
 	(goal maxpopattack ALLOW)
+	(goal fortress-siege-hold NO)
 =>
 	(set-goal aready YES) ; is what sends an attack off
 	(set-goal maxpopattack SENTOFF) ; stop this from firing again
@@ -897,6 +1335,7 @@
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	(not (goal maxpopattack SENTOFF))
+	(goal fortress-siege-hold NO)
 =>
 	(set-goal aready YES)
 	(set-goal reasonforattack attack-is-me)
@@ -908,9 +1347,11 @@
 
 (defrule
 	(military-population >= 12)
+	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
 	(not (goal maxpopattack SENTOFF))
+	(goal fortress-siege-hold NO)
 =>
 	(set-goal aready YES)
 	(set-goal reasonforattack attack-is-me)
@@ -1002,6 +1443,1075 @@
 	(set-goal aready NO)
 )
 
+; TL3 ordinary land reinforcement batches: send roughly eight troops after
+; personality allocation. Initial attacks and AIR/SEA/TSA are unaffected.
+; Retry in 30 game seconds so a small batch does not wait a full attack interval.
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(attack-soldier-count > 0)
+	(goal openingstyle STYLE-RUSH)
+	(defend-soldier-count < 8)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(attack-soldier-count > 0)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(defend-soldier-count < 11)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(attack-soldier-count > 0)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(defend-soldier-count < 16)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+; TL3 core composition checks. Completed counts exclude queued production.
+; Subtract a conservative upper bound for ALL attackers in the same domain:
+; e.g. 1-4 attacking ground units require 8 owned Strike Mechs to prove 4 spare.
+; Bands increase by 4 through 32 attackers, 8 through 64, 16 through 128,
+; and 32 through 256. Five attackers need 12 core units; 17 need 24.
+; This can wait longer when attackers are mixed; it never credits them twice.
+; Troop lineups need four Lasers OR four Mounties. AIR needs four Fighters.
+; Percent allocation still applies afterwards. These are composition minimums,
+; not a guarantee of escorts or positioning. TSA and TL4 keep their own behavior.
+; Very small population caps retain their existing attack behavior.
+#load-if-not-defined POPULATION-CAP-25
+#load-if-not-defined POPULATION-CAP-50
+
+; Strike Mechs: require at least four completed core units outside attack groups.
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count <= 0)
+	(unit-type-count UNIT-MECH1-LINE < 4)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 0)
+	(attack-soldier-count <= 4)
+	(unit-type-count UNIT-MECH1-LINE < 8)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 4)
+	(attack-soldier-count <= 8)
+	(unit-type-count UNIT-MECH1-LINE < 12)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 8)
+	(attack-soldier-count <= 12)
+	(unit-type-count UNIT-MECH1-LINE < 16)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 12)
+	(attack-soldier-count <= 16)
+	(unit-type-count UNIT-MECH1-LINE < 20)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 16)
+	(attack-soldier-count <= 20)
+	(unit-type-count UNIT-MECH1-LINE < 24)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 20)
+	(attack-soldier-count <= 24)
+	(unit-type-count UNIT-MECH1-LINE < 28)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 24)
+	(attack-soldier-count <= 28)
+	(unit-type-count UNIT-MECH1-LINE < 32)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 28)
+	(attack-soldier-count <= 32)
+	(unit-type-count UNIT-MECH1-LINE < 36)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 32)
+	(attack-soldier-count <= 40)
+	(unit-type-count UNIT-MECH1-LINE < 44)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 40)
+	(attack-soldier-count <= 48)
+	(unit-type-count UNIT-MECH1-LINE < 52)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 48)
+	(attack-soldier-count <= 56)
+	(unit-type-count UNIT-MECH1-LINE < 60)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 56)
+	(attack-soldier-count <= 64)
+	(unit-type-count UNIT-MECH1-LINE < 68)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 64)
+	(attack-soldier-count <= 80)
+	(unit-type-count UNIT-MECH1-LINE < 84)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 80)
+	(attack-soldier-count <= 96)
+	(unit-type-count UNIT-MECH1-LINE < 100)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 96)
+	(attack-soldier-count <= 112)
+	(unit-type-count UNIT-MECH1-LINE < 116)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 112)
+	(attack-soldier-count <= 128)
+	(unit-type-count UNIT-MECH1-LINE < 132)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 128)
+	(attack-soldier-count <= 160)
+	(unit-type-count UNIT-MECH1-LINE < 164)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 160)
+	(attack-soldier-count <= 192)
+	(unit-type-count UNIT-MECH1-LINE < 196)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 192)
+	(attack-soldier-count <= 224)
+	(unit-type-count UNIT-MECH1-LINE < 228)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 224)
+	(attack-soldier-count <= 256)
+	(unit-type-count UNIT-MECH1-LINE < 260)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or
+		(goal combat-arm STRIKE/HW)
+		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	)
+	(attack-soldier-count > 256)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+; Fighters: require at least four completed core units outside attack groups.
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count <= 0)
+	(unit-type-count UNIT-FIGHTER-LINE < 4)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 0)
+	(attack-air-count <= 4)
+	(unit-type-count UNIT-FIGHTER-LINE < 8)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 4)
+	(attack-air-count <= 8)
+	(unit-type-count UNIT-FIGHTER-LINE < 12)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 8)
+	(attack-air-count <= 12)
+	(unit-type-count UNIT-FIGHTER-LINE < 16)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 12)
+	(attack-air-count <= 16)
+	(unit-type-count UNIT-FIGHTER-LINE < 20)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 16)
+	(attack-air-count <= 20)
+	(unit-type-count UNIT-FIGHTER-LINE < 24)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 20)
+	(attack-air-count <= 24)
+	(unit-type-count UNIT-FIGHTER-LINE < 28)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 24)
+	(attack-air-count <= 28)
+	(unit-type-count UNIT-FIGHTER-LINE < 32)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 28)
+	(attack-air-count <= 32)
+	(unit-type-count UNIT-FIGHTER-LINE < 36)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 32)
+	(attack-air-count <= 40)
+	(unit-type-count UNIT-FIGHTER-LINE < 44)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 40)
+	(attack-air-count <= 48)
+	(unit-type-count UNIT-FIGHTER-LINE < 52)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 48)
+	(attack-air-count <= 56)
+	(unit-type-count UNIT-FIGHTER-LINE < 60)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 56)
+	(attack-air-count <= 64)
+	(unit-type-count UNIT-FIGHTER-LINE < 68)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 64)
+	(attack-air-count <= 80)
+	(unit-type-count UNIT-FIGHTER-LINE < 84)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 80)
+	(attack-air-count <= 96)
+	(unit-type-count UNIT-FIGHTER-LINE < 100)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 96)
+	(attack-air-count <= 112)
+	(unit-type-count UNIT-FIGHTER-LINE < 116)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 112)
+	(attack-air-count <= 128)
+	(unit-type-count UNIT-FIGHTER-LINE < 132)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 128)
+	(attack-air-count <= 160)
+	(unit-type-count UNIT-FIGHTER-LINE < 164)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 160)
+	(attack-air-count <= 192)
+	(unit-type-count UNIT-FIGHTER-LINE < 196)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 192)
+	(attack-air-count <= 224)
+	(unit-type-count UNIT-FIGHTER-LINE < 228)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 224)
+	(attack-air-count <= 256)
+	(unit-type-count UNIT-FIGHTER-LINE < 260)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal combat-arm AIR)
+	(attack-air-count > 256)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+; Laser Troopers or Mounties: require at least four completed core units outside attack groups.
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count <= 0)
+	(unit-type-count UNIT-LASER-LINE < 4)
+	(unit-type-count UNIT-MOUNTED-LINE < 4)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 0)
+	(attack-soldier-count <= 4)
+	(unit-type-count UNIT-LASER-LINE < 8)
+	(unit-type-count UNIT-MOUNTED-LINE < 8)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 4)
+	(attack-soldier-count <= 8)
+	(unit-type-count UNIT-LASER-LINE < 12)
+	(unit-type-count UNIT-MOUNTED-LINE < 12)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 8)
+	(attack-soldier-count <= 12)
+	(unit-type-count UNIT-LASER-LINE < 16)
+	(unit-type-count UNIT-MOUNTED-LINE < 16)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 12)
+	(attack-soldier-count <= 16)
+	(unit-type-count UNIT-LASER-LINE < 20)
+	(unit-type-count UNIT-MOUNTED-LINE < 20)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 16)
+	(attack-soldier-count <= 20)
+	(unit-type-count UNIT-LASER-LINE < 24)
+	(unit-type-count UNIT-MOUNTED-LINE < 24)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 20)
+	(attack-soldier-count <= 24)
+	(unit-type-count UNIT-LASER-LINE < 28)
+	(unit-type-count UNIT-MOUNTED-LINE < 28)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 24)
+	(attack-soldier-count <= 28)
+	(unit-type-count UNIT-LASER-LINE < 32)
+	(unit-type-count UNIT-MOUNTED-LINE < 32)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 28)
+	(attack-soldier-count <= 32)
+	(unit-type-count UNIT-LASER-LINE < 36)
+	(unit-type-count UNIT-MOUNTED-LINE < 36)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 32)
+	(attack-soldier-count <= 40)
+	(unit-type-count UNIT-LASER-LINE < 44)
+	(unit-type-count UNIT-MOUNTED-LINE < 44)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 40)
+	(attack-soldier-count <= 48)
+	(unit-type-count UNIT-LASER-LINE < 52)
+	(unit-type-count UNIT-MOUNTED-LINE < 52)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 48)
+	(attack-soldier-count <= 56)
+	(unit-type-count UNIT-LASER-LINE < 60)
+	(unit-type-count UNIT-MOUNTED-LINE < 60)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 56)
+	(attack-soldier-count <= 64)
+	(unit-type-count UNIT-LASER-LINE < 68)
+	(unit-type-count UNIT-MOUNTED-LINE < 68)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 64)
+	(attack-soldier-count <= 80)
+	(unit-type-count UNIT-LASER-LINE < 84)
+	(unit-type-count UNIT-MOUNTED-LINE < 84)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 80)
+	(attack-soldier-count <= 96)
+	(unit-type-count UNIT-LASER-LINE < 100)
+	(unit-type-count UNIT-MOUNTED-LINE < 100)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 96)
+	(attack-soldier-count <= 112)
+	(unit-type-count UNIT-LASER-LINE < 116)
+	(unit-type-count UNIT-MOUNTED-LINE < 116)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 112)
+	(attack-soldier-count <= 128)
+	(unit-type-count UNIT-LASER-LINE < 132)
+	(unit-type-count UNIT-MOUNTED-LINE < 132)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 128)
+	(attack-soldier-count <= 160)
+	(unit-type-count UNIT-LASER-LINE < 164)
+	(unit-type-count UNIT-MOUNTED-LINE < 164)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 160)
+	(attack-soldier-count <= 192)
+	(unit-type-count UNIT-LASER-LINE < 196)
+	(unit-type-count UNIT-MOUNTED-LINE < 196)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 192)
+	(attack-soldier-count <= 224)
+	(unit-type-count UNIT-LASER-LINE < 228)
+	(unit-type-count UNIT-MOUNTED-LINE < 228)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 224)
+	(attack-soldier-count <= 256)
+	(unit-type-count UNIT-LASER-LINE < 260)
+	(unit-type-count UNIT-MOUNTED-LINE < 260)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 256)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+#end-if
+#end-if
+
 ; CHITCHAT
 ; LOADED BEFOREHAND BECAUSE IT'S EASIER THIS WAY (as aready is set to NO as part of attack script)
 
@@ -1043,58 +2553,88 @@
 	(set-goal reasonforattack attack-is-me) ; this one's a bit of a bugger to get your head around, but basically if the AI gets a joinin while it is holding its attacks (eg: getting techs), the joinin is never cleared
 )
 
+; Standard attack-group commitment by opening personality.
+; TSA and the separate opening/Jedi pulses keep their existing behavior.
+(defrule
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal openingstyle STYLE-RUSH)
+=>
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 100)
+	(set-strategic-number sn-percent-attack-boats 100)
+)
+
+(defrule
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal openingstyle STYLE-AGGRESSIVE)
+=>
+	(set-strategic-number sn-percent-attack-soldiers 75)
+	(set-strategic-number sn-percent-attack-air 75)
+	(set-strategic-number sn-percent-attack-boats 75)
+)
+
+(defrule
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal openingstyle STYLE-DEFENSIVE)
+=>
+	(set-strategic-number sn-percent-attack-soldiers 50)
+	(set-strategic-number sn-percent-attack-air 50)
+	(set-strategic-number sn-percent-attack-boats 50)
+)
+
 (defrule
 	(goal aready YES)
 	(goal attacktype NORM)
 	(current-age == tech-level-1)
+	(goal raid-launch-open YES)
 =>
 	;(set-strategic-number sn-maximum-town-size 30)
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
 	(attack-now)
 	(set-goal opening-attack-target TARGET-WORKERS)
 	(set-goal aready NO) 						
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
 	(goal aready YES)
 	(current-age == tech-level-2)
 	(goal attacktype NORM)
+	(goal raid-launch-open YES)
 =>
 	;(set-strategic-number sn-maximum-town-size 43) ; gets reset by homebase ; seems to be causing weird worker dogpile issues
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
 	(attack-now)
 	(set-goal opening-attack-target TARGET-WORKERS)
 	(set-goal aready NO)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
 	(goal aready YES)
 	(current-age == tech-level-3)
 	(goal attacktype NORM)
+	(goal raid-launch-open YES)
+	(goal fortress-siege-hold NO)
 =>
 	;(set-strategic-number sn-maximum-town-size 70)
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
 	(attack-now)
 	(set-goal aready NO)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 (defrule
 	(goal aready YES)
 	(current-age == tech-level-4)
 	(goal attacktype NORM)
+	(goal raid-launch-open YES)
+	(goal fortress-siege-hold NO)
 =>
 	;(set-strategic-number sn-maximum-town-size 150)
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
 	(attack-now) ; try to not do this lategame, hence the whole TSA shebang
 	(set-goal aready NO)
+	(do-nothing) ; RAID diagnostics disabled
 )
 
 
@@ -1109,6 +2649,7 @@
 (defrule
 	(goal aready YES)
 	(goal attacktype TSA)
+	(goal fortress-siege-hold NO)
 =>
 	; (chat-local-to-self "WAFFLE: TSA. Attack. Set to HIGH")
 	(set-goal attackTSAhold HOLDING-HIGH)
@@ -1123,8 +2664,8 @@
 =>
 	(set-goal attackTSAhold HOLDING-LOW) ; start the timer to call off TSA in however many min
 	(disable-timer t-attackgroup-hold)
-	(enable-timer t-attackgroup-hold 360)
-	; (chat-local-to-self "WAFFLE: TSA hit lower pop threshold. Holding for 360s more")
+	(enable-timer t-attackgroup-hold 90)
+	; (chat-local-to-self "WAFFLE: TSA hit lower pop threshold. Holding for 90s more")
 )
 
 (defrule
@@ -1133,8 +2674,8 @@
 =>
 	(set-goal attackTSAhold HOLDING-LOW) ; start the timer to call off TSA
 	(disable-timer t-attackgroup-hold)
-	(enable-timer t-attackgroup-hold 420)
-	; (chat-local-to-self "WAFFLE: TSA hit low pop threshold. Holding for 420s more")
+	(enable-timer t-attackgroup-hold 120)
+	; (chat-local-to-self "WAFFLE: TSA hit low pop threshold. Holding for 120s more")
 )
 ; thanks to a bit of lucky script we can have it so that if the pop is lower, TSA goes on for shorter, without breaking it
 ; (as in, if it was low, then went to lower, we don't want the timer to restart)
@@ -1376,9 +2917,6 @@
 	(goal attackTSAvar INCREMENT)
 =>
 	(set-goal attackTSAvar NULL)
-	(chat-to-all "267 Woah! I can't seem to find your base to attack it... ")
-	(chat-to-all "I'll go looking, but you're not playing on an islands map, are you?")
-	(chat-to-all "The AI needs a land route between players to work correctly!")
 	(set-goal attackTSAlevel 11)
 )
 
@@ -1528,6 +3066,28 @@
 =>
 	(set-goal attackTSAvar INCREMENT)
 	; (chat-local-to-self "WAFFLE: TSA is HOLDING but no enemy buildings. INCREMENT")
+)
+
+; If TSA is expanding and still sees no buildings, send scouts before the
+; attack radius maxes out. This gives the next attack update real sight instead
+; of only stale building memory.
+(defrule
+	(not (enemy-buildings-in-town))
+	(or
+		(goal attackTSAhold HOLDING-HIGH)
+		(goal attackTSAhold HOLDING-LOW)
+	)
+	(or
+		(goal attackTSAlevel 3)
+		(or
+			(goal attackTSAlevel 4)
+			(goal attackTSAlevel 5)
+		)
+	)
+=>
+	(set-goal scouting PULSEYES)
+	(set-strategic-number sn-blot-exploration-map 1)
+	(set-strategic-number sn-blot-size 25)
 )
 
 
@@ -1771,3 +3331,57 @@
 
 #end-if
 #end-if
+
+; RAID EXPERIMENT: allocation and tracking.
+(defrule
+	(current-age == tech-level-1)
+	(goal raid-phase 0)
+	(attack-soldier-count > 0)
+=>
+	(set-goal raid-phase 1)
+	(do-nothing) ; RAID diagnostics disabled
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-DEFENSIVE)
+=>
+	(set-goal aready NO)
+	(set-strategic-number sn-percent-attack-soldiers 0)
+	(set-strategic-number sn-number-attack-groups 0)
+	(set-strategic-number sn-gather-defense-units 1)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(goal raid-ever-attacked NO)
+=>
+	(set-goal aready NO)
+	(set-strategic-number sn-percent-attack-soldiers 0)
+	(set-strategic-number sn-number-attack-groups 0)
+	(set-strategic-number sn-gather-defense-units 1)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(goal raid-ever-attacked YES)
+=>
+	(set-strategic-number sn-number-attack-groups 1)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(goal raid-ever-attacked YES)
+	(goal attacksonhold-auto NO)
+	(goal attacksonhold-manual NO)
+	(goal attacksonhold-scn NO)
+	(or (shared-goal treatytimer 0) (shared-goal treatytimer 1))
+	(defend-soldier-count >= TL2-trooper-core-p1)
+	(goal raid-cooldown 0)
+=>
+	(set-goal aready YES)
+	(set-goal raid-cooldown 6)
+)

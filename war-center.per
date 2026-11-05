@@ -17,20 +17,32 @@
 ; =====================================================
 
 (defrule
+	(current-age >= tech-level-3)
 	(or
-		(current-age >= tech-level-3)
-		(goal openingstyle STYLE-RUSH) ; Rush
+		(building-type-count-total BLDG-TRAINHEAVY >= 1)
+		(or
+			(building-type-count-total BLDG-TRAINAIR >= 2)
+			(building-type-count-total BLDG-TRAINMECH >= 2)
+		)
 	)
-	(or
-		(building-type-count-total BLDG-TRAINAIR >= 2); Defensive
-		(building-type-count BLDG-MAIN >= 2) ; Aggressive
-	)
-	(building-type-count-total BLDG-WARCTR < 2)
-	(building-type-count-total BLDG-TRAINMECH > 0)
+	(building-type-count-total BLDG-WARCTR < 1)
 	(building-type-count-total BLDG-SPACEPORT > 0)
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-WARCTR)
 	(not (goal buildpause YES))
+	(goal raid-build-open YES)
+=>
+	(release-escrow carbon)
+	(build BLDG-WARCTR)
+)
+
+(defrule
+	(current-age >= tech-level-4)
+	(building-type-count-total BLDG-WARCTR < 2)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-WARCTR)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-WARCTR)
@@ -42,12 +54,9 @@
 
 (defrule
     ; Elevation Tracking, Mech Range TL2
-	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-elevation-tracking)
-	(or
-		(unit-type-count-total UNIT-MECH1-LINE > 0)
-		(unit-type-count-total UNIT-MECH2-LINE > 0)
-	)
+	(current-age >= tech-level-3)
+	(research-completed rt-primary-focus-coils)
 =>
 	(release-escrow food)
 	(research rt-elevation-tracking)
@@ -55,12 +64,9 @@
 
 (defrule
     ; External Sensor Pod, Mech Range TL3
-	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-external-sensor-pod)
-	(or
-		(unit-type-count-total UNIT-MECH1-LINE > 0)
-		(unit-type-count-total UNIT-MECH2-LINE > 0)
-	)
+	(current-age >= tech-level-3)
+	(research-completed rt-cooling-sleeves)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -69,43 +75,12 @@
 
 (defrule
     ; Targeting Sensor, Mech Range TL4
-	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-targetting-sensors)
-	(or
-		(unit-type-count-total UNIT-MECH1-LINE > 0)
-		(or
-			(unit-type-count-total UNIT-MECH2-LINE > 0)
-			(or
-				(unit-type-count-total UNIT-MECH3-LINE > 0)
-				(unit-type-count-total UNIT-MECH4-LINE > 0)
-			)
-		)
-	)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-targetting-sensors)
-)
-
-(defrule
-    ; Targeting Sensor rich/late fallback for mech or heavy-mech games
 	(current-age >= tech-level-4)
-	(can-research-with-escrow rt-targetting-sensors)
 	(or
-		(current-age-time > 480)
-		(and
-			(food-amount > 500)
-			(nova-amount > 350)
-		)
+		(research-completed rt-adv-power-pack)
+		(not (research-available rt-adv-power-pack))
 	)
-	(or
-		(goal combat-arm MECH)
-		(or
-			(goal combat-arm MECH/HW)
-			(goal support-assault-mech YES)
-		)
-	)
-	(building-type-count-total BLDG-TRAINMECH > 0)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -118,21 +93,17 @@
 
 (defrule
     ; Primary Focusing Coils, Damage TL2
-	(or
-		(current-age >= tech-level-3)
-		(goal openingstyle STYLE-RUSH)
-	)
-	(can-research rt-primary-focus-coils)
+	(current-age >= tech-level-3)
+	(can-research-with-escrow rt-primary-focus-coils)
 =>
+	(release-escrow food)
+	(release-escrow nova)
 	(research rt-primary-focus-coils)
 )
 
 (defrule
     ; Cooling Sleeves, Damage TL3
-	(or
-		(current-age >= tech-level-3)
-		(goal openingstyle STYLE-RUSH)
-	)
+	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-cooling-sleeves)
 =>
 	(release-escrow food)
@@ -157,20 +128,14 @@
 (defrule
 	; Basic Armor, TL2
 	(can-research-with-escrow rt-basic-armor)
+	(current-age >= tech-level-3)
 	(or
-		(current-age >= tech-level-3)
-		(goal openingstyle STYLE-RUSH)
-	)
-	(or
-		(goal combat-arm TROOP)
+		(goal support-repeater YES)
 		(or
-			(goal combat-arm TROOP/HW)
+			(goal support-mounted YES)
 			(or
 				(goal support-grenadiers YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
+				(goal uu-kind TROOP)
 			)
 		)
 	)
@@ -182,20 +147,14 @@
 (defrule
 	; Light Armor, TL3
 	(can-research-with-escrow rt-light-armor)
+	(current-age >= tech-level-3)
 	(or
-		(current-age >= tech-level-3)
-		(goal openingstyle STYLE-RUSH)
-	)
-	(or
-		(goal combat-arm TROOP)
+		(goal support-repeater YES)
 		(or
-			(goal combat-arm TROOP/HW)
+			(goal support-mounted YES)
 			(or
 				(goal support-grenadiers YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
+				(goal uu-kind TROOP)
 			)
 		)
 	)
@@ -207,18 +166,15 @@
 
 (defrule
 	; Heavy Armor, TL4
-	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-heavy-armor)
+	(current-age >= tech-level-3)
 	(or
-		(goal combat-arm TROOP)
+		(goal support-repeater YES)
 		(or
-			(goal combat-arm TROOP/HW)
+			(goal support-mounted YES)
 			(or
 				(goal support-grenadiers YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
+				(goal uu-kind TROOP)
 			)
 		)
 	)
@@ -235,17 +191,21 @@
 (defrule
 	; Light Plating, TL2
 	(can-research-with-escrow rt-light-plating)
+	(current-age >= tech-level-3)
 	(or
-		(current-age >= tech-level-3)
-		(goal openingstyle STYLE-RUSH)
-	)
-	(or
-		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(goal support-strike YES)
 		(or
-			(unit-type-count-total UNIT-MECH2-LINE > 0)
-			(unit-type-count-total UNIT-MECH3-LINE > 0)
+			(goal support-destroyer YES)
+			(or
+				(goal support-apc YES)
+				(or
+					(goal support-assault-mech YES)
+					(goal uu-kind MECH)
+				)
+			)
 		)
 	)
+	(research-completed rt-elevation-tracking)
 =>
 	(release-escrow food)
 	(research rt-light-plating)
@@ -254,17 +214,21 @@
 (defrule
 	; Medium Plating, TL3 
 	(can-research-with-escrow rt-medium-plating)
+	(current-age >= tech-level-3)
 	(or
-		(current-age >= tech-level-3)
-		(goal openingstyle STYLE-RUSH)
-	)
-	(or
-		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(goal support-strike YES)
 		(or
-			(unit-type-count-total UNIT-MECH2-LINE > 0)
-			(unit-type-count-total UNIT-MECH3-LINE > 0)
+			(goal support-destroyer YES)
+			(or
+				(goal support-apc YES)
+				(or
+					(goal support-assault-mech YES)
+					(goal uu-kind MECH)
+				)
+			)
 		)
 	)
+	(research-completed rt-external-sensor-pod)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -274,55 +238,21 @@
 (defrule
 	; Heavy Plating, TL4
 	(can-research-with-escrow rt-heavy-plating)
-	(current-age >= tech-level-4)
+	(current-age >= tech-level-3)
 	(or
-		(unit-type-count-total UNIT-MECH1-LINE > 0)
+		(goal support-strike YES)
 		(or
-			(unit-type-count-total UNIT-MECH2-LINE > 0)
-			(unit-type-count-total UNIT-MECH3-LINE > 0)
+			(goal support-destroyer YES)
+			(or
+				(goal support-apc YES)
+				(or
+					(goal support-assault-mech YES)
+					(goal uu-kind MECH)
+				)
+			)
 		)
 	)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-heavy-plating)
-)
-
-(defrule
-	; Light Plating, TL4 mech-UU fallback
-	(current-age >= tech-level-4)
-	(can-research-with-escrow rt-light-plating)
-	(or
-		(civ-selected RESISTANCE)
-		(civ-selected BLACKSUN)
-	)
-=>
-	(release-escrow food)
-	(research rt-light-plating)
-)
-
-(defrule
-	; Medium Plating, TL4 mech-UU fallback
-	(current-age >= tech-level-4)
-	(can-research-with-escrow rt-medium-plating)
-	(or
-		(civ-selected RESISTANCE)
-		(civ-selected BLACKSUN)
-	)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-medium-plating)
-)
-
-(defrule
-	; Heavy Plating, TL4 mech-UU fallback
-	(current-age >= tech-level-4)
-	(can-research-with-escrow rt-heavy-plating)
-	(or
-		(civ-selected RESISTANCE)
-		(civ-selected BLACKSUN)
-	)
+	(research-completed rt-targetting-sensors)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -334,19 +264,16 @@
 ; -----------------------------------------------------
 
 (defrule
-    ; Stimpacks - prioritize for real troop/grenadier armies
+    ; Stimpacks
 	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-stimpacks)
 	(or
-		(goal combat-arm TROOP)
+		(goal support-repeater YES)
 		(or
-			(goal combat-arm TROOP/HW)
+			(goal support-mounted YES)
 			(or
 				(goal support-grenadiers YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
+				(goal uu-kind TROOP)
 			)
 		)
 	)
@@ -358,24 +285,10 @@
 
 (defrule
     ; Grenadier Training
+	(current-age >= tech-level-3)
+	(unit-type-count-total UNIT-GRENADE-LINE >= TL3-grenade-core-p1)
 	(can-research-with-escrow rt-gren-reload)
-	(goal importantT2research DONE)
-	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-grenadiers YES)
-				(or
-					(goal support-grenadiers YES)
-					(or
-						(civ-selected ZANN)
-						(unit-type-count-total UNIT-GRENADE-LINE > 0)
-					)
-				)
-			)
-		)
-	)
+	(goal support-grenadiers YES)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -386,14 +299,6 @@
     ; ZC Black Market Components
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-black-market-components)
-	(goal importantT4research DONE)
-	(or
-		(goal combat-arm MECH)
-		(or
-			(goal combat-arm MECH/HW)
-			(goal support-assault-mech YES)
-		)
-	)
 =>
 	(release-escrow carbon)
 	(release-escrow nova)
@@ -402,8 +307,8 @@
 
 (defrule
     ; GN Potent Plasma
+	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-potent-plasma)
-	(goal importantT4research DONE)
 =>
 	(release-escrow metal)
 	(release-escrow carbon)
@@ -412,20 +317,8 @@
 
 (defrule
     ; RA Tougher Armor
+	(current-age >= tech-level-4)
     (can-research-with-escrow rt-tougher-armor)
-	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-grenadiers YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
-			)
-		)
-	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -436,20 +329,6 @@
     ; RP Kaminoan Cloners
     (current-age >= tech-level-4)
     (can-research-with-escrow rt-kamclonr)
-	(goal importantT4research DONE)
-	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal support-grenadiers YES)
-				(or
-					(goal support-grenadiers YES)
-					(goal uu-kind UU-TROOPER)
-				)
-			)
-		)
-	)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -459,18 +338,8 @@
 (defrule
     ; CF Battlefield Scanners
     (current-age >= tech-level-4)
+	(military-population >= MIL_POP_B)
     (can-research-with-escrow rt-battlefield-scanners)
-	(goal importantT4research DONE)
-	(or
-		(goal combat-arm TROOP)
-		(or
-			(goal combat-arm TROOP/HW)
-			(or
-				(goal combat-arm MECH)
-				(goal combat-arm MECH/HW)
-			)
-		)
-	)
 =>
 	(release-escrow carbon)
 	(release-escrow food)
@@ -481,7 +350,6 @@
     ; RS Sensor Cloak
 	(current-age >= tech-level-3)
 	(can-research-with-escrow rt-sensorcloak)
-	(goal importantT4research DONE)
 	(goal support-airlift YES)
 =>
 	(release-escrow carbon)
@@ -493,7 +361,6 @@
     ; GN Faster Growth Chambers
 	(current-age >= tech-level-4)
 	(can-research-with-escrow rt-fast-growth-chambers)
-	(goal importantT4research DONE)
 	(or
 		(goal support-sea YES)
 		(or
@@ -506,4 +373,3 @@
 	(release-escrow carbon)
 	(research rt-fast-growth-chambers)
 )
-

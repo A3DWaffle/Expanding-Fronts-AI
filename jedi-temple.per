@@ -26,46 +26,60 @@
 	(disable-self)
 )
 
+; Debug: announce when a temple unit successfully claims a holocron.
+(defrule
+	(unit-type-count-total UNIT-JEDIHOLO-LINE > 0)
+=>
+	(chat-to-all "252: My holocron!")
+	(disable-self)
+)
+
 ; =====================================================
 ; *** Chapter 1: BUILDINGS ***
 ; =====================================================
 
 (defrule
+	(current-age == tech-level-2)
+;	(or
+;		(goal openingstyle STYLE-RUSH)
+;		(goal openingstyle STYLE-DEFENSIVE)
+;	)
+	(goal support-aircraft YES)
+	(building-type-count-total BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-TRAINJEDI == 0)
+	(can-build-with-escrow BLDG-TRAINJEDI)
+	(nova-amount >= 25)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
+=>
+	(release-escrow carbon)
+	(release-escrow nova)
+	(build BLDG-TRAINJEDI)
+)
+
+(defrule
 	(current-age >= tech-level-3)
-	(building-type-count-total BLDG-TRAINTROOPER > 0)
-	(building-type-count-total BLDG-TRAINMECH > 0)
-	(building-type-count-total BLDG-SPACEPORT > 0)
-	(building-type-count-total BLDG-MAIN > 2)
-	(goal importantT3research DONE)
-	(or
-		(building-type-count BLDG-POWERCORE > 0)
-		(carbon-amount > 400)
-	)
+	(building-type-count-total BLDG-MAIN > 3)
 	(building-type-count-total BLDG-TRAINJEDI == 0)
 	(can-build-with-escrow BLDG-TRAINJEDI)
 	(nova-amount > 25)
 	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINJEDI)
 )
 
-; TL4 fallback: do not strand the Temple behind unfinished TL3 research.
 (defrule
-	(current-age == tech-level-4)
-	(building-type-count-total BLDG-TRAINTROOPER > 0)
-	(building-type-count-total BLDG-TRAINMECH > 0)
-	(building-type-count-total BLDG-SPACEPORT > 0)
-	(building-type-count-total BLDG-MAIN >= 1)
-	(goal importantT4research DONE)
-	(or
-		(building-type-count BLDG-POWERCORE > 0)
-		(carbon-amount > 400)
-	)
+	(current-age >= tech-level-3)
+	(building-type-count-total BLDG-MAIN > 3)
 	(building-type-count-total BLDG-TRAINJEDI == 0)
 	(can-build-with-escrow BLDG-TRAINJEDI)
 	(nova-amount > 25)
 	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINJEDI)
@@ -73,19 +87,13 @@
 
 (defrule
 	(current-age == tech-level-4)
-	(current-age-time > 360)
-	(building-type-count-total BLDG-TRAINTROOPER > 0)
-	(building-type-count-total BLDG-TRAINMECH > 0)
-	(building-type-count-total BLDG-SPACEPORT > 0)
-	(building-type-count-total BLDG-MAIN >= 1)
-	(or
-		(building-type-count BLDG-POWERCORE > 0)
-		(carbon-amount > 400)
-	)
-	(building-type-count-total BLDG-TRAINJEDI == 0)
 	(can-build-with-escrow BLDG-TRAINJEDI)
+	(building-type-count-total BLDG-TRAINJEDI < 4)
+	(goal support-masters YES)
 	(nova-amount > 25)
 	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+	(goal raid-build-open YES)
 =>
 	(release-escrow carbon)
 	(build BLDG-TRAINJEDI)
@@ -96,6 +104,27 @@
 ; =====================================================
 
 #load-if-not-defined BLACKSUN
+
+; Disabled: early Rush/Defensive Jedi training can collect holocrons too soon.
+; (defrule
+; 	(current-age <= tech-level-3)
+; 	(or
+; 		(goal openingstyle STYLE-RUSH)
+; 		(goal openingstyle STYLE-DEFENSIVE)
+; 	)
+; 	(goal support-masters YES)
+; 	(building-type-count-total BLDG-TRAINJEDI > 0)
+; 	(unit-type-count-total UNIT-JEDI-LINE < TL2-knight-supp-p1)
+; 	(or
+; 		(nova-amount > 200)
+; 		(goal agingup YES)
+; 	)
+; 	(can-train-with-escrow UNIT-JEDI-LINE)
+; =>
+; 	(release-escrow food)
+; 	(release-escrow nova)
+; 	(train UNIT-JEDI-LINE)
+; )
 
 (defrule
 	(current-age >= tech-level-3)
@@ -140,14 +169,200 @@
 ; =====================================================
 ; *** Chapter 3: MASTER UNITS ***
 ; =====================================================
+; Match each Master tier to completed Cannons on the current map.
+; Queued Cannons do not unlock Masters. Require a real Cannon even if a
+; small population package rounds its Cannon target to zero.
+; Keep the existing army/tech prerequisites and p3 military-population check.
 
+; --- Master p1: Cannon p1 prerequisite ---
+(defrule
+	(can-train UNIT-MASTER-LINE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p1)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p1)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(can-train UNIT-MASTER-LINE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p1-water)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-water)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(can-train UNIT-MASTER-LINE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p1-asteroid)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-asteroid)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(can-train UNIT-MASTER-LINE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p1-hybrid)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p1-hybrid)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+; --- Master p2: Cannon p2 prerequisite ---
+(defrule
+	(can-train UNIT-MASTER-LINE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(goal special-map LAND)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p2)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p2)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(can-train UNIT-MASTER-LINE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(goal special-map WATER)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p2-water)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p2-water)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(can-train UNIT-MASTER-LINE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(goal special-map ASTEROID)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p2-asteroid)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p2-asteroid)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+(defrule
+	(can-train UNIT-MASTER-LINE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(goal special-map HYBRID)
+	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p2-hybrid)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p2-hybrid)
+=>
+	(train UNIT-MASTER-LINE)
+)
+
+; --- Master p3: Cannon p3 prerequisite ---
 (defrule
 	(current-age == tech-level-4)
 	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(military-population >= MIL_POP_B)
+	(can-train UNIT-MASTER-LINE)
 	(goal special-map LAND)
 	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3)
-	(military-population > 30)
-	(can-train UNIT-MASTER-LINE)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p3)
 =>
 	(train UNIT-MASTER-LINE)
 )
@@ -155,10 +370,21 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(military-population >= MIL_POP_B)
+	(can-train UNIT-MASTER-LINE)
 	(goal special-map WATER)
 	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3-water)
-	(military-population > 30)
-	(can-train UNIT-MASTER-LINE)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p3-water)
 =>
 	(train UNIT-MASTER-LINE)
 )
@@ -166,10 +392,21 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(military-population >= MIL_POP_B)
+	(can-train UNIT-MASTER-LINE)
 	(goal special-map ASTEROID)
 	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3-asteroid)
-	(military-population > 30)
-	(can-train UNIT-MASTER-LINE)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p3-asteroid)
 =>
 	(train UNIT-MASTER-LINE)
 )
@@ -177,10 +414,21 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal support-masters YES)
+	(or
+		(unit-type-count-total UNIT-MECH3-LINE >= TL4-mech3-arm-p3)
+		(or
+			(unit-type-count-total SIEGE-ARTILLERY-LINE >= TL4-artillery-arm-p3)
+			(not
+				(research-available rt-jedi-mind-trick)
+			)
+		)
+	)
+	(military-population >= MIL_POP_B)
+	(can-train UNIT-MASTER-LINE)
 	(goal special-map HYBRID)
 	(unit-type-count-total UNIT-MASTER-LINE < TL4-master-supp-p3-hybrid)
-	(military-population > 30)
-	(can-train UNIT-MASTER-LINE)
+	(unit-type-count SIEGE-CANNON-LINE > 0)
+	(unit-type-count SIEGE-CANNON-LINE >= TL4-cannon-arm-p3-hybrid)
 =>
 	(train UNIT-MASTER-LINE)
 )
@@ -254,29 +502,15 @@
 
 #end-if
 
-; --- Zann Temple UU ---
-#load-if-defined ZANN
-
-; --- T4 Nightsister Beastmaster ---
-(defrule
-	(current-age == tech-level-4)
-	(unit-type-count UU-JEDIALT-LINE < unique-beastmaster-arm)
-	(can-train UU-JEDIALT-LINE)
-=>
-	(train UU-JEDIALT-LINE)
-)
-
-#end-if
-
 ; =====================================================
 ; *** Chapter 5: UPGRADES ***
 ; =====================================================
 
 (defrule
 	(current-age >= tech-level-3)
-	(unit-type-count-total UNIT-JEDI-LINE > 0)
+	(goal support-masters YES)
+	(unit-type-count-total UNIT-JEDI-LINE >= TL3-knight-supp-p1)
 	(can-research-with-escrow ut-jedi-2)
-	(goal importantT3research DONE)
 =>
 	(release-escrow nova)
 	(release-escrow food)
@@ -284,91 +518,25 @@
 )
 
 (defrule
-	; Force Stamina
-	(current-age == tech-level-4)
-	(unit-type-count-total UNIT-MASTER-LINE > 0)
-	(can-research-with-escrow rt-jedi-stamina)
-	(goal importantT4research DONE)
-=>
-	(release-escrow nova)
-	(research rt-jedi-stamina)
-)
-
-(defrule
-	; Force Agility
-	(current-age == tech-level-4)
-	(unit-type-count-total UNIT-MASTER-LINE > 0)
+	; Force Agility, Jedi go fast.
 	(can-research-with-escrow rt-jedi-agility)
-	(goal importantT4research DONE)
+	(current-age >= tech-level-2)
+	(or
+		(unit-type-count-total UNIT-JEDI-LINE > 0)
+		(unit-type-count-total UNIT-MASTER-LINE > 0)
+	)
+	(nova-amount >= 300)
 =>
 	(release-escrow nova)
 	(research rt-jedi-agility)
 )
 
 (defrule
-	; Force Concentration
-	(current-age == tech-level-4)
-	(unit-type-count-total UNIT-MASTER-LINE > 0)
-	(can-research-with-escrow rt-jedi-concentration)
-	(goal importantT4research DONE)
-=>
-	(release-escrow nova)
-	(research rt-jedi-concentration)
-)
-
-(defrule
-	; Force Purge
-	(current-age >= tech-level-3)
-	(military-population >= MIL_POP_B)
-	(nova-amount >= 2000)
-	(unit-type-count-total UNIT-MASTER-LINE > 0)
-	(can-research-with-escrow rt-jedi-strength)
-=>
-	(release-escrow nova)
-	(research rt-jedi-strength)
-)
-
-(defrule
-	; Stronger Force
-	(current-age == tech-level-4)
-	(unit-type-count-total UNIT-MASTER-LINE > 0)
-	(can-research-with-escrow rt-force-strong)
-	(goal importantT4research DONE)
-=>
-	(release-escrow nova)
-	(research rt-force-strong)
-)
-
-(defrule
-	; Faith in the Force
-	(current-age == tech-level-4)
-	(can-research-with-escrow rt-faith-in-the-force)
-	(military-population >= MIL_POP_B)
-	(nova-amount >= 2000)
-	(goal importantT4research DONE)
-=>
-	(release-escrow food)
-	(release-escrow nova)
-	(research rt-faith-in-the-force)
-)
-
-(defrule
-	; Force Influence
-	(current-age == tech-level-4)
-	(unit-type-count-total UNIT-MASTER-LINE > 0)
-	(can-research-with-escrow rt-force-influence)
-	(goal importantT4research DONE)
-=>
-	(release-escrow nova)
-	(research rt-force-influence)
-)
-
-(defrule
 	; Force Meditation
-	(current-age == tech-level-4)
-	(unit-type-count-total UNIT-MASTER-LINE > 0)
 	(can-research-with-escrow rt-jedi-meditation)
-	(goal importantT4research DONE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(unit-type-count-total UNIT-MASTER-LINE >= 1)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -376,25 +544,108 @@
 )
 
 (defrule
-	; Force Perception
+	; Force Concentration
+	(can-research-with-escrow rt-jedi-concentration)
 	(current-age == tech-level-4)
-	(unit-type-count-total UNIT-MASTER-LINE > 0)
-	(can-research-with-escrow rt-jedi-perception)
-	(goal importantT4research DONE)
+	(goal support-masters YES)
+	(or
+		(research-completed rt-jedi-meditation)
+		(not (research-available rt-jedi-meditation))
+	)
 =>
 	(release-escrow nova)
-	(research rt-jedi-perception)
+	(research rt-jedi-concentration)
+)
+
+(defrule
+	; Stronger Force,
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(can-research-with-escrow rt-force-strong)
+	(or
+		(research-completed rt-jedi-concentration)
+		(not (research-available rt-jedi-concentration))
+	)
+=>
+	(release-escrow nova)
+	(research rt-force-strong)
 )
 
 (defrule
 	; Jedi Mind Trick
-	(current-age == tech-level-4)
-	(unit-type-count-total UNIT-MASTER-LINE > 0)
 	(can-research-with-escrow rt-jedi-mind-trick)
-	(goal importantT4research DONE)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(military-population >= MIL_POP_A)
 =>
 	(release-escrow nova)
 	(research rt-jedi-mind-trick)
+)
+
+(defrule
+	; Force Influence,
+	(can-research-with-escrow rt-force-influence)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(not (goal enemyjedisighted JEDI-ALERT-NONE))
+	(or
+		(research-completed rt-jedi-concentration)
+		(not (research-available rt-jedi-concentration))
+	)
+=>
+	(release-escrow nova)
+	(research rt-force-influence)
+)
+
+(defrule
+	; Force Stamina,
+	(can-research-with-escrow rt-jedi-stamina)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(or
+		(research-completed rt-jedi-concentration)
+		(not (research-available rt-jedi-concentration))
+	)
+=>
+	(release-escrow nova)
+	(research rt-jedi-stamina)
+)
+
+(defrule
+	; Force Purge,
+	(current-age >= tech-level-3)
+	(military-population >= MIL_POP_A)
+	(nova-amount >= 2000)
+	(not (goal enemyjedisighted JEDI-ALERT-NONE))
+	(can-research-with-escrow rt-jedi-strength)
+=>
+	(release-escrow nova)
+	(research rt-jedi-strength)
+)
+
+(defrule
+	; Faith in the Force,
+	(can-research-with-escrow rt-faith-in-the-force)
+	(current-age == tech-level-4)
+	(not (goal enemyjedisighted JEDI-ALERT-NONE))
+	(military-population >= MIL_POP_A)
+	(nova-amount >= 2000)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(research rt-faith-in-the-force)
+)
+
+(defrule
+	; Force Perception
+	(can-research-with-escrow rt-jedi-perception)
+	(current-age == tech-level-4)
+	(goal support-masters YES)
+	(unit-type-count-total UNIT-MASTER-LINE >= 1)
+	(not (goal enemyjedisighted JEDI-ALERT-NONE))
+=>
+	(release-escrow nova)
+	(research rt-jedi-perception)
 )
 
 ; =====================================================
@@ -403,6 +654,7 @@
 
 (defrule
 	; RP Sight Beyond Sight
+	(military-population >= MIL_POP_B)
 	(can-research-with-escrow rt-sgtbysgt)
 	(goal importantT4research DONE)
 =>
@@ -412,9 +664,14 @@
 
 (defrule
 	; GE Chain Lightning
+	(unit-type-count-total UNIT-MASTER-LINE >= TL4-master-supp-p1)
 	(can-research-with-escrow rt-chain-lightning)
 	(goal importantT4research DONE)
 	(goal support-masters YES)
+	(or
+		(research-completed rt-force-influence)
+		(not (research-available rt-force-influence))
+	)
 =>
 	(release-escrow nova)
 	(research rt-chain-lightning)
@@ -422,6 +679,7 @@
 
 (defrule
 	; IR Artusian Crystals
+	(military-population >= MIL_POP_A)
 	(can-research-with-escrow rt-artusiancrystals)
 	(goal importantT4research DONE)
 =>
@@ -432,9 +690,15 @@
 
 (defrule
 	; NR New Jedi Order
+	(current-age >= tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE >= TL4-master-supp-p1)
 	(can-research-with-escrow rt-newjediorder)
 	(goal importantT4research DONE)
 	(goal support-masters YES)
+	(or
+		(research-completed rt-jedi-meditation)
+		(not (research-available rt-jedi-meditation))
+	)
 =>
 	(release-escrow nova)
 	(research rt-newjediorder)
@@ -442,9 +706,15 @@
 
 (defrule
 	; BS Spirit Ichor
+	(current-age >= tech-level-4)
+	(unit-type-count-total UNIT-MASTER-LINE >= TL4-master-supp-p1)
 	(can-research-with-escrow ut-spiritichor)
 	(goal importantT4research DONE)
 	(goal support-masters YES)
+	(or
+		(research-completed rt-force-strong)
+		(not (research-available rt-force-strong))
+	)
 =>
 	(release-escrow nova)
 	(research ut-spiritichor)

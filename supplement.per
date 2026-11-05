@@ -47,6 +47,7 @@
 
 (defrule
 		(timer-triggered t-nerfs)
+		(goal fortress-siege-hold NO)
 		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
         (military-population > 0)
 		=>
@@ -92,7 +93,7 @@
 
 (defrule
 		(building-type-count-total OBJ-SUPPLEMENT-SCENARIO > 0)
-        (cc-players-unit-type-count any-enemy UNIT-DESTDROID2 > 0)
+        (players-unit-type-count any-enemy UNIT-DESTDROID2 > 0)
         (can-train 1856)
         =>
         (train 1856)

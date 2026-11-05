@@ -228,9 +228,9 @@
 	)
 	(current-age >= tech-level-3)
 	(or
-		(goal combat-arm MECH)
+		(goal combat-arm MECHBALL)
 		(or
-			(goal combat-arm MECH/HW)
+			(goal combat-arm STRIKE/HW)
 			(goal support-assault-mech YES)
 		)
 	)
@@ -247,8 +247,8 @@
 	)
 	(current-age >= tech-level-3)
 	(or
-		(goal combat-arm MECH)
-		(goal combat-arm MECH/HW)
+		(goal combat-arm MECHBALL)
+		(goal combat-arm STRIKE/HW)
 	)
 	(unit-type-count-total UNIT-MECH1-LINE < 6)
 	(can-train UNIT-MECH1-LINE)
@@ -264,7 +264,7 @@
 	(current-age >= tech-level-4)
 	(or
 		(goal combat-arm TROOP/HW)
-		(goal combat-arm MECH/HW)
+		(goal combat-arm STRIKE/HW)
 	)
 	(unit-type-count-total SIEGE-RAM-LINE < 4)
 	(can-train SIEGE-RAM-LINE)
@@ -810,9 +810,6 @@
 	(goal attackTSAvar INCREMENT)
 =>
 	(set-goal attackTSAvar NULL)
-	(chat-to-all "267 Woah! I can't seem to find your base to attack it... ")
-	(chat-to-all "I'll go looking, but you're not playing on an islands map, are you?")
-	(chat-to-all "The AI needs a land route between players to work correctly!")
 	(set-goal attackTSAlevel 11)
 )
 
@@ -1335,7 +1332,7 @@
 
 (defrule
 	(building-type-count BLDG-GOVTCTR == 3)
-	(building-type-count-total BLDG-GOVTCTR < 4)
+	(building-type-count-total BLDG-GOVTCTR < 3)
 	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
 	(not (goal buildpause YES))
@@ -1345,7 +1342,7 @@
 
 (defrule
 	(building-type-count BLDG-GOVTCTR == 4)
-	(building-type-count-total BLDG-GOVTCTR < 5)
+	(building-type-count-total BLDG-GOVTCTR < 3)
 	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
 	(not (goal buildpause YES))
@@ -1355,7 +1352,7 @@
 
 (defrule
 	(building-type-count BLDG-GOVTCTR == 5) 
-	(building-type-count-total BLDG-GOVTCTR < 6) ; everyone gets 6
+	(building-type-count-total BLDG-GOVTCTR < 3) ; fortress cap: 3
 	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
 	(not (goal buildpause YES))
@@ -1366,7 +1363,7 @@
 (defrule
 	(not (goal wonder-attempt ATTACK))
 	(building-type-count BLDG-GOVTCTR == 6)
-	(building-type-count-total BLDG-GOVTCTR < 7)
+	(building-type-count-total BLDG-GOVTCTR < 3)
 	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
 	(not (goal buildpause YES))
@@ -1377,7 +1374,7 @@
 (defrule
 	(not (goal wonder-attempt ATTACK))
 	(building-type-count BLDG-GOVTCTR == 7)
-	(building-type-count-total BLDG-GOVTCTR < 8) ; defenders get 8 
+	(building-type-count-total BLDG-GOVTCTR < 3) ; fortress cap: 3 
 	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
 	(not (goal buildpause YES))
@@ -1388,7 +1385,7 @@
 (defrule
 	(goal wonder-attempt HOLDER)
 	(building-type-count BLDG-GOVTCTR == 8)
-	(building-type-count-total BLDG-GOVTCTR < 9)
+	(building-type-count-total BLDG-GOVTCTR < 3)
 	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
 	(not (goal buildpause YES))
@@ -1399,7 +1396,7 @@
 (defrule
 	(goal wonder-attempt HOLDER)	; holder gets 10
 	(building-type-count BLDG-GOVTCTR == 9)
-	(building-type-count-total BLDG-GOVTCTR < 10)
+	(building-type-count-total BLDG-GOVTCTR < 3)
 	(not (goal special-map WATER))
 	(can-build BLDG-GOVTCTR)
 	(not (goal buildpause YES))
@@ -1606,8 +1603,17 @@
         (true)
 		(not (goal special-map WATER))
         (current-age == tech-level-4)
-        (unit-type-count-total UNIT-BOUNTY < TL4-bounty-detect)
-		(goal enemyjedisighted YES)
+        (unit-type-count-total UNIT-BOUNTY < TL4-bounty-detect-p2)
+		(or
+			(goal enemyjedisighted JEDI-ALERT-P1)
+			(or
+				(goal enemyjedisighted JEDI-ALERT-P2)
+				(or
+					(goal enemyjedisighted JEDI-ALERT-P3)
+					(goal enemyjedisighted JEDI-ALERT-P4)
+				)
+			)
+		)
         (can-train UNIT-BOUNTY)
         =>
         (train UNIT-BOUNTY)
@@ -1618,8 +1624,17 @@
         (true)
 		(goal special-map WATER)
         (current-age == tech-level-4)
-        (unit-type-count-total UNIT-BOUNTY < TL4-bounty-detect)
-		(goal enemyjedisighted YES)
+        (unit-type-count-total UNIT-BOUNTY < TL4-bounty-detect-p2)
+		(or
+			(goal enemyjedisighted JEDI-ALERT-P1)
+			(or
+				(goal enemyjedisighted JEDI-ALERT-P2)
+				(or
+					(goal enemyjedisighted JEDI-ALERT-P3)
+					(goal enemyjedisighted JEDI-ALERT-P4)
+				)
+			)
+		)
         (can-train UNIT-BOUNTY)
         =>
         (train UNIT-BOUNTY)

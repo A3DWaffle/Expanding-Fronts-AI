@@ -65,14 +65,14 @@
 	(set-builders-type BLDG-SHLDGEN2 1) ;Shield Gen
 	(set-builders-type BLDG-GOVTCTR2 1) ;Fortress
 	(set-builders-type BLDG-FARM 2) ;Farm
-	(set-builders-type BDEF-TURRET 1) ;Laser Turret
+	(set-builders-type BDEF-TURRET 5) ;Laser Turret
 	(disable-self)
 )
 
 (defrule
 	(current-age >= tech-level-3)
 =>
-    ;TL3+: restore normal builder counts, capped at 3 to avoid worker overtasking
+    ;TL3+: normal buildings use 3 builders; laser turrets use 5
     (set-builders-type BLDG-DROPCHOW 3) ;Food Proc Ctr
     (set-builders-type BLDG-DROPMETAL 3) ;Ore Proc Ctr
     (set-builders-type BLDG-DROPCARBON 3) ;Carbon Proc Ctr
@@ -93,7 +93,7 @@
 	(set-builders-type BLDG-SHLDGEN2 3) ;Shield Gen
 	(set-builders-type BLDG-GOVTCTR2 3) ;Fortress
 	(set-builders-type BLDG-FARM 3) ;Farm
-	(set-builders-type BDEF-TURRET 3) ;Laser Turret
+	(set-builders-type BDEF-TURRET 5) ;Laser Turret
 	(disable-self)
 )
 
@@ -103,6 +103,7 @@
 	(carbon-amount > 225)
 	(unit-type-count-total UNIT-WORKER > 10)
 	(building-type-count-total BLDG-DROPCHOW > 0)
+	(not (unit-type-count GAIA-ANIMAL-LURE-LINE > 0))
 =>
 	(set-builders-type BLDG-FARM 3) ; Food-crisis farms need to finish immediately
 )
@@ -111,7 +112,7 @@
 	(current-age >= tech-level-3)
 =>
 	(set-builders-type BLDG-FARM 3) ;Farm
-	(set-builders-type BDEF-TURRET 3) ;Laser Turret
+	(set-builders-type BDEF-TURRET 5) ;Laser Turret
 	(disable-self)
 )
 
@@ -130,5 +131,5 @@
 
 ; Difficulty should not change the AI's macro shell. Keep one CC plan for everyone
 ; and let economy/cheat support differentiate the ladder instead.
-(defconst TL3-CCs 5)
-(defconst TL4-CCs 7)
+(defconst TL3-CCs 4)
+(defconst TL4-CCs 6)
