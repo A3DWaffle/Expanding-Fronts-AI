@@ -118,7 +118,7 @@
 	(current-age >= tech-level-3)
 	(goal special-map WATER)
 	(goal support-sealift YES)
-	(building-type-count-total BLDG-TRAINBOAT < 4)
+	(building-type-count-total BLDG-TRAINBOAT < 5)
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(can-build-with-escrow BLDG-TRAINBOAT)
 	(not (too-many-unpowered-buildings))
@@ -450,9 +450,8 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal support-sea YES)
-	(building-type-count-total BLDG-TRAINBOAT < 6)
+	(building-type-count-total BLDG-TRAINBOAT < 7)
 	(building-type-count-total BLDG-POWERCORE > 0)
-	(goal importantT4research DONE)
 	(can-build-with-escrow BLDG-TRAINBOAT)
 	(not (too-many-unpowered-buildings))
 	(not (goal buildpause YES))
@@ -485,6 +484,16 @@
 	(can-train BOAT-TRANSPORT)
 =>
 	(chat-local-to-self "WAFFLE: Training sea transport.")
+	(train BOAT-TRANSPORT)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map WATER)
+	(goal support-sealift YES)
+	(unit-type-count-total BOAT-TRANSPORT < TL3-transport-ship-water)
+	(can-train BOAT-TRANSPORT)
+=>
 	(train BOAT-TRANSPORT)
 )
 
@@ -1018,7 +1027,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p1-water)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p1-water)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p1-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1045,7 +1053,6 @@
 	(goal support-sea YES)
 	(not (goal passiveage YES))
 	(unit-type-count-total BOAT-LASER-LINE < TL3-frigate-arm-p2-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p1-water)
 	(can-train BOAT-LASER-LINE)
 =>
 	(train BOAT-LASER-LINE)
@@ -1095,7 +1102,6 @@
 	(goal support-sea YES)
 	(not (goal passiveage YES))
 	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p2-water)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p2-water)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p2-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1122,8 +1128,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(not (goal passiveage YES))
-	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p2-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p2-water)
 	(not (goal enemymechsighted MECH-ALERT-NONE))
 	(unit-type-count-total BOAT-MONITOR-LINE < TL3-monitor-detect-p1-water)
 	(can-train BOAT-MONITOR-LINE)
@@ -1150,7 +1154,6 @@
 	(goal support-sea YES)
 	(not (goal passiveage YES))
 	(unit-type-count-total BOAT-LASER-LINE < TL3-frigate-arm-p3-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p2-water)
 	(can-train BOAT-LASER-LINE)
 =>
 	(train BOAT-LASER-LINE)
@@ -1200,7 +1203,6 @@
 	(goal support-sea YES)
 	(not (goal passiveage YES))
 	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p3-water)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p3-water)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p3-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1228,7 +1230,6 @@
 	(goal support-sea YES)
 	(not (goal passiveage YES))
 	(unit-type-count-total BOAT-LASER-LINE < TL3-frigate-arm-p4-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p3-water)
 	(can-train BOAT-LASER-LINE)
 =>
 	(train BOAT-LASER-LINE)
@@ -1278,7 +1279,6 @@
 	(goal support-sea YES)
 	(not (goal passiveage YES))
 	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p4-water)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p4-water)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p4-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1507,7 +1507,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p1-water)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p1-water)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p1-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1533,7 +1532,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p1-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p1-water)
 	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p1-water)
 	(can-train BOAT-ARTILLERY-LINE)
 =>
@@ -1557,7 +1555,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE < TL4-frigate-arm-p2-water)
-	(unit-type-count-total BOAT-ARTILLERY-LINE >= TL4-cruiser-arm-p1-water)
 	(can-train BOAT-LASER-LINE)
 =>
 	(train BOAT-LASER-LINE)
@@ -1603,7 +1600,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p2-water)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p2-water)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p2-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1629,7 +1625,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p2-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p2-water)
 	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p2-water)
 	(can-train BOAT-ARTILLERY-LINE)
 =>
@@ -1653,7 +1648,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE < TL4-frigate-arm-p3-water)
-	(unit-type-count-total BOAT-ARTILLERY-LINE >= TL4-cruiser-arm-p2-water)
 	(can-train BOAT-LASER-LINE)
 =>
 	(train BOAT-LASER-LINE)
@@ -1699,7 +1693,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3-water)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p3-water)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p3-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1725,7 +1718,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p3-water)
 	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p3-water)
 	(can-train BOAT-ARTILLERY-LINE)
 =>
@@ -1749,7 +1741,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE < TL4-frigate-arm-p4-water)
-	(unit-type-count-total BOAT-ARTILLERY-LINE >= TL4-cruiser-arm-p3-water)
 	(can-train BOAT-LASER-LINE)
 =>
 	(train BOAT-LASER-LINE)
@@ -1795,7 +1786,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p4-water)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p4-water)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p4-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1821,7 +1811,6 @@
 	(goal special-map WATER)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p4-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p4-water)
 	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p4-water)
 	(can-train BOAT-ARTILLERY-LINE)
 =>
@@ -1844,9 +1833,6 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal support-sea YES)
-	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p3-water)
-	(unit-type-count-total BOAT-ARTILLERY-LINE >= TL4-cruiser-arm-p2-water)
 	(not (goal enemymechsighted MECH-ALERT-NONE))
 	(unit-type-count-total BOAT-MONITOR-LINE < TL4-monitor-detect-p1-water)
 	(can-train BOAT-MONITOR-LINE)

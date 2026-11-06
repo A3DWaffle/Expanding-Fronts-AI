@@ -267,6 +267,7 @@
 
 ; TL2 worker counts split by whether an ally trade route is available.
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-2)
 	(or
 		(and
@@ -283,10 +284,32 @@
 	(train UNIT-WORKER)
 )
 
+; WATER keeps a smaller shore workforce to leave population for the fleet.
+(defrule
+	(current-age >= tech-level-2)
+	(goal special-map WATER)
+	(goal lategameworker NO)
+	(population <= stop-junk-threshold)
+	(or
+		(and
+			(cc-players-building-type-count any-ally BLDG-SPACEPORT > 0)
+			(unit-type-count-total UNIT-WORKER < water-shore-workers-ally)
+		)
+		(and
+			(not (cc-players-building-type-count any-ally BLDG-SPACEPORT > 0))
+			(unit-type-count-total UNIT-WORKER < water-shore-workers-noally)
+		)
+	)
+	(can-train UNIT-WORKER)
+=>
+	(train UNIT-WORKER)
+)
+
 ; Late eco pop is split between workers, trawlers, and trade.
 
 ; case 1: no fish, yes ally
 (defrule
+	(not (goal special-map WATER))
 		(or
 			(current-age == tech-level-3)
 			(current-age == tech-level-4)
@@ -303,6 +326,7 @@
 
 ; case 2: no fish, no ally
 (defrule
+	(not (goal special-map WATER))
         (or
 			(current-age == tech-level-3)
 			(current-age == tech-level-4)
@@ -321,6 +345,7 @@
 ; if the map DOES have fish (includes carbon gas vent)
 ; case 3: yes fish, yes ally
 (defrule
+	(not (goal special-map WATER))
         (or
 			(current-age == tech-level-3)
 			(current-age == tech-level-4)
@@ -336,6 +361,7 @@
 )
 ; case 4: yes fish, no ally
 (defrule
+	(not (goal special-map WATER))
         (or
 			(current-age == tech-level-3)
 			(current-age == tech-level-4)

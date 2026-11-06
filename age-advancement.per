@@ -89,15 +89,18 @@
 )
 
 
-; A fishing fleet opens the early TL4 path. Keep an affordability-only fallback.
+; Match the standard TL4 window. A standing fleet opens the 26-minute path.
 (defrule
 	(goal special-map WATER)
 	(current-age == tech-level-3)
 	(shared-goal age-match-human NO)
 	(can-research-with-escrow tech-level-4)
 	(or
-		(unit-type-count BOAT-WORKER >= 5)
-		(current-age-time > 300)
+		(and
+			(game-time >= 1560)
+			(warboat-count >= TL3-frigate-arm-p2-water)
+		)
+		(game-time >= 1680)
 	)
 =>
 	(release-escrow food)
