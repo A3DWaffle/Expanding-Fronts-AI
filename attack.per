@@ -2585,6 +2585,16 @@
 	(set-strategic-number sn-percent-attack-boats 50)
 )
 
+; Naval maps commit their available fleet when an ordinary attack launches.
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal special-map HYBRID) (goal special-map WATER))
+=>
+	(set-strategic-number sn-percent-attack-boats 100)
+)
+
 (defrule
 	(goal aready YES)
 	(goal attacktype NORM)

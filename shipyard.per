@@ -1196,32 +1196,6 @@
 	(train BOAT-MISSILE-LINE)
 )
 
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map WATER)
-	(goal support-sea YES)
-	(not (goal passiveage YES))
-	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p3-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p3-water)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map HYBRID)
-	(goal support-sea YES)
-	(not (goal passiveage YES))
-	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p3-hybrid)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p3-hybrid)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p3-hybrid)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
 
 (defrule
 	(current-age == tech-level-3)
@@ -1241,7 +1215,7 @@
 	(goal support-sea YES)
 	(not (goal passiveage YES))
 	(unit-type-count-total BOAT-LASER-LINE < TL3-frigate-arm-p4-hybrid)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p3-hybrid)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL3-destroyer-arm-p2-hybrid)
 	(can-train BOAT-LASER-LINE)
 =>
 	(train BOAT-LASER-LINE)
@@ -1272,32 +1246,6 @@
 	(train BOAT-MISSILE-LINE)
 )
 
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map WATER)
-	(goal support-sea YES)
-	(not (goal passiveage YES))
-	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p4-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p4-water)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map HYBRID)
-	(goal support-sea YES)
-	(not (goal passiveage YES))
-	(unit-type-count-total BOAT-LASER-LINE >= TL3-frigate-arm-p4-hybrid)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL3-aa-destroyer-arm-p4-hybrid)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p4-hybrid)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
 
 ; TL3 extra AA response.
 
@@ -1365,34 +1313,12 @@
 	(train BOAT-MISSILE-LINE)
 )
 
-; TL3 extra destroyer response.
+; TL3 Destroyer response to visible combat boats.
 
 (defrule
 	(current-age == tech-level-3)
 	(goal special-map WATER)
 	(goal enemyboatsighted BOAT-ALERT-P1)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p1-water)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map HYBRID)
-	(goal enemyboatsighted BOAT-ALERT-P1)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p1-hybrid)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map WATER)
-	(goal enemyboatsighted BOAT-ALERT-P2)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p2-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1403,7 +1329,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal special-map HYBRID)
-	(goal enemyboatsighted BOAT-ALERT-P2)
+	(goal enemyboatsighted BOAT-ALERT-P1)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p2-hybrid)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1414,8 +1340,30 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal special-map WATER)
+	(goal enemyboatsighted BOAT-ALERT-P2)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-boat-alert-p2-water)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(goal enemyboatsighted BOAT-ALERT-P2)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-boat-alert-p2-hybrid)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
 	(goal enemyboatsighted BOAT-ALERT-P3)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p3-water)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-boat-alert-p3-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
 	(train BOAT-CUTLASER-LINE)
@@ -1426,7 +1374,7 @@
 	(current-age == tech-level-3)
 	(goal special-map HYBRID)
 	(goal enemyboatsighted BOAT-ALERT-P3)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p3-hybrid)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-boat-alert-p3-hybrid)
 	(can-train BOAT-CUTLASER-LINE)
 =>
 	(train BOAT-CUTLASER-LINE)
@@ -1437,7 +1385,7 @@
 	(current-age == tech-level-3)
 	(goal special-map WATER)
 	(goal enemyboatsighted BOAT-ALERT-P4)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p4-water)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-boat-alert-p4-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
 	(train BOAT-CUTLASER-LINE)
@@ -1448,7 +1396,7 @@
 	(current-age == tech-level-3)
 	(goal special-map HYBRID)
 	(goal enemyboatsighted BOAT-ALERT-P4)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-arm-p4-hybrid)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL3-destroyer-boat-alert-p4-hybrid)
 	(can-train BOAT-CUTLASER-LINE)
 =>
 	(train BOAT-CUTLASER-LINE)
@@ -1687,30 +1635,6 @@
 	(train BOAT-MISSILE-LINE)
 )
 
-(defrule
-	(current-age == tech-level-4)
-	(goal special-map WATER)
-	(goal support-sea YES)
-	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p3-water)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
-
-(defrule
-	(current-age == tech-level-4)
-	(goal special-map HYBRID)
-	(goal support-sea YES)
-	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3-hybrid)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p3-hybrid)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p3-hybrid)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
 
 (defrule
 	(current-age == tech-level-4)
@@ -1728,7 +1652,7 @@
 	(goal special-map HYBRID)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p3-hybrid)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p3-hybrid)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p2-hybrid)
 	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p3-hybrid)
 	(can-train BOAT-ARTILLERY-LINE)
 =>
@@ -1780,30 +1704,6 @@
 	(train BOAT-MISSILE-LINE)
 )
 
-(defrule
-	(current-age == tech-level-4)
-	(goal special-map WATER)
-	(goal support-sea YES)
-	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p4-water)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p4-water)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
-
-(defrule
-	(current-age == tech-level-4)
-	(goal special-map HYBRID)
-	(goal support-sea YES)
-	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p4-hybrid)
-	(unit-type-count-total BOAT-MISSILE-LINE >= TL4-aa-destroyer-arm-p4-hybrid)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p4-hybrid)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
 
 (defrule
 	(current-age == tech-level-4)
@@ -1821,7 +1721,7 @@
 	(goal special-map HYBRID)
 	(goal support-sea YES)
 	(unit-type-count-total BOAT-LASER-LINE >= TL4-frigate-arm-p4-hybrid)
-	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p4-hybrid)
+	(unit-type-count-total BOAT-CUTLASER-LINE >= TL4-destroyer-arm-p2-hybrid)
 	(unit-type-count-total BOAT-ARTILLERY-LINE < TL4-cruiser-arm-p4-hybrid)
 	(can-train BOAT-ARTILLERY-LINE)
 =>
@@ -1913,34 +1813,12 @@
 	(train BOAT-MISSILE-LINE)
 )
 
-; TL4 extra destroyer response.
+; TL4 Destroyer response to visible combat boats.
 
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal enemyboatsighted BOAT-ALERT-P1)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p1-water)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
-
-(defrule
-	(current-age == tech-level-4)
-	(goal special-map HYBRID)
-	(goal enemyboatsighted BOAT-ALERT-P1)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p1-hybrid)
-	(can-train BOAT-CUTLASER-LINE)
-=>
-	(train BOAT-CUTLASER-LINE)
-	(set-goal boattobuild FISHBOAT)
-)
-
-(defrule
-	(current-age == tech-level-4)
-	(goal special-map WATER)
-	(goal enemyboatsighted BOAT-ALERT-P2)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p2-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1951,7 +1829,7 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
-	(goal enemyboatsighted BOAT-ALERT-P2)
+	(goal enemyboatsighted BOAT-ALERT-P1)
 	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p2-hybrid)
 	(can-train BOAT-CUTLASER-LINE)
 =>
@@ -1962,8 +1840,30 @@
 (defrule
 	(current-age == tech-level-4)
 	(goal special-map WATER)
+	(goal enemyboatsighted BOAT-ALERT-P2)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-boat-alert-p2-water)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map HYBRID)
+	(goal enemyboatsighted BOAT-ALERT-P2)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-boat-alert-p2-hybrid)
+	(can-train BOAT-CUTLASER-LINE)
+=>
+	(train BOAT-CUTLASER-LINE)
+	(set-goal boattobuild FISHBOAT)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
 	(goal enemyboatsighted BOAT-ALERT-P3)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p3-water)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-boat-alert-p3-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
 	(train BOAT-CUTLASER-LINE)
@@ -1974,7 +1874,7 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal enemyboatsighted BOAT-ALERT-P3)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p3-hybrid)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-boat-alert-p3-hybrid)
 	(can-train BOAT-CUTLASER-LINE)
 =>
 	(train BOAT-CUTLASER-LINE)
@@ -1985,7 +1885,7 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal enemyboatsighted BOAT-ALERT-P4)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p4-water)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-boat-alert-p4-water)
 	(can-train BOAT-CUTLASER-LINE)
 =>
 	(train BOAT-CUTLASER-LINE)
@@ -1996,7 +1896,7 @@
 	(current-age == tech-level-4)
 	(goal special-map HYBRID)
 	(goal enemyboatsighted BOAT-ALERT-P4)
-	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-arm-p4-hybrid)
+	(unit-type-count-total BOAT-CUTLASER-LINE < TL4-destroyer-boat-alert-p4-hybrid)
 	(can-train BOAT-CUTLASER-LINE)
 =>
 	(train BOAT-CUTLASER-LINE)

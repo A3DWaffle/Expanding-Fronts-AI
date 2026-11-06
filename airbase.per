@@ -76,6 +76,55 @@
 	(build BLDG-TRAINAIR)
 )
 
+; Heavy troop pressure can justify an Airbase response from any lineup.
+(defrule
+	(current-age == tech-level-4)
+	(not (goal combat-arm AIR))
+	(goal enemytroopersighted TROOPER-ALERT-P2)
+	(building-type-count-total BLDG-TRAINAIR < 3)
+	(can-build BLDG-TRAINAIR)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(metal-amount > 25)
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+	(goal raid-build-open YES)
+=>
+	(build BLDG-TRAINAIR)
+)
+
+; Naval air support can establish Airbases even without the aircraft package.
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map WATER)
+	(not (goal enemyboatsighted BOAT-ALERT-NONE))
+	(not (goal enemyboatsighted BOAT-ALERT-P1))
+	(building-type-count-total BLDG-TRAINAIR < 2)
+	(can-build BLDG-TRAINAIR)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(metal-amount > 25)
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+	(goal raid-build-open YES)
+=>
+	(build BLDG-TRAINAIR)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map HYBRID)
+	(not (goal enemyboatsighted BOAT-ALERT-NONE))
+	(not (goal enemyboatsighted BOAT-ALERT-P1))
+	(building-type-count-total BLDG-TRAINAIR < 2)
+	(can-build BLDG-TRAINAIR)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(metal-amount > 25)
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+	(goal raid-build-open YES)
+=>
+	(build BLDG-TRAINAIR)
+)
+
 ; =====================================================
 ; CHAPTER 2: UPGRADES
 ; =====================================================
@@ -84,7 +133,7 @@
 (defrule
 	(can-research-with-escrow ut-fighter-2)
 	(current-age >= tech-level-4)
-	(goal support-aircraft YES)
+	(or (goal support-aircraft YES) (goal enemytroopersighted TROOPER-ALERT-P2))
 	(unit-type-count-total UNIT-FIGHTER-LINE >= TL4-fighter-arm-p1)
 =>
 	(release-escrow carbon)
@@ -96,7 +145,7 @@
 (defrule
 	(can-research-with-escrow ut-fighter-3)
 	(current-age >= tech-level-4)
-	(goal support-aircraft YES)
+	(or (goal support-aircraft YES) (goal enemytroopersighted TROOPER-ALERT-P2))
 	(unit-type-count-total UNIT-FIGHTER-LINE >= TL4-fighter-arm-p1)
 =>
 	(release-escrow carbon)
@@ -476,6 +525,30 @@
 	(set-goal t4-fighter-priority YES)
 )
 
+; Heavy mounted armies can draw a larger Fighter response.
+(defrule
+	(current-age == tech-level-4)
+	(not (goal combat-arm AIR))
+	(goal enemytroopersighted TROOPER-ALERT-P2)
+	(players-unit-type-count any-enemy UNIT-MOUNTED-LINE >= 20)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL4-fighter-arm-p4)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(set-goal t4-fighter-priority YES)
+	(train UNIT-FIGHTER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(not (goal combat-arm AIR))
+	(goal enemytroopersighted TROOPER-ALERT-P2)
+	(unit-type-count-total UNIT-FIGHTER-LINE < TL4-fighter-arm-p3)
+	(can-train UNIT-FIGHTER-LINE)
+=>
+	(set-goal t4-fighter-priority YES)
+	(train UNIT-FIGHTER-LINE)
+)
+
 ; -----------------------
 ; INTERCEPTORS
 ; -----------------------
@@ -640,6 +713,30 @@
 ; -----------------------
 ;  BOMBERS
 ; -----------------------
+
+; Bombers supplement the fleet when multiple enemy combat boats are seen.
+(defrule
+	(current-age >= tech-level-3)
+	(or (goal special-map WATER) (goal special-map HYBRID))
+	(not (goal enemyboatsighted BOAT-ALERT-NONE))
+	(not (goal enemyboatsighted BOAT-ALERT-P1))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-water)
+	(goal t4-fighter-priority NO)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(or (goal special-map WATER) (goal special-map HYBRID))
+	(or (goal enemyboatsighted BOAT-ALERT-P3) (goal enemyboatsighted BOAT-ALERT-P4))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL4-bomber-supp-p2)
+	(goal t4-fighter-priority NO)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
 
 ; --- Anti-mech bomber p1 ---
 (defrule

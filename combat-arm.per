@@ -60,6 +60,16 @@
 	(disable-self)
 )
 
+; Hybrid fleets can form smaller attack groups than dedicated WATER fleets.
+(defrule
+	(goal special-map HYBRID)
+=>
+	(set-strategic-number sn-number-boat-attack-groups 2)
+	(set-strategic-number sn-minimum-boat-attack-group-size 3)
+	(set-strategic-number sn-maximum-boat-attack-group-size 7)
+	(disable-self)
+)
+
 (defrule
 	(goal special-map WATER)
 	(goal support-sealift YES)
