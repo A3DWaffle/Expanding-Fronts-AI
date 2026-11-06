@@ -89,7 +89,7 @@
 )
 
 
-; Match the standard TL4 window. A standing fleet opens the 26-minute path.
+; Match the standard TL4 window. An established fishing fleet opens the 26-minute path.
 (defrule
 	(goal special-map WATER)
 	(current-age == tech-level-3)
@@ -98,7 +98,7 @@
 	(or
 		(and
 			(game-time >= 1560)
-			(warboat-count >= TL3-frigate-arm-p2-water)
+			(unit-type-count BOAT-WORKER >= water-tl4-trawlers)
 		)
 		(game-time >= 1680)
 	)
