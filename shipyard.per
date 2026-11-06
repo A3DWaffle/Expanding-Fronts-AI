@@ -114,6 +114,22 @@
 	(set-goal resourcerefund cshipyard)
 )
 
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map WATER)
+	(goal support-sealift YES)
+	(building-type-count-total BLDG-TRAINBOAT < 4)
+	(building-type-count-total BLDG-POWERCORE > 0)
+	(can-build-with-escrow BLDG-TRAINBOAT)
+	(not (too-many-unpowered-buildings))
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
+=>
+	(release-escrow carbon)
+	(build BLDG-TRAINBOAT)
+	(set-goal resourcerefund cshipyard)
+)
+
 ; RAID: split oversized prerequisite list
 (defrule
 	(true)
@@ -434,7 +450,7 @@
 	(current-age == tech-level-4)
 	(goal special-map WATER)
 	(goal support-sea YES)
-	(building-type-count-total BLDG-TRAINBOAT < 5)
+	(building-type-count-total BLDG-TRAINBOAT < 6)
 	(building-type-count-total BLDG-POWERCORE > 0)
 	(goal importantT4research DONE)
 	(can-build-with-escrow BLDG-TRAINBOAT)
@@ -624,7 +640,7 @@
 (defrule
 	(current-age == tech-level-1)
 	(goal special-map WATER)
-	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats)
+	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats-water)
 	(not (goal fish-present NO))
 	(can-train BOAT-WORKER)
 =>
@@ -646,7 +662,7 @@
 	(goal special-map WATER)
 	(warboat-count >= 2)
 	(goal boattobuild FISHBOAT)
-	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats)
+	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats-water)
 	(not (goal fish-present NO))
 	(can-train BOAT-WORKER)
 =>
@@ -672,7 +688,7 @@
 	(goal special-map WATER)
 	(warboat-count >= 3)
 	(goal boattobuild FISHBOAT)
-	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats)
+	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats-water)
 	(or
 		(goal lategamefish NO)
 		(goal fish-present VENTSIGHTED)
@@ -706,7 +722,7 @@
 	(goal special-map WATER)
 	(warboat-count >= 4)
 	(goal boattobuild FISHBOAT)
-	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats)
+	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats-water)
 	(or
 		(goal lategamefish NO)
 		(goal fish-present VENTSIGHTED)

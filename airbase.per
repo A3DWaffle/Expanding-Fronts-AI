@@ -738,10 +738,38 @@
 	(disable-self)
 )
 
-; --- Asteroid maps allow Air Transport ---
+; --- Enable airlift on Asteroid and Water maps ---
 (defrule
-	(goal special-map ASTEROID)
+	(or
+		(goal special-map ASTEROID)
+		(goal special-map WATER)
+	)
 =>
 	(set-goal support-airlift YES)
 	(disable-self)
 )
+
+; --- Water transport reserve for the existing group logic ---
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map WATER)
+	(goal support-airlift YES)
+	(unit-type-count-total UNIT-AIRLIFT-LINE < 2)
+	(can-train UNIT-AIRLIFT-LINE)
+=>
+	(train UNIT-AIRLIFT-LINE)
+)
+
+#load-if-not-defined POPULATION-CAP-25
+#load-if-not-defined POPULATION-CAP-50
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map WATER)
+	(goal support-airlift YES)
+	(unit-type-count-total UNIT-AIRLIFT-LINE < 3)
+	(can-train UNIT-AIRLIFT-LINE)
+=>
+	(train UNIT-AIRLIFT-LINE)
+)
+#end-if
+#end-if

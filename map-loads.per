@@ -438,60 +438,17 @@
 )
 ; Vents alone no longer promote hybrid logic; fish mass handles visible water.
 
-(defrule
-	(or
-		(goal fish-present YES)
-		(goal fish-present PLENTY)
-	)
-	(not (goal special-map ASTEROID))
-=>
-	(set-goal special-map HYBRID)
-	(chat-local-to-self "WAFFLE: Fish water detected; hybrid mode enabled")
-	(disable-self)
-)
 
 ; =====================================================
 ; *** Chapter 3: LEGACY MAP METADATA ***
 ; =====================================================
 
-; Legacy map defines remain only for non-map side effects. Map mode itself is
-; owned by the Gaia marker objects in Chapter 4.
+; Retain legacy map-specific resource and setup rules.
 
-#load-if-defined WATERMAP
-(defrule
-	(not (goal special-map NOTWATER))
-=>
-	(set-goal special-map HYBRID)
-	(disable-self)
-)
-#end-if
 
-#load-if-defined EF-WATERMAP
-(defrule
-	(not (goal special-map NOTWATER))
-=>
-	(set-goal special-map HYBRID)
-	(disable-self)
-)
-#end-if
 
-#load-if-defined EF_WATERMAP
-(defrule
-	(not (goal special-map NOTWATER))
-=>
-	(set-goal special-map HYBRID)
-	(disable-self)
-)
-#end-if
 
-#load-if-defined FULL_WATER
-(defrule
-	(not (goal special-map NOTWATER))
-=>
-	(set-goal special-map HYBRID)
-	(disable-self)
-)
-#end-if
+
 
 #load-if-defined GAME-SPEED-LOCKED
 (defrule
@@ -503,27 +460,7 @@
 #end-if
 
 ;*******************************
-#load-if-defined WATER-MASS-MAP
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
-
-#end-if
 ;*******************************
-#load-if-defined LAND-SATELLITES-MAP	;Islands
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
-
-#end-if
 ;*******************************
 #load-if-defined SPACE-SATELLITES-MAP
 
@@ -558,15 +495,6 @@
 
 #end-if
 ;*******************************
-#load-if-defined TEAM-LAND-SATELLITES-MAP		;Team Islands
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
-#end-if
 
 ;*******************************
 #load-if-defined TEAM-SPACE-SATELLITES-MAP
@@ -735,25 +663,7 @@
 #end-if
 #end-if
 ;*******************************
-#load-if-defined SEA-MAP
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
-#end-if
 ;*******************************
-#load-if-defined SHORELINE-MAP
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-		(set-goal special-map HYBRID)
-        (disable-self)
-)
-#end-if
 ;*******************************
 #load-if-defined LAND-MASS-MAP
 
@@ -776,25 +686,7 @@
 
 #end-if
 ;*******************************
-#load-if-defined NOVA-LAKE-MAP
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
-#end-if
 ;*******************************
-#load-if-defined LARGE-SEA-MAP
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
-#end-if
 ;*******************************
 #load-if-defined STAR-WARS-WORLD-KRANT-MAP
 
@@ -1064,12 +956,6 @@
 #load-if-not-defined NEWREPUBLIC
 #load-if-not-defined IMPERIALREMNANT
 
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
 
 #end-if
 #end-if
@@ -1081,16 +967,6 @@
 #load-if-defined GUNGANS
 #load-if-defined FEDERATION
 #load-if-defined NEWREPUBLIC
-#load-if-defined IMPERIALREMNANT
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
-
-#end-if
 #end-if
 #end-if
 #end-if
@@ -1106,12 +982,6 @@
 #load-if-not-defined NEWREPUBLIC
 #load-if-not-defined IMPERIALREMNANT
 
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
 
 #end-if
 #end-if
@@ -1123,16 +993,6 @@
 #load-if-defined GUNGANS
 #load-if-defined FEDERATION
 #load-if-defined NEWREPUBLIC
-#load-if-defined IMPERIALREMNANT
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
-
-#end-if
 #end-if
 #end-if
 #end-if
@@ -1191,15 +1051,6 @@
 )
 #end-if
 ;*******************************
-#load-if-defined ICE-LAKE-MAP
-
-(defrule
-        (not (goal special-map NOTWATER))
-=>
-        (set-goal special-map HYBRID)
-        (disable-self)
-)
-#end-if
 ;*******************************
 #load-if-defined NOVA-ASSAULT-MAP
 
@@ -1261,7 +1112,7 @@
 ; =====================================================
 ; *** Chapter 4: GAIA MAP MARKER OVERRIDES ***
 ; =====================================================
-; Gaia marker objects are the only source of special-map classification.
+; Gaia markers select the map strategy. Unmarked maps retain the LAND default.
 
 (defrule
 	(cc-players-unit-type-count 0 OBJ-LANDMAP > 0)
@@ -1282,8 +1133,8 @@
 (defrule
 	(cc-players-unit-type-count 0 OBJ-WATERMAP > 0)
 =>
-	(chat-local-to-self "WAFFLE: Water map marker detected; hybrid mode enabled")
-	(set-goal special-map HYBRID)
+	(chat-local-to-self "WAFFLE: Water map marker detected")
+	(set-goal special-map WATER)
 	(disable-self)
 )
 
@@ -1327,15 +1178,6 @@
 	(disable-self)
 )
 
-; Production files key off exact map modes. Treat legacy NOTWATER as land.
-(defrule
-	(game-time > 8)
-	(goal special-map NOTWATER)
-=>
-	(set-goal special-map LAND)
-	(chat-local-to-self "WAFFLE: Legacy NOTWATER normalized to LAND")
-	(disable-self)
-)
 
 (defrule
 	(game-time > 8)
