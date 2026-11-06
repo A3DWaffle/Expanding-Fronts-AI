@@ -352,6 +352,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(current-age-time > 300)
 	(building-type-count-total BLDG-DROPCHOW < 4)
@@ -365,6 +366,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(current-age-time > 600)
 	(building-type-count-total BLDG-DROPCHOW < 5)
@@ -573,4 +575,18 @@
 	(not (strategic-number sn-mill-max-distance == 24))
 =>
 	(set-strategic-number sn-mill-max-distance 24)
+)
+
+; Water adds a second food drop-off only when workers need it.
+(defrule
+	(goal special-map WATER)
+	(current-age >= tech-level-3)
+	(building-type-count BLDG-MAIN > 0)
+	(building-type-count-total BLDG-DROPCHOW == 1)
+	(dropsite-min-distance food > 8)
+	(can-build BLDG-DROPCHOW)
+	(not (goal buildpause YES))
+=>
+	(set-goal resourcerefund cfoodproc)
+	(build BLDG-DROPCHOW)
 )

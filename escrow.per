@@ -63,6 +63,7 @@
 
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 =>
 	(set-escrow-percentage food 40)
@@ -73,6 +74,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(goal importantT3research DONE)
 	(current-age == tech-level-3)
 => 
@@ -80,6 +82,18 @@
 	(set-escrow-percentage carbon 30)
 	(set-escrow-percentage nova 25)
 	(set-escrow-percentage metal 10)
+	(disable-self)
+)
+
+; Reserve more food and nova for WATER's TL4 advance.
+(defrule
+	(goal special-map WATER)
+	(current-age == tech-level-3)
+=>
+	(set-escrow-percentage food 55)
+	(set-escrow-percentage carbon 30)
+	(set-escrow-percentage nova 40)
+	(set-escrow-percentage metal 0)
 	(disable-self)
 )
 

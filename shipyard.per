@@ -637,6 +637,19 @@
 ; FISHING BOATS
 ; ============================================================================
 
+; Water maintains a small fishing fleet before filling its warship stages.
+(defrule
+	(current-age >= tech-level-2)
+	(current-age <= tech-level-3)
+	(goal special-map WATER)
+	(or (goal fish-present YES) (goal fish-present PLENTY))
+	(unit-type-count-total BOAT-WORKER < 5)
+	(unit-type-count-total BOAT-WORKER < TL4-max-fishing-boats-water)
+	(can-train BOAT-WORKER)
+=>
+	(train BOAT-WORKER)
+)
+
 (defrule
 	(current-age == tech-level-1)
 	(goal special-map WATER)

@@ -35,8 +35,23 @@
 	(build BLDG-MAIN) 
 )
 
+; Water expands to a second CC without first building a land production spine.
+(defrule
+	(goal special-map WATER)
+	(current-age >= tech-level-3)
+	(building-type-count-total BLDG-MAIN == 1)
+	(can-build-with-escrow BLDG-MAIN)
+	(not (goal buildpause YES))
+	(goal raid-build-open YES)
+=>
+	(release-escrow carbon)
+	(release-escrow metal)
+	(build BLDG-MAIN)
+)
+
 ; TL3-CCs and TL4-CCs are set in building-count before this file loads.
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(building-type-count-total BLDG-MAIN < 3)
 	(or
@@ -56,6 +71,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(building-type-count-total BLDG-MAIN < TL4-CCs)
 	(can-build-with-escrow BLDG-MAIN)
@@ -68,7 +84,20 @@
 )
 
 (defrule
+	(true)
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 	(can-build-with-escrow BLDG-MAIN)
 	(or
 		(goal attackTSAhold HOLDING-HIGH) ; use far-flung CCs to grab res during TSA
@@ -88,6 +117,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(can-build-with-escrow BLDG-MAIN)
 	(or
@@ -105,6 +135,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(can-build-with-escrow BLDG-MAIN)
 	(or
@@ -122,6 +153,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(can-build-with-escrow BLDG-MAIN)
 	(or
@@ -139,6 +171,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(can-build-with-escrow BLDG-MAIN)
 	(or
@@ -157,6 +190,7 @@
 
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(can-build-with-escrow BLDG-MAIN)
 	(or
@@ -634,7 +668,20 @@
 )
 
 (defrule
+	(true)
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-2)
+=>
+	(set-goal raid-rule-check YES)
+)
+
+(defrule
+	(goal raid-rule-check YES)
 	(building-type-count BLDG-SPACEPORT > 0)
 	(or
 		(building-type-count BLDG-TRAINJEDI > 0)
@@ -655,6 +702,7 @@
 ; TL2 farm floor: do not depend on perfect hunt exhaustion detection once the
 ; worker count is large enough to need stable food income.
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-2)
 	(building-type-count BLDG-SPACEPORT > 0)
 	(or
@@ -673,6 +721,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-2)
 	(building-type-count BLDG-SPACEPORT > 0)
 	(or
@@ -689,6 +738,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-2)
 	(building-type-count BLDG-SPACEPORT > 0)
 	(or
@@ -706,6 +756,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-2)
 	(building-type-count BLDG-SPACEPORT > 0)
 	(or
@@ -723,6 +774,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-2)
 	(building-type-count BLDG-SPACEPORT > 0)
 	(or
@@ -739,6 +791,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-2)
 	(building-type-count BLDG-SPACEPORT > 0)
 	(or
@@ -755,6 +808,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(goal hunt-present NO)
 	(building-type-count-total BLDG-FARM < 28)
@@ -766,6 +820,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(goal hunt-present NO)
 	(building-type-count-total BLDG-FARM < 24)
@@ -777,6 +832,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(goal hunt-present NO)
 	(building-type-count-total BLDG-FARM < 20)
@@ -788,6 +844,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(goal agingup YES)
 	(building-type-count-total BLDG-FARM < 45)
@@ -799,6 +856,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(goal agingup YES)
 	(building-type-count-total BLDG-FARM < 40)
@@ -810,6 +868,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(goal hunt-present NO)
 	(building-type-count-total BLDG-FARM < 45)
@@ -821,6 +880,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(goal hunt-present NO)
 	(building-type-count-total BLDG-FARM < 40)
@@ -832,6 +892,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(goal hunt-present NO)
 	(building-type-count-total BLDG-FARM < 35)
@@ -843,6 +904,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(goal hunt-present YES)
 	(current-age-time > 180)
@@ -855,6 +917,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(goal hunt-present YES)
 	(current-age-time > 180)
@@ -867,6 +930,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(goal hunt-present YES)
 	(current-age-time > 180)
@@ -879,6 +943,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(goal hunt-present YES)
 	(building-type-count-total BLDG-FARM < 45)
@@ -890,6 +955,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(goal hunt-present YES)
 	(building-type-count-total BLDG-FARM < 40)
@@ -901,6 +967,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(goal hunt-present YES)
 	(building-type-count-total BLDG-FARM < 35)
@@ -908,12 +975,42 @@
 	(goal allowfarm YES)
 	(not (goal buildpause YES))
 =>
+	(build BLDG-FARM)
+)
+
+; Compact WATER farms supplement fishing without taking over the shore.
+(defrule
+	(goal special-map WATER)
+	(current-age == tech-level-2)
+	(building-type-count BLDG-MAIN > 0)
+	(building-type-count-total BLDG-FARM < 6)
+	(idle-farm-count < 2)
+	(goal allowfarm YES)
+	(can-build-with-escrow BLDG-FARM)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(build BLDG-FARM)
+)
+
+(defrule
+	(goal special-map WATER)
+	(current-age >= tech-level-3)
+	(building-type-count BLDG-MAIN > 0)
+	(building-type-count-total BLDG-FARM < 10)
+	(idle-farm-count < 2)
+	(goal allowfarm YES)
+	(can-build-with-escrow BLDG-FARM)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
 	(build BLDG-FARM)
 )
 
 ; Maintain spare idle farms so exhausted farms can be refreshed without waiting
 ; for total farm count to fall behind the age target.
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-2)
 	(building-type-count BLDG-SPACEPORT > 0)
 	(or
@@ -929,6 +1026,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(idle-farm-count < 5)
 	(can-build BLDG-FARM)
@@ -939,6 +1037,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(idle-farm-count < 50)
 	(can-build BLDG-FARM)
@@ -949,6 +1048,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(game-time > 2400)
 	(idle-farm-count < 50)
@@ -960,6 +1060,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age >= tech-level-3)
 	(carbon-amount > 500)
 	(idle-farm-count < 16)
@@ -973,6 +1074,7 @@
 ; Late food-collapse recovery. If farm production got disabled or simply fell
 ; behind, spend the small carbon bank on farms before the food eco flatlines.
 (defrule
+	(not (goal special-map WATER))
 	(current-age >= tech-level-3)
 	(game-time > 2400)
 	(unit-type-count-total UNIT-WORKER > 40)
@@ -991,6 +1093,7 @@
 ; Stronger TL4 version: an hour in, 12 farmers is unrecoverable unless the AI
 ; aggressively refills the farm grid.
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(game-time > 3000)
 	(unit-type-count-total UNIT-WORKER > 60)

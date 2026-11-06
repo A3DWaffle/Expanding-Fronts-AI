@@ -67,6 +67,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(can-research-with-escrow tech-level-4)
 	(shared-goal age-match-human NO)
 	(or
@@ -87,6 +88,27 @@
 	(research tech-level-4)
 )
 
+
+; Water can reach TL4 on fishing or a small farm economy.
+(defrule
+	(goal special-map WATER)
+	(current-age == tech-level-3)
+	(shared-goal age-match-human NO)
+	(can-research-with-escrow tech-level-4)
+	(or
+		(unit-type-count BOAT-WORKER >= 5)
+		(or
+			(building-type-count BLDG-FARM >= 8)
+			(current-age-time > 300)
+		)
+	)
+=>
+	(release-escrow food)
+	(release-escrow nova)
+	(set-goal agingup YES)
+	(set-goal attacksonhold-auto YES)
+	(research tech-level-4)
+)
 
 ; fun config stuff (or easy/easiest)
 (defrule
