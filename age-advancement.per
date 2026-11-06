@@ -89,7 +89,7 @@
 )
 
 
-; Water can reach TL4 on fishing or a small farm economy.
+; A fishing fleet opens the early TL4 path. Keep an affordability-only fallback.
 (defrule
 	(goal special-map WATER)
 	(current-age == tech-level-3)
@@ -97,10 +97,7 @@
 	(can-research-with-escrow tech-level-4)
 	(or
 		(unit-type-count BOAT-WORKER >= 5)
-		(or
-			(building-type-count BLDG-FARM >= 8)
-			(current-age-time > 300)
-		)
+		(current-age-time > 300)
 	)
 =>
 	(release-escrow food)
