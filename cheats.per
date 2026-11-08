@@ -26,11 +26,12 @@
 	(disable-self)
 )
 
+#load-if-not-defined DIFFICULTY-MODERATE
 ; free worker cheat
 #load-if-not-defined DIFFICULTY-EASY
 #load-if-not-defined DIFFICULTY-EASIEST
 
-; For Moderate, Hard, and Hardest
+; For Hard and Hardest
 ; the AI gets free workers in T1
 ; This is because quite frankly the AI is bad
 ; players can take advantage of all the food available;
@@ -71,16 +72,6 @@
 )
 #end-if
 
-#load-if-defined DIFFICULTY-MODERATE
-(defrule
-	(current-age == tech-level-1)
-	(food-amount < 50)
-	(not (food-amount < 2)) ; handles cases in scenarios where starting with 0 res
-	(game-time > 150) ; worker train time is 25s, so this means 4 workers (starting 200f) are trained with downtime for 2
-=>
-	(cc-add-resource food 5)
-)
-#end-if
 #load-if-not-defined DIFFICULTY-MODERATE
 (defrule
 	(current-age == tech-level-1)
@@ -98,6 +89,8 @@
 
 
 
+
+#end-if
 
 #load-if-defined DIFFICULTY-EASY
 ; EASY CHEATS
@@ -602,11 +595,38 @@
 )
 #end-if
 
+
 #load-if-defined DIFFICULTY-MODERATE
-; MODERATE CHEATS
-; Moderate intentionally has no difficulty resource income here. It keeps only the
-; shared TL1 worker-food anti-idle support above, which adds small food packets
-; when food dips under 50.
+; Moderate automatic support: three post-age packets plus the CC LOS fix.
+; No TL1 food faucet, opener subsidy, building refunds, or turret reimbursements.
+(defrule
+	(current-age == tech-level-2)
+	(current-age-time > cheat-timeout)
+=>
+	(cc-add-resource carbon 100)
+	(cc-add-resource food 100)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(current-age-time > cheat-timeout)
+=>
+	(cc-add-resource carbon 150)
+	(cc-add-resource food 150)
+	(cc-add-resource nova 75)
+	(disable-self)
+)
+
+(defrule
+	(current-age == tech-level-4)
+	(current-age-time > cheat-timeout)
+=>
+	(cc-add-resource carbon 200)
+	(cc-add-resource food 200)
+	(cc-add-resource nova 100)
+	(disable-self)
+)
 
 #end-if
 
@@ -2279,6 +2299,7 @@
 
 ; One-time TL1 opener bridge. Only fires if the first Troop Center is late,
 ; so normal openers still need to gather most of their follow-on carbon.
+#load-if-not-defined DIFFICULTY-MODERATE
 (defrule
 	(current-age == tech-level-1)
 	(game-time > 240)
@@ -2289,6 +2310,7 @@
 	(cc-add-resource carbon 40)
 	(disable-self)
 )
+#end-if
 
 ; Retired the unlimited sub-30 ore top-up; ore must come from mining or timed support.
 
@@ -2316,14 +2338,6 @@
 )
 #end-if
 
-#load-if-defined DIFFICULTY-MODERATE 
-(defrule
-	(goal resourcerefund cshipyard)
-=>
-	(cc-add-resource carbon 45)
-	(set-goal resourcerefund NULL)
-)
-#end-if
 ; no refund on Easy or Easiest 
 
 
@@ -2438,58 +2452,6 @@
 )
 #end-if
 
-#load-if-defined DIFFICULTY-MODERATE 
-(defrule
-	(goal resourcerefund cpowercore)
-	(current-age == tech-level-1)
-=>
-	(set-goal resourcerefund NULL) ; do nothing
-)
-(defrule
-	(goal resourcerefund cpowercore)
-	(current-age >= tech-level-2)
-=>
-	(cc-add-resource carbon 60)
-	(set-goal resourcerefund NULL)
-)
-
-(defrule
-	(goal resourcerefund ccarbonproc)
-	(current-age == tech-level-1)
-=>
-	(cc-add-resource carbon 20)
-	(set-goal resourcerefund NULL)
-)
-
-(defrule
-	(goal resourcerefund ccarbonproc)
-	(current-age >= tech-level-2)
-=>
-	(cc-add-resource carbon 40)
-	(set-goal resourcerefund NULL)
-)
-
-(defrule
-	(goal resourcerefund cfoodproc)
-=>
-	(cc-add-resource food 50)
-	(set-goal resourcerefund NULL)
-)
-
-(defrule
-	(goal resourcerefund cnovaproc)
-=>
-	(cc-add-resource nova 50)
-	(set-goal resourcerefund NULL)
-)
-
-(defrule
-	(goal resourcerefund cmetalproc)
-=>
-	(cc-add-resource metal 12)
-	(set-goal resourcerefund NULL)
-)
-#end-if
 
 
 
@@ -2532,39 +2494,9 @@
 
 
 ; Additional rules exist to build refunded AA Turrets in T3+. See fortress for info.
-; Laser turret reimbursements remain Moderate+ only and are capped at four so
+; Laser turret reimbursements remain Hard/Hardest only and are capped at four so
 ; Defensive does not become free.
 
-#load-if-defined DIFFICULTY-MODERATE
-(defrule
-	(current-age >= tech-level-2)
-	(building-type-count-total BLDG-TURRET-LINE >= 1)
-=>
-	(cc-add-resource metal 15)
-	(disable-self)
-)
-(defrule
-	(current-age >= tech-level-2)
-	(building-type-count-total BLDG-TURRET-LINE >= 2)
-=>
-	(cc-add-resource metal 15)
-	(disable-self)
-)
-(defrule
-	(current-age >= tech-level-2)
-	(building-type-count-total BLDG-TURRET-LINE >= 3)
-=>
-	(cc-add-resource metal 15)
-	(disable-self)
-)
-(defrule
-	(current-age >= tech-level-2)
-	(building-type-count-total BLDG-TURRET-LINE >= 4)
-=>
-	(cc-add-resource metal 15)
-	(disable-self)
-)
-#end-if
 
 #load-if-defined DIFFICULTY-HARD
 (defrule
