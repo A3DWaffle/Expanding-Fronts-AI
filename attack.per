@@ -1055,6 +1055,14 @@
 	(set-goal fortress-siege-hold NO)
 )
 
+; A strength hold must also stop automatic groups, not just attack-now.
+(defrule
+	(goal attack-strength-hold YES)
+	(not (strategic-number sn-number-attack-groups == 0))
+=>
+	(set-strategic-number sn-number-attack-groups 0)
+)
+
 ; Town Size Attack can form groups without an explicit attack-now.
 (defrule
 	(goal fortress-siege-hold YES)
@@ -1068,6 +1076,7 @@
 (defrule
 	(current-age >= tech-level-3)
 	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
 	(strategic-number sn-number-attack-groups == 0)
 =>
 	(set-strategic-number sn-number-attack-groups 1)
@@ -3254,12 +3263,65 @@
 #end-if
 #end-if
 
+; TL2 ground batches must contain enough soldiers at home to commit six
+; after personality allocation (100/75/50 percent). Total military includes
+; troops already deployed and cannot prove a spare reinforcement batch.
+#load-if-not-defined POPULATION-CAP-25
+#load-if-not-defined POPULATION-CAP-50
+(defrule
+	(current-age == tech-level-2)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal openingstyle STYLE-RUSH)
+	(defend-soldier-count < 6)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(defend-soldier-count < 8)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal openingstyle STYLE-DEFENSIVE)
+	(defend-soldier-count < 12)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+#end-if
+#end-if
+
 ; CHITCHAT
 ; LOADED BEFOREHAND BECAUSE IT'S EASIER THIS WAY (as aready is set to NO as part of attack script)
 
 (defrule
 	(goal aready YES)
 	(goal reasonforattack attack-is-me)
+	(goal attack-strength-hold NO)
 =>
 	(chat-to-player every-computer "234")      	; sends taunt 234 to other Computer to summon them in
 	(set-goal messagestatus msg-ATTACKING)		; there is no every computer ally so this has to call every computer to avoid spamming humans - corresponding taunt incoming logic can check if it was actually an ally, tho
