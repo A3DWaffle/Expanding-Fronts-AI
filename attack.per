@@ -221,6 +221,7 @@
 =>
 	(set-goal attack-strength-hold NO)
 	(set-goal attack-strength-debug-phase 0)
+	(set-goal attack-batch-debug-phase 0)
 	(disable-self)
 )
 (defrule
@@ -936,7 +937,8 @@
 	(goal attack-strength-debug-phase 0)
 	(goal attack-strength-hold YES)
 =>
-	(chat-to-all "AI strength: HOLD - reinforcing before regular attacks.")
+	(chat-to-all "ATTACK STRENGTH: LOWER - HOLD")
+	(chat-local "ATTACK STRENGTH: LOWER - HOLD")
 	(set-goal attack-strength-debug-phase 1)
 )
 
@@ -944,7 +946,8 @@
 	(goal attack-strength-debug-phase 1)
 	(goal attack-strength-hold NO)
 =>
-	(chat-to-all "AI strength: CLEAR - strength hold lifted; other attack checks still apply.")
+	(chat-to-all "ATTACK STRENGTH: RECOVERED - CLEAR")
+	(chat-local "ATTACK STRENGTH: RECOVERED - CLEAR")
 	(set-goal attack-strength-debug-phase 2)
 )
 #end-if
@@ -2053,7 +2056,6 @@
 	(goal attack-strength-hold NO)
 =>
 	(set-goal aready YES) ; is what sends an attack off
-	(set-goal attackTSAhold HOLDING-HIGH)
 	; (chat-local-to-self "WAFFLE: Pop cap reached. TSA ON")
 )
 ; for max pop attacks that are NOT under TSA
@@ -2194,8 +2196,8 @@
 	(set-goal aready NO)
 )
 
-; TL3 ordinary land reinforcement batches: send roughly eight troops after
-; personality allocation. Initial attacks and AIR/SEA/TSA are unaffected.
+; Keep existing TL3 reinforcement batching on WATER/ASTEROID.
+; LAND/HYBRID use the broader TL3/TL4 spare-batch gate before CHITCHAT.
 ; Retry in 30 game seconds so a small batch does not wait a full attack interval.
 (defrule
 	(current-age == tech-level-3)
@@ -2206,6 +2208,7 @@
 	(attack-soldier-count > 0)
 	(goal openingstyle STYLE-RUSH)
 	(defend-soldier-count < 8)
+	(or (goal special-map WATER) (goal special-map ASTEROID))
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -2221,6 +2224,7 @@
 	(attack-soldier-count > 0)
 	(goal openingstyle STYLE-AGGRESSIVE)
 	(defend-soldier-count < 11)
+	(or (goal special-map WATER) (goal special-map ASTEROID))
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -2236,6 +2240,7 @@
 	(attack-soldier-count > 0)
 	(goal openingstyle STYLE-DEFENSIVE)
 	(defend-soldier-count < 16)
+	(or (goal special-map WATER) (goal special-map ASTEROID))
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -3312,6 +3317,116 @@
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 30)
 )
+#end-if
+#end-if
+
+; TL3/TL4 LAND/HYBRID spare ground batches, including initial TSA starts.
+; Eight committed soldiers need 8/11/16 at home for 100/75/50 percent allocation.
+; Total military and troops already attacking do not satisfy this check.
+#load-if-not-defined MONUMENT-RACE
+#load-if-not-defined POPULATION-CAP-25
+#load-if-not-defined POPULATION-CAP-50
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal openingstyle STYLE-RUSH)
+	(defend-soldier-count < 8)
+	(goal attack-batch-debug-phase 0)
+=>
+	(chat-to-all "ATTACK GROUP: SMALL - WAIT")
+	(chat-local "ATTACK GROUP: SMALL - WAIT")
+	(set-goal attack-batch-debug-phase 1)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal openingstyle STYLE-RUSH)
+	(defend-soldier-count < 8)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(defend-soldier-count < 11)
+	(goal attack-batch-debug-phase 0)
+=>
+	(chat-to-all "ATTACK GROUP: SMALL - WAIT")
+	(chat-local "ATTACK GROUP: SMALL - WAIT")
+	(set-goal attack-batch-debug-phase 1)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(defend-soldier-count < 11)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal openingstyle STYLE-DEFENSIVE)
+	(defend-soldier-count < 16)
+	(goal attack-batch-debug-phase 0)
+=>
+	(chat-to-all "ATTACK GROUP: SMALL - WAIT")
+	(chat-local "ATTACK GROUP: SMALL - WAIT")
+	(set-goal attack-batch-debug-phase 1)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal openingstyle STYLE-DEFENSIVE)
+	(defend-soldier-count < 16)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal attack-batch-debug-phase 1)
+=>
+	(chat-to-all "ATTACK GROUP: READY")
+	(chat-local "ATTACK GROUP: READY")
+	(set-goal attack-batch-debug-phase 2)
+)
+
+#end-if
 #end-if
 #end-if
 
