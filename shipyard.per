@@ -472,6 +472,8 @@
 	(building-type-count-total BLDG-TRAINBOAT > 0)
 	(unit-type-count-total BOAT-TRANSPORT < 2)
 	(not (can-train BOAT-TRANSPORT))
+	(military-population >= MIL_POP_A)
+	(soldier-count > 0)
 =>
 	(release-escrow carbon)
 	(release-escrow food)
@@ -482,8 +484,9 @@
 	(goal special-map WATER)
 	(unit-type-count-total BOAT-TRANSPORT < 2)
 	(can-train BOAT-TRANSPORT)
+	(military-population >= MIL_POP_A)
+	(soldier-count > 0)
 =>
-	(chat-local-to-self "WAFFLE: Training sea transport.")
 	(train BOAT-TRANSPORT)
 )
 
@@ -493,6 +496,8 @@
 	(goal support-sealift YES)
 	(unit-type-count-total BOAT-TRANSPORT < TL3-transport-ship-water)
 	(can-train BOAT-TRANSPORT)
+	(military-population >= MIL_POP_A)
+	(soldier-count > 0)
 =>
 	(train BOAT-TRANSPORT)
 )
@@ -877,6 +882,8 @@
 	(goal support-sealift YES)
 	(unit-type-count-total BOAT-TRANSPORT < 2)
 	(can-train-with-escrow BOAT-TRANSPORT)
+	(military-population >= MIL_POP_A)
+	(soldier-count > 0)
 =>
 	(release-escrow carbon)
 	(release-escrow food)
