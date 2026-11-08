@@ -45,6 +45,10 @@
 (defconst attack-strength-band 223) ; Enemy military population upper bound; 0 means bypass
 (defconst attack-strength-debug-phase 224) ; 0 awaiting hold, 1 awaiting clear, 2 finished
 (defconst attack-batch-debug-phase 253) ; First spare-batch wait/ready messages only
+(defconst land-attack-policy 60) ; Regular TL3+ LAND ground policy is active
+(defconst land-core-ready 61) ; Four completed core units conservatively outside attacks
+(defconst land-regroup-phase 62) ; 0 idle, 1 substantial attack seen, 2 rebuilding
+(defconst land-regroup-debug 63) ; First regroup/rebuilt message pair only
 
 (defconst raid-mine-open 217) ; own-player live-mine count permits construction
 (defconst raid-empty-ticks 218) ; two consecutive empty-group heartbeats

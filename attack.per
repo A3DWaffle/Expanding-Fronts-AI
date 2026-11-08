@@ -1058,6 +1058,1117 @@
 	(set-goal fortress-siege-hold NO)
 )
 
+; LAND core and loss recovery. AoC has no per-type idle counter, so subtract
+; the upper bound of ALL attacking ground soldiers from completed core counts.
+; This is conservative when attackers mix types. Queued units never count.
+; Recovery is an observed group-count collapse, not a local battle simulation.
+#load-if-not-defined MONUMENT-RACE
+(defrule
+	(true)
+=>
+	(set-goal land-regroup-phase 0)
+	(set-goal land-regroup-debug 0)
+	(disable-self)
+)
+
+(defrule
+	(true)
+=>
+	(set-goal land-attack-policy NO)
+	(set-goal land-core-ready NO)
+)
+
+#load-if-not-defined POPULATION-CAP-25
+#load-if-not-defined POPULATION-CAP-50
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+=>
+	(set-goal land-attack-policy YES)
+)
+
+#end-if
+#end-if
+(defrule
+	(goal land-attack-policy NO)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+; Trooper core
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count <= 0)
+	(or (unit-type-count UNIT-LASER-LINE >= 4) (unit-type-count UNIT-MOUNTED-LINE >= 4))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 0)
+	(attack-soldier-count <= 4)
+	(or (unit-type-count UNIT-LASER-LINE >= 8) (unit-type-count UNIT-MOUNTED-LINE >= 8))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 4)
+	(attack-soldier-count <= 8)
+	(or (unit-type-count UNIT-LASER-LINE >= 12) (unit-type-count UNIT-MOUNTED-LINE >= 12))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 8)
+	(attack-soldier-count <= 12)
+	(or (unit-type-count UNIT-LASER-LINE >= 16) (unit-type-count UNIT-MOUNTED-LINE >= 16))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 12)
+	(attack-soldier-count <= 16)
+	(or (unit-type-count UNIT-LASER-LINE >= 20) (unit-type-count UNIT-MOUNTED-LINE >= 20))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 16)
+	(attack-soldier-count <= 24)
+	(or (unit-type-count UNIT-LASER-LINE >= 28) (unit-type-count UNIT-MOUNTED-LINE >= 28))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 24)
+	(attack-soldier-count <= 32)
+	(or (unit-type-count UNIT-LASER-LINE >= 36) (unit-type-count UNIT-MOUNTED-LINE >= 36))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 32)
+	(attack-soldier-count <= 48)
+	(or (unit-type-count UNIT-LASER-LINE >= 52) (unit-type-count UNIT-MOUNTED-LINE >= 52))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 48)
+	(attack-soldier-count <= 64)
+	(or (unit-type-count UNIT-LASER-LINE >= 68) (unit-type-count UNIT-MOUNTED-LINE >= 68))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 64)
+	(attack-soldier-count <= 96)
+	(or (unit-type-count UNIT-LASER-LINE >= 100) (unit-type-count UNIT-MOUNTED-LINE >= 100))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 96)
+	(attack-soldier-count <= 128)
+	(or (unit-type-count UNIT-LASER-LINE >= 132) (unit-type-count UNIT-MOUNTED-LINE >= 132))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 128)
+	(attack-soldier-count <= 192)
+	(or (unit-type-count UNIT-LASER-LINE >= 196) (unit-type-count UNIT-MOUNTED-LINE >= 196))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 192)
+	(attack-soldier-count <= 256)
+	(or (unit-type-count UNIT-LASER-LINE >= 260) (unit-type-count UNIT-MOUNTED-LINE >= 260))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 256)
+	(attack-soldier-count <= 384)
+	(or (unit-type-count UNIT-LASER-LINE >= 388) (unit-type-count UNIT-MOUNTED-LINE >= 388))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 384)
+	(attack-soldier-count <= 512)
+	(or (unit-type-count UNIT-LASER-LINE >= 516) (unit-type-count UNIT-MOUNTED-LINE >= 516))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 512)
+	(attack-soldier-count <= 768)
+	(or (unit-type-count UNIT-LASER-LINE >= 772) (unit-type-count UNIT-MOUNTED-LINE >= 772))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 768)
+	(attack-soldier-count <= 1024)
+	(or (unit-type-count UNIT-LASER-LINE >= 1028) (unit-type-count UNIT-MOUNTED-LINE >= 1028))
+=>
+	(set-goal land-core-ready YES)
+)
+
+; Strike core
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count <= 0)
+	(unit-type-count UNIT-MECH1-LINE >= 4)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 0)
+	(attack-soldier-count <= 4)
+	(unit-type-count UNIT-MECH1-LINE >= 8)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 4)
+	(attack-soldier-count <= 8)
+	(unit-type-count UNIT-MECH1-LINE >= 12)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 8)
+	(attack-soldier-count <= 12)
+	(unit-type-count UNIT-MECH1-LINE >= 16)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 12)
+	(attack-soldier-count <= 16)
+	(unit-type-count UNIT-MECH1-LINE >= 20)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 16)
+	(attack-soldier-count <= 24)
+	(unit-type-count UNIT-MECH1-LINE >= 28)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 24)
+	(attack-soldier-count <= 32)
+	(unit-type-count UNIT-MECH1-LINE >= 36)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 32)
+	(attack-soldier-count <= 48)
+	(unit-type-count UNIT-MECH1-LINE >= 52)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 48)
+	(attack-soldier-count <= 64)
+	(unit-type-count UNIT-MECH1-LINE >= 68)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 64)
+	(attack-soldier-count <= 96)
+	(unit-type-count UNIT-MECH1-LINE >= 100)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 96)
+	(attack-soldier-count <= 128)
+	(unit-type-count UNIT-MECH1-LINE >= 132)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 128)
+	(attack-soldier-count <= 192)
+	(unit-type-count UNIT-MECH1-LINE >= 196)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 192)
+	(attack-soldier-count <= 256)
+	(unit-type-count UNIT-MECH1-LINE >= 260)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 256)
+	(attack-soldier-count <= 384)
+	(unit-type-count UNIT-MECH1-LINE >= 388)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 384)
+	(attack-soldier-count <= 512)
+	(unit-type-count UNIT-MECH1-LINE >= 516)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 512)
+	(attack-soldier-count <= 768)
+	(unit-type-count UNIT-MECH1-LINE >= 772)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 768)
+	(attack-soldier-count <= 1024)
+	(unit-type-count UNIT-MECH1-LINE >= 1028)
+=>
+	(set-goal land-core-ready YES)
+)
+
+; TL3 mech core
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count <= 0)
+	(unit-type-count UNIT-MECH1-LINE >= 4)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 0)
+	(attack-soldier-count <= 4)
+	(unit-type-count UNIT-MECH1-LINE >= 8)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 4)
+	(attack-soldier-count <= 8)
+	(unit-type-count UNIT-MECH1-LINE >= 12)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 8)
+	(attack-soldier-count <= 12)
+	(unit-type-count UNIT-MECH1-LINE >= 16)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 12)
+	(attack-soldier-count <= 16)
+	(unit-type-count UNIT-MECH1-LINE >= 20)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 16)
+	(attack-soldier-count <= 24)
+	(unit-type-count UNIT-MECH1-LINE >= 28)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 24)
+	(attack-soldier-count <= 32)
+	(unit-type-count UNIT-MECH1-LINE >= 36)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 32)
+	(attack-soldier-count <= 48)
+	(unit-type-count UNIT-MECH1-LINE >= 52)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 48)
+	(attack-soldier-count <= 64)
+	(unit-type-count UNIT-MECH1-LINE >= 68)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 64)
+	(attack-soldier-count <= 96)
+	(unit-type-count UNIT-MECH1-LINE >= 100)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 96)
+	(attack-soldier-count <= 128)
+	(unit-type-count UNIT-MECH1-LINE >= 132)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 128)
+	(attack-soldier-count <= 192)
+	(unit-type-count UNIT-MECH1-LINE >= 196)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 192)
+	(attack-soldier-count <= 256)
+	(unit-type-count UNIT-MECH1-LINE >= 260)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 256)
+	(attack-soldier-count <= 384)
+	(unit-type-count UNIT-MECH1-LINE >= 388)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 384)
+	(attack-soldier-count <= 512)
+	(unit-type-count UNIT-MECH1-LINE >= 516)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 512)
+	(attack-soldier-count <= 768)
+	(unit-type-count UNIT-MECH1-LINE >= 772)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 768)
+	(attack-soldier-count <= 1024)
+	(unit-type-count UNIT-MECH1-LINE >= 1028)
+=>
+	(set-goal land-core-ready YES)
+)
+
+; TL4 Mechball core
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count <= 0)
+	(unit-type-count UNIT-MECH2-LINE >= 4)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 0)
+	(attack-soldier-count <= 4)
+	(unit-type-count UNIT-MECH2-LINE >= 8)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 4)
+	(attack-soldier-count <= 8)
+	(unit-type-count UNIT-MECH2-LINE >= 12)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 8)
+	(attack-soldier-count <= 12)
+	(unit-type-count UNIT-MECH2-LINE >= 16)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 12)
+	(attack-soldier-count <= 16)
+	(unit-type-count UNIT-MECH2-LINE >= 20)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 16)
+	(attack-soldier-count <= 24)
+	(unit-type-count UNIT-MECH2-LINE >= 28)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 24)
+	(attack-soldier-count <= 32)
+	(unit-type-count UNIT-MECH2-LINE >= 36)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 32)
+	(attack-soldier-count <= 48)
+	(unit-type-count UNIT-MECH2-LINE >= 52)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 48)
+	(attack-soldier-count <= 64)
+	(unit-type-count UNIT-MECH2-LINE >= 68)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 64)
+	(attack-soldier-count <= 96)
+	(unit-type-count UNIT-MECH2-LINE >= 100)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 96)
+	(attack-soldier-count <= 128)
+	(unit-type-count UNIT-MECH2-LINE >= 132)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 128)
+	(attack-soldier-count <= 192)
+	(unit-type-count UNIT-MECH2-LINE >= 196)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 192)
+	(attack-soldier-count <= 256)
+	(unit-type-count UNIT-MECH2-LINE >= 260)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 256)
+	(attack-soldier-count <= 384)
+	(unit-type-count UNIT-MECH2-LINE >= 388)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 384)
+	(attack-soldier-count <= 512)
+	(unit-type-count UNIT-MECH2-LINE >= 516)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 512)
+	(attack-soldier-count <= 768)
+	(unit-type-count UNIT-MECH2-LINE >= 772)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 768)
+	(attack-soldier-count <= 1024)
+	(unit-type-count UNIT-MECH2-LINE >= 1028)
+=>
+	(set-goal land-core-ready YES)
+)
+
+; TL4 Deathball core
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count <= 0)
+	(or (unit-type-count UNIT-MECH2-LINE >= 4) (unit-type-count UNIT-MECH3-LINE >= 4))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 0)
+	(attack-soldier-count <= 4)
+	(or (unit-type-count UNIT-MECH2-LINE >= 8) (unit-type-count UNIT-MECH3-LINE >= 8))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 4)
+	(attack-soldier-count <= 8)
+	(or (unit-type-count UNIT-MECH2-LINE >= 12) (unit-type-count UNIT-MECH3-LINE >= 12))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 8)
+	(attack-soldier-count <= 12)
+	(or (unit-type-count UNIT-MECH2-LINE >= 16) (unit-type-count UNIT-MECH3-LINE >= 16))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 12)
+	(attack-soldier-count <= 16)
+	(or (unit-type-count UNIT-MECH2-LINE >= 20) (unit-type-count UNIT-MECH3-LINE >= 20))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 16)
+	(attack-soldier-count <= 24)
+	(or (unit-type-count UNIT-MECH2-LINE >= 28) (unit-type-count UNIT-MECH3-LINE >= 28))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 24)
+	(attack-soldier-count <= 32)
+	(or (unit-type-count UNIT-MECH2-LINE >= 36) (unit-type-count UNIT-MECH3-LINE >= 36))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 32)
+	(attack-soldier-count <= 48)
+	(or (unit-type-count UNIT-MECH2-LINE >= 52) (unit-type-count UNIT-MECH3-LINE >= 52))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 48)
+	(attack-soldier-count <= 64)
+	(or (unit-type-count UNIT-MECH2-LINE >= 68) (unit-type-count UNIT-MECH3-LINE >= 68))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 64)
+	(attack-soldier-count <= 96)
+	(or (unit-type-count UNIT-MECH2-LINE >= 100) (unit-type-count UNIT-MECH3-LINE >= 100))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 96)
+	(attack-soldier-count <= 128)
+	(or (unit-type-count UNIT-MECH2-LINE >= 132) (unit-type-count UNIT-MECH3-LINE >= 132))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 128)
+	(attack-soldier-count <= 192)
+	(or (unit-type-count UNIT-MECH2-LINE >= 196) (unit-type-count UNIT-MECH3-LINE >= 196))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 192)
+	(attack-soldier-count <= 256)
+	(or (unit-type-count UNIT-MECH2-LINE >= 260) (unit-type-count UNIT-MECH3-LINE >= 260))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 256)
+	(attack-soldier-count <= 384)
+	(or (unit-type-count UNIT-MECH2-LINE >= 388) (unit-type-count UNIT-MECH3-LINE >= 388))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 384)
+	(attack-soldier-count <= 512)
+	(or (unit-type-count UNIT-MECH2-LINE >= 516) (unit-type-count UNIT-MECH3-LINE >= 516))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 512)
+	(attack-soldier-count <= 768)
+	(or (unit-type-count UNIT-MECH2-LINE >= 772) (unit-type-count UNIT-MECH3-LINE >= 772))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 768)
+	(attack-soldier-count <= 1024)
+	(or (unit-type-count UNIT-MECH2-LINE >= 1028) (unit-type-count UNIT-MECH3-LINE >= 1028))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal land-regroup-phase 0)
+	(attack-soldier-count >= 8)
+=>
+	(set-goal land-regroup-phase 1)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal land-regroup-phase 1)
+	(attack-soldier-count <= 2)
+=>
+	(set-goal land-regroup-phase 2)
+	(set-goal attackTSAhold EXHAUSTED)
+	(set-goal attackTSAlevel 0)
+	(set-goal attackTSAvar NULL)
+	(disable-timer t-attackgroup-hold)
+)
+
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-regroup-debug 0)
+=>
+	(chat-to-all "ATTACK GROUP: LOSSES - REGROUP")
+	(chat-local "ATTACK GROUP: LOSSES - REGROUP")
+	(set-goal land-regroup-debug 1)
+)
+
+#load-if-not-defined POPULATION-CAP-75
+#load-if-not-defined POPULATION-CAP-100
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-core-ready YES)
+	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
+	(goal openingstyle STYLE-RUSH)
+	(defend-soldier-count >= 16)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+#end-if
+#end-if
+#load-if-defined POPULATION-CAP-75
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-core-ready YES)
+	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
+	(goal openingstyle STYLE-RUSH)
+	(defend-soldier-count >= 8)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+#end-if
+#load-if-defined POPULATION-CAP-100
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-core-ready YES)
+	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
+	(goal openingstyle STYLE-RUSH)
+	(defend-soldier-count >= 8)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+#end-if
+#load-if-not-defined POPULATION-CAP-75
+#load-if-not-defined POPULATION-CAP-100
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-core-ready YES)
+	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(defend-soldier-count >= 22)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+#end-if
+#end-if
+#load-if-defined POPULATION-CAP-75
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-core-ready YES)
+	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(defend-soldier-count >= 11)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+#end-if
+#load-if-defined POPULATION-CAP-100
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-core-ready YES)
+	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(defend-soldier-count >= 11)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+#end-if
+#load-if-not-defined POPULATION-CAP-75
+#load-if-not-defined POPULATION-CAP-100
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-core-ready YES)
+	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(defend-soldier-count >= 32)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+#end-if
+#end-if
+#load-if-defined POPULATION-CAP-75
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-core-ready YES)
+	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(defend-soldier-count >= 16)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+#end-if
+#load-if-defined POPULATION-CAP-100
+(defrule
+	(goal land-regroup-phase 2)
+	(goal land-core-ready YES)
+	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
+	(goal openingstyle STYLE-DEFENSIVE)
+	(defend-soldier-count >= 16)
+=>
+	(set-goal land-regroup-phase 0)
+)
+
+#end-if
+(defrule
+	(goal land-regroup-debug 1)
+	(goal land-regroup-phase 0)
+	(goal land-attack-policy YES)
+=>
+	(chat-to-all "ATTACK GROUP: REBUILT - READY")
+	(chat-local "ATTACK GROUP: REBUILT - READY")
+	(set-goal land-regroup-debug 2)
+)
+
+(defrule
+	(goal land-regroup-phase 2)
+=>
+	(set-goal raid-launch-open NO)
+	(set-strategic-number sn-number-attack-groups 0)
+)
+
+#end-if
+
 ; A strength hold must also stop automatic groups, not just attack-now.
 (defrule
 	(goal attack-strength-hold YES)
@@ -1080,6 +2191,7 @@
 	(current-age >= tech-level-3)
 	(goal fortress-siege-hold NO)
 	(goal attack-strength-hold NO)
+	(not (goal land-regroup-phase 2))
 	(strategic-number sn-number-attack-groups == 0)
 =>
 	(set-strategic-number sn-number-attack-groups 1)
@@ -3319,6 +4431,38 @@
 )
 #end-if
 #end-if
+
+; Final LAND composition/recovery vetoes run before batch debug and ally signals.
+; Keep existing readiness queued through the regular 30-second retry path.
+(defrule
+	(goal land-attack-policy YES)
+	(goal aready YES)
+	(goal land-core-ready NO)
+	(goal attack-batch-debug-phase 0)
+=>
+	(chat-to-all "ATTACK GROUP: CORE LOW - WAIT")
+	(chat-local "ATTACK GROUP: CORE LOW - WAIT")
+	(set-goal attack-batch-debug-phase 1)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal aready YES)
+	(goal land-core-ready NO)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+(defrule
+	(goal land-regroup-phase 2)
+	(goal aready YES)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
 
 ; TL3/TL4 LAND/HYBRID spare ground batches, including initial TSA starts.
 ; Eight committed soldiers need 8/11/16 at home for 100/75/50 percent allocation.
