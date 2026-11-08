@@ -220,6 +220,7 @@
 	(true)
 =>
 	(set-goal attack-strength-hold NO)
+	(set-goal attack-strength-debug-phase 0)
 	(disable-self)
 )
 (defrule
@@ -928,6 +929,23 @@
 	(military-population >= 850)
 =>
 	(set-goal attack-strength-hold NO)
+)
+; Temporary playtest messages: one hold and one clear per AI per match.
+; Do not say an attack launched: independent siege/readiness checks still apply.
+(defrule
+	(goal attack-strength-debug-phase 0)
+	(goal attack-strength-hold YES)
+=>
+	(chat-to-all "AI strength: HOLD - reinforcing before regular attacks.")
+	(set-goal attack-strength-debug-phase 1)
+)
+
+(defrule
+	(goal attack-strength-debug-phase 1)
+	(goal attack-strength-hold NO)
+=>
+	(chat-to-all "AI strength: CLEAR - strength hold lifted; other attack checks still apply.")
+	(set-goal attack-strength-debug-phase 2)
 )
 #end-if
 

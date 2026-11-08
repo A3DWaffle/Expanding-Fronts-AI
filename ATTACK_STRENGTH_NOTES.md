@@ -1,5 +1,7 @@
 # Initial attack strength check
 
+Temporary playtest chat reports the first strength HOLD and first CLEAR per AI per match, with no further repetitions. CLEAR means this check released; other attack requirements still apply. Goal 224 tracks the two-message limit without using another timer.
+
 Regular LAND games now check military population before launching ordinary TL3 and TL4 attacks or starting a Town Size Attack. This first version operates only when exactly one enemy remains in the game. Early raids, WATER, HYBRID, ASTEROID, Monument Race, and games with several remaining enemies retain their previous behavior. Separate Jedi attack commands and scripted emergency commands are outside this initial rollout.
 
 The AI holds these launches when its military population falls below approximately 70% of the enemy's, then resumes once it reaches approximately 85%. The difference between the two thresholds prevents repeated switching. The comparison updates every script pass, so enemy losses can release a hold without waiting for more troops. Enemies with 20 or fewer military population bypass this initial check.
