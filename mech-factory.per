@@ -615,6 +615,7 @@
 #load-if-not-defined POPULATION-CAP-50
 (defrule
 	(current-age == tech-level-3)
+	(not (goal special-map LAND))
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -676,20 +677,26 @@
 	(train UNIT-MECH1-LINE)
 )
 
-; A TL4 LAND Strike lineup must be able to rebuild a spare core even at low caps.
-#load-if-not-defined POPULATION-CAP-25
-#load-if-not-defined POPULATION-CAP-50
 (defrule
-	(current-age == tech-level-4)
+	(current-age == tech-level-3)
 	(goal special-map LAND)
-	(goal combat-arm STRIKE/HW)
-	(unit-type-count-total UNIT-MECH1-LINE < 8)
+	(or (goal combat-arm STRIKE/HW) (or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL)))
+	(unit-type-count-total UNIT-MECH1-LINE < land-core-floor)
 	(can-train UNIT-MECH1-LINE)
 =>
 	(train UNIT-MECH1-LINE)
 )
-#end-if
-#end-if
+
+; A TL4 LAND Strike lineup must be able to rebuild a spare core even at low caps.
+(defrule
+	(current-age == tech-level-4)
+	(goal special-map LAND)
+	(goal combat-arm STRIKE/HW)
+	(unit-type-count-total UNIT-MECH1-LINE < land-core-floor)
+	(can-train UNIT-MECH1-LINE)
+=>
+	(train UNIT-MECH1-LINE)
+)
 
 ; --- TL3 Strike core p1 ---
 (defrule

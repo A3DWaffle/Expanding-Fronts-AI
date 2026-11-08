@@ -212,7 +212,7 @@
 ; Apply only to TL3+ LAND with exactly one active enemy. With several enemies,
 ; AoC cannot reliably expose the engine's selected target, so leave attacks alone.
 ; Recompute the opponent and population band each pass; preserve the hold between
-; passes for hysteresis. Small armies (enemy <= 20) bypass this initial rollout.
+; passes for hysteresis. The small-enemy bypass comes from the population package.
 ; Bands approximate 70% to hold and 85% to release. They count unseen troops too.
 ; This is total military population, not a simulation of the available field army.
 #load-if-not-defined MONUMENT-RACE
@@ -356,6 +356,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 20)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 30)
 =>
 	(set-goal attack-strength-band 30)
@@ -366,6 +367,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 30)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 40)
 =>
 	(set-goal attack-strength-band 40)
@@ -376,6 +378,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 40)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 50)
 =>
 	(set-goal attack-strength-band 50)
@@ -386,6 +389,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 50)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 60)
 =>
 	(set-goal attack-strength-band 60)
@@ -396,6 +400,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 60)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 70)
 =>
 	(set-goal attack-strength-band 70)
@@ -406,6 +411,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 70)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 80)
 =>
 	(set-goal attack-strength-band 80)
@@ -416,6 +422,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 80)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 90)
 =>
 	(set-goal attack-strength-band 90)
@@ -426,6 +433,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 90)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 100)
 =>
 	(set-goal attack-strength-band 100)
@@ -436,6 +444,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 100)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 125)
 =>
 	(set-goal attack-strength-band 125)
@@ -446,6 +455,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 125)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 150)
 =>
 	(set-goal attack-strength-band 150)
@@ -456,6 +466,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 150)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 175)
 =>
 	(set-goal attack-strength-band 175)
@@ -466,6 +477,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 175)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 200)
 =>
 	(set-goal attack-strength-band 200)
@@ -476,6 +488,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 200)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 225)
 =>
 	(set-goal attack-strength-band 225)
@@ -486,6 +499,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 225)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 250)
 =>
 	(set-goal attack-strength-band 250)
@@ -496,6 +510,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 250)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 300)
 =>
 	(set-goal attack-strength-band 300)
@@ -506,6 +521,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 300)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 350)
 =>
 	(set-goal attack-strength-band 350)
@@ -516,6 +532,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 350)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 400)
 =>
 	(set-goal attack-strength-band 400)
@@ -526,6 +543,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 400)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 450)
 =>
 	(set-goal attack-strength-band 450)
@@ -536,6 +554,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 450)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 500)
 =>
 	(set-goal attack-strength-band 500)
@@ -546,6 +565,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 500)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 600)
 =>
 	(set-goal attack-strength-band 600)
@@ -556,6 +576,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 600)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 700)
 =>
 	(set-goal attack-strength-band 700)
@@ -566,6 +587,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 700)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 800)
 =>
 	(set-goal attack-strength-band 800)
@@ -576,6 +598,7 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 800)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 900)
 =>
 	(set-goal attack-strength-band 900)
@@ -586,10 +609,119 @@
 	(not (goal attack-strength-opponent 0))
 	(not (goal attack-strength-opponent 9))
 	(players-military-population any-enemy > 900)
+	(players-military-population any-enemy > land-strength-min-enemy)
 	(players-military-population any-enemy <= 1000)
 =>
 	(set-goal attack-strength-band 1000)
 )
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 0)
+	(players-military-population any-enemy > land-strength-min-enemy)
+	(players-military-population any-enemy <= 2)
+=>
+	(set-goal attack-strength-band 2)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 2)
+	(players-military-population any-enemy > land-strength-min-enemy)
+	(players-military-population any-enemy <= 3)
+=>
+	(set-goal attack-strength-band 3)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 3)
+	(players-military-population any-enemy > land-strength-min-enemy)
+	(players-military-population any-enemy <= 4)
+=>
+	(set-goal attack-strength-band 4)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 4)
+	(players-military-population any-enemy > land-strength-min-enemy)
+	(players-military-population any-enemy <= 6)
+=>
+	(set-goal attack-strength-band 6)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 6)
+	(players-military-population any-enemy > land-strength-min-enemy)
+	(players-military-population any-enemy <= 8)
+=>
+	(set-goal attack-strength-band 8)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 8)
+	(players-military-population any-enemy > land-strength-min-enemy)
+	(players-military-population any-enemy <= 10)
+=>
+	(set-goal attack-strength-band 10)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 10)
+	(players-military-population any-enemy > land-strength-min-enemy)
+	(players-military-population any-enemy <= 12)
+=>
+	(set-goal attack-strength-band 12)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 12)
+	(players-military-population any-enemy > land-strength-min-enemy)
+	(players-military-population any-enemy <= 15)
+=>
+	(set-goal attack-strength-band 15)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 15)
+	(players-military-population any-enemy > land-strength-min-enemy)
+	(players-military-population any-enemy <= 20)
+=>
+	(set-goal attack-strength-band 20)
+)
+
 (defrule
 	(goal attack-strength-band 0)
 =>
@@ -931,6 +1063,150 @@
 =>
 	(set-goal attack-strength-hold NO)
 )
+(defrule
+	(goal attack-strength-band 2)
+	(goal attack-strength-hold NO)
+	(military-population < 2)
+=>
+	(set-goal attack-strength-hold YES)
+)
+
+(defrule
+	(goal attack-strength-band 2)
+	(goal attack-strength-hold YES)
+	(military-population >= 2)
+=>
+	(set-goal attack-strength-hold NO)
+)
+
+(defrule
+	(goal attack-strength-band 3)
+	(goal attack-strength-hold NO)
+	(military-population < 3)
+=>
+	(set-goal attack-strength-hold YES)
+)
+
+(defrule
+	(goal attack-strength-band 3)
+	(goal attack-strength-hold YES)
+	(military-population >= 3)
+=>
+	(set-goal attack-strength-hold NO)
+)
+
+(defrule
+	(goal attack-strength-band 4)
+	(goal attack-strength-hold NO)
+	(military-population < 3)
+=>
+	(set-goal attack-strength-hold YES)
+)
+
+(defrule
+	(goal attack-strength-band 4)
+	(goal attack-strength-hold YES)
+	(military-population >= 4)
+=>
+	(set-goal attack-strength-hold NO)
+)
+
+(defrule
+	(goal attack-strength-band 6)
+	(goal attack-strength-hold NO)
+	(military-population < 5)
+=>
+	(set-goal attack-strength-hold YES)
+)
+
+(defrule
+	(goal attack-strength-band 6)
+	(goal attack-strength-hold YES)
+	(military-population >= 6)
+=>
+	(set-goal attack-strength-hold NO)
+)
+
+(defrule
+	(goal attack-strength-band 8)
+	(goal attack-strength-hold NO)
+	(military-population < 6)
+=>
+	(set-goal attack-strength-hold YES)
+)
+
+(defrule
+	(goal attack-strength-band 8)
+	(goal attack-strength-hold YES)
+	(military-population >= 7)
+=>
+	(set-goal attack-strength-hold NO)
+)
+
+(defrule
+	(goal attack-strength-band 10)
+	(goal attack-strength-hold NO)
+	(military-population < 7)
+=>
+	(set-goal attack-strength-hold YES)
+)
+
+(defrule
+	(goal attack-strength-band 10)
+	(goal attack-strength-hold YES)
+	(military-population >= 9)
+=>
+	(set-goal attack-strength-hold NO)
+)
+
+(defrule
+	(goal attack-strength-band 12)
+	(goal attack-strength-hold NO)
+	(military-population < 9)
+=>
+	(set-goal attack-strength-hold YES)
+)
+
+(defrule
+	(goal attack-strength-band 12)
+	(goal attack-strength-hold YES)
+	(military-population >= 11)
+=>
+	(set-goal attack-strength-hold NO)
+)
+
+(defrule
+	(goal attack-strength-band 15)
+	(goal attack-strength-hold NO)
+	(military-population < 11)
+=>
+	(set-goal attack-strength-hold YES)
+)
+
+(defrule
+	(goal attack-strength-band 15)
+	(goal attack-strength-hold YES)
+	(military-population >= 13)
+=>
+	(set-goal attack-strength-hold NO)
+)
+
+(defrule
+	(goal attack-strength-band 20)
+	(goal attack-strength-hold NO)
+	(military-population < 14)
+=>
+	(set-goal attack-strength-hold YES)
+)
+
+(defrule
+	(goal attack-strength-band 20)
+	(goal attack-strength-hold YES)
+	(military-population >= 17)
+=>
+	(set-goal attack-strength-hold NO)
+)
+
 ; Temporary playtest messages: one hold and one clear per AI per match.
 ; Do not say an attack launched: independent siege/readiness checks still apply.
 (defrule
@@ -1078,8 +1354,6 @@
 	(set-goal land-core-ready NO)
 )
 
-#load-if-not-defined POPULATION-CAP-25
-#load-if-not-defined POPULATION-CAP-50
 (defrule
 	(current-age >= tech-level-3)
 	(goal special-map LAND)
@@ -1089,8 +1363,6 @@
 	(set-goal land-attack-policy YES)
 )
 
-#end-if
-#end-if
 (defrule
 	(goal land-attack-policy NO)
 =>
@@ -1102,7 +1374,7 @@
 	(goal land-attack-policy YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count <= 0)
-	(or (unit-type-count UNIT-LASER-LINE >= 4) (unit-type-count UNIT-MOUNTED-LINE >= 4))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-0) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-0))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1111,8 +1383,38 @@
 	(goal land-attack-policy YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 0)
+	(attack-soldier-count <= 1)
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-1) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-1))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 1)
+	(attack-soldier-count <= 2)
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-2) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-2))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 2)
+	(attack-soldier-count <= 3)
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-3) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-3))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
+	(attack-soldier-count > 3)
 	(attack-soldier-count <= 4)
-	(or (unit-type-count UNIT-LASER-LINE >= 8) (unit-type-count UNIT-MOUNTED-LINE >= 8))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-4) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-4))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1122,7 +1424,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 4)
 	(attack-soldier-count <= 8)
-	(or (unit-type-count UNIT-LASER-LINE >= 12) (unit-type-count UNIT-MOUNTED-LINE >= 12))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-8) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-8))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1132,7 +1434,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 8)
 	(attack-soldier-count <= 12)
-	(or (unit-type-count UNIT-LASER-LINE >= 16) (unit-type-count UNIT-MOUNTED-LINE >= 16))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-12) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-12))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1142,7 +1444,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 12)
 	(attack-soldier-count <= 16)
-	(or (unit-type-count UNIT-LASER-LINE >= 20) (unit-type-count UNIT-MOUNTED-LINE >= 20))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-16) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-16))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1152,7 +1454,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 16)
 	(attack-soldier-count <= 24)
-	(or (unit-type-count UNIT-LASER-LINE >= 28) (unit-type-count UNIT-MOUNTED-LINE >= 28))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-24) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-24))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1162,7 +1464,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 24)
 	(attack-soldier-count <= 32)
-	(or (unit-type-count UNIT-LASER-LINE >= 36) (unit-type-count UNIT-MOUNTED-LINE >= 36))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-32) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-32))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1172,7 +1474,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 32)
 	(attack-soldier-count <= 48)
-	(or (unit-type-count UNIT-LASER-LINE >= 52) (unit-type-count UNIT-MOUNTED-LINE >= 52))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-48) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-48))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1182,7 +1484,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 48)
 	(attack-soldier-count <= 64)
-	(or (unit-type-count UNIT-LASER-LINE >= 68) (unit-type-count UNIT-MOUNTED-LINE >= 68))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-64) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-64))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1192,7 +1494,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 64)
 	(attack-soldier-count <= 96)
-	(or (unit-type-count UNIT-LASER-LINE >= 100) (unit-type-count UNIT-MOUNTED-LINE >= 100))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-96) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-96))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1202,7 +1504,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 96)
 	(attack-soldier-count <= 128)
-	(or (unit-type-count UNIT-LASER-LINE >= 132) (unit-type-count UNIT-MOUNTED-LINE >= 132))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-128) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-128))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1212,7 +1514,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 128)
 	(attack-soldier-count <= 192)
-	(or (unit-type-count UNIT-LASER-LINE >= 196) (unit-type-count UNIT-MOUNTED-LINE >= 196))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-192) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-192))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1222,7 +1524,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 192)
 	(attack-soldier-count <= 256)
-	(or (unit-type-count UNIT-LASER-LINE >= 260) (unit-type-count UNIT-MOUNTED-LINE >= 260))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-256) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-256))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1232,7 +1534,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 256)
 	(attack-soldier-count <= 384)
-	(or (unit-type-count UNIT-LASER-LINE >= 388) (unit-type-count UNIT-MOUNTED-LINE >= 388))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-384) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-384))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1242,7 +1544,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 384)
 	(attack-soldier-count <= 512)
-	(or (unit-type-count UNIT-LASER-LINE >= 516) (unit-type-count UNIT-MOUNTED-LINE >= 516))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-512) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-512))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1252,7 +1554,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 512)
 	(attack-soldier-count <= 768)
-	(or (unit-type-count UNIT-LASER-LINE >= 772) (unit-type-count UNIT-MOUNTED-LINE >= 772))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-768) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-768))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1262,7 +1564,7 @@
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 768)
 	(attack-soldier-count <= 1024)
-	(or (unit-type-count UNIT-LASER-LINE >= 1028) (unit-type-count UNIT-MOUNTED-LINE >= 1028))
+	(or (unit-type-count UNIT-LASER-LINE >= land-core-spare-1024) (unit-type-count UNIT-MOUNTED-LINE >= land-core-spare-1024))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1272,7 +1574,7 @@
 	(goal land-attack-policy YES)
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count <= 0)
-	(unit-type-count UNIT-MECH1-LINE >= 4)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-0)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1281,8 +1583,38 @@
 	(goal land-attack-policy YES)
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 0)
+	(attack-soldier-count <= 1)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-1)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 1)
+	(attack-soldier-count <= 2)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-2)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 2)
+	(attack-soldier-count <= 3)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-3)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal combat-arm STRIKE/HW)
+	(attack-soldier-count > 3)
 	(attack-soldier-count <= 4)
-	(unit-type-count UNIT-MECH1-LINE >= 8)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-4)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1292,7 +1624,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 4)
 	(attack-soldier-count <= 8)
-	(unit-type-count UNIT-MECH1-LINE >= 12)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-8)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1302,7 +1634,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 8)
 	(attack-soldier-count <= 12)
-	(unit-type-count UNIT-MECH1-LINE >= 16)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-12)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1312,7 +1644,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 12)
 	(attack-soldier-count <= 16)
-	(unit-type-count UNIT-MECH1-LINE >= 20)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-16)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1322,7 +1654,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 16)
 	(attack-soldier-count <= 24)
-	(unit-type-count UNIT-MECH1-LINE >= 28)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-24)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1332,7 +1664,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 24)
 	(attack-soldier-count <= 32)
-	(unit-type-count UNIT-MECH1-LINE >= 36)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-32)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1342,7 +1674,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 32)
 	(attack-soldier-count <= 48)
-	(unit-type-count UNIT-MECH1-LINE >= 52)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-48)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1352,7 +1684,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 48)
 	(attack-soldier-count <= 64)
-	(unit-type-count UNIT-MECH1-LINE >= 68)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-64)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1362,7 +1694,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 64)
 	(attack-soldier-count <= 96)
-	(unit-type-count UNIT-MECH1-LINE >= 100)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-96)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1372,7 +1704,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 96)
 	(attack-soldier-count <= 128)
-	(unit-type-count UNIT-MECH1-LINE >= 132)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-128)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1382,7 +1714,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 128)
 	(attack-soldier-count <= 192)
-	(unit-type-count UNIT-MECH1-LINE >= 196)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-192)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1392,7 +1724,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 192)
 	(attack-soldier-count <= 256)
-	(unit-type-count UNIT-MECH1-LINE >= 260)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-256)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1402,7 +1734,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 256)
 	(attack-soldier-count <= 384)
-	(unit-type-count UNIT-MECH1-LINE >= 388)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-384)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1412,7 +1744,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 384)
 	(attack-soldier-count <= 512)
-	(unit-type-count UNIT-MECH1-LINE >= 516)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-512)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1422,7 +1754,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 512)
 	(attack-soldier-count <= 768)
-	(unit-type-count UNIT-MECH1-LINE >= 772)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-768)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1432,7 +1764,7 @@
 	(goal combat-arm STRIKE/HW)
 	(attack-soldier-count > 768)
 	(attack-soldier-count <= 1024)
-	(unit-type-count UNIT-MECH1-LINE >= 1028)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-1024)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1443,7 +1775,7 @@
 	(current-age == tech-level-3)
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count <= 0)
-	(unit-type-count UNIT-MECH1-LINE >= 4)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-0)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1453,8 +1785,41 @@
 	(current-age == tech-level-3)
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 0)
+	(attack-soldier-count <= 1)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-1)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 1)
+	(attack-soldier-count <= 2)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-2)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 2)
+	(attack-soldier-count <= 3)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-3)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-3)
+	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
+	(attack-soldier-count > 3)
 	(attack-soldier-count <= 4)
-	(unit-type-count UNIT-MECH1-LINE >= 8)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-4)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1465,7 +1830,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 4)
 	(attack-soldier-count <= 8)
-	(unit-type-count UNIT-MECH1-LINE >= 12)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-8)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1476,7 +1841,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 8)
 	(attack-soldier-count <= 12)
-	(unit-type-count UNIT-MECH1-LINE >= 16)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-12)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1487,7 +1852,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 12)
 	(attack-soldier-count <= 16)
-	(unit-type-count UNIT-MECH1-LINE >= 20)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-16)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1498,7 +1863,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 16)
 	(attack-soldier-count <= 24)
-	(unit-type-count UNIT-MECH1-LINE >= 28)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-24)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1509,7 +1874,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 24)
 	(attack-soldier-count <= 32)
-	(unit-type-count UNIT-MECH1-LINE >= 36)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-32)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1520,7 +1885,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 32)
 	(attack-soldier-count <= 48)
-	(unit-type-count UNIT-MECH1-LINE >= 52)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-48)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1531,7 +1896,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 48)
 	(attack-soldier-count <= 64)
-	(unit-type-count UNIT-MECH1-LINE >= 68)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-64)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1542,7 +1907,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 64)
 	(attack-soldier-count <= 96)
-	(unit-type-count UNIT-MECH1-LINE >= 100)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-96)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1553,7 +1918,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 96)
 	(attack-soldier-count <= 128)
-	(unit-type-count UNIT-MECH1-LINE >= 132)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-128)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1564,7 +1929,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 128)
 	(attack-soldier-count <= 192)
-	(unit-type-count UNIT-MECH1-LINE >= 196)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-192)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1575,7 +1940,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 192)
 	(attack-soldier-count <= 256)
-	(unit-type-count UNIT-MECH1-LINE >= 260)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-256)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1586,7 +1951,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 256)
 	(attack-soldier-count <= 384)
-	(unit-type-count UNIT-MECH1-LINE >= 388)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-384)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1597,7 +1962,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 384)
 	(attack-soldier-count <= 512)
-	(unit-type-count UNIT-MECH1-LINE >= 516)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-512)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1608,7 +1973,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 512)
 	(attack-soldier-count <= 768)
-	(unit-type-count UNIT-MECH1-LINE >= 772)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-768)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1619,7 +1984,7 @@
 	(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
 	(attack-soldier-count > 768)
 	(attack-soldier-count <= 1024)
-	(unit-type-count UNIT-MECH1-LINE >= 1028)
+	(unit-type-count UNIT-MECH1-LINE >= land-core-spare-1024)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1630,7 +1995,7 @@
 	(current-age == tech-level-4)
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count <= 0)
-	(unit-type-count UNIT-MECH2-LINE >= 4)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-0)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1640,8 +2005,41 @@
 	(current-age == tech-level-4)
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 0)
+	(attack-soldier-count <= 1)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-1)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 1)
+	(attack-soldier-count <= 2)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-2)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 2)
+	(attack-soldier-count <= 3)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-3)
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm MECHBALL)
+	(attack-soldier-count > 3)
 	(attack-soldier-count <= 4)
-	(unit-type-count UNIT-MECH2-LINE >= 8)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-4)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1652,7 +2050,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 4)
 	(attack-soldier-count <= 8)
-	(unit-type-count UNIT-MECH2-LINE >= 12)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-8)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1663,7 +2061,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 8)
 	(attack-soldier-count <= 12)
-	(unit-type-count UNIT-MECH2-LINE >= 16)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-12)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1674,7 +2072,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 12)
 	(attack-soldier-count <= 16)
-	(unit-type-count UNIT-MECH2-LINE >= 20)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-16)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1685,7 +2083,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 16)
 	(attack-soldier-count <= 24)
-	(unit-type-count UNIT-MECH2-LINE >= 28)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-24)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1696,7 +2094,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 24)
 	(attack-soldier-count <= 32)
-	(unit-type-count UNIT-MECH2-LINE >= 36)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-32)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1707,7 +2105,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 32)
 	(attack-soldier-count <= 48)
-	(unit-type-count UNIT-MECH2-LINE >= 52)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-48)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1718,7 +2116,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 48)
 	(attack-soldier-count <= 64)
-	(unit-type-count UNIT-MECH2-LINE >= 68)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-64)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1729,7 +2127,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 64)
 	(attack-soldier-count <= 96)
-	(unit-type-count UNIT-MECH2-LINE >= 100)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-96)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1740,7 +2138,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 96)
 	(attack-soldier-count <= 128)
-	(unit-type-count UNIT-MECH2-LINE >= 132)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-128)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1751,7 +2149,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 128)
 	(attack-soldier-count <= 192)
-	(unit-type-count UNIT-MECH2-LINE >= 196)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-192)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1762,7 +2160,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 192)
 	(attack-soldier-count <= 256)
-	(unit-type-count UNIT-MECH2-LINE >= 260)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-256)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1773,7 +2171,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 256)
 	(attack-soldier-count <= 384)
-	(unit-type-count UNIT-MECH2-LINE >= 388)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-384)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1784,7 +2182,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 384)
 	(attack-soldier-count <= 512)
-	(unit-type-count UNIT-MECH2-LINE >= 516)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-512)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1795,7 +2193,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 512)
 	(attack-soldier-count <= 768)
-	(unit-type-count UNIT-MECH2-LINE >= 772)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-768)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1806,7 +2204,7 @@
 	(goal combat-arm MECHBALL)
 	(attack-soldier-count > 768)
 	(attack-soldier-count <= 1024)
-	(unit-type-count UNIT-MECH2-LINE >= 1028)
+	(unit-type-count UNIT-MECH2-LINE >= land-core-spare-1024)
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1817,7 +2215,7 @@
 	(current-age == tech-level-4)
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count <= 0)
-	(or (unit-type-count UNIT-MECH2-LINE >= 4) (unit-type-count UNIT-MECH3-LINE >= 4))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-0) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-0))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1827,8 +2225,41 @@
 	(current-age == tech-level-4)
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 0)
+	(attack-soldier-count <= 1)
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-1) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-1))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 1)
+	(attack-soldier-count <= 2)
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-2) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-2))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 2)
+	(attack-soldier-count <= 3)
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-3) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-3))
+=>
+	(set-goal land-core-ready YES)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(current-age == tech-level-4)
+	(goal combat-arm DEATHBALL)
+	(attack-soldier-count > 3)
 	(attack-soldier-count <= 4)
-	(or (unit-type-count UNIT-MECH2-LINE >= 8) (unit-type-count UNIT-MECH3-LINE >= 8))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-4) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-4))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1839,7 +2270,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 4)
 	(attack-soldier-count <= 8)
-	(or (unit-type-count UNIT-MECH2-LINE >= 12) (unit-type-count UNIT-MECH3-LINE >= 12))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-8) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-8))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1850,7 +2281,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 8)
 	(attack-soldier-count <= 12)
-	(or (unit-type-count UNIT-MECH2-LINE >= 16) (unit-type-count UNIT-MECH3-LINE >= 16))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-12) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-12))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1861,7 +2292,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 12)
 	(attack-soldier-count <= 16)
-	(or (unit-type-count UNIT-MECH2-LINE >= 20) (unit-type-count UNIT-MECH3-LINE >= 20))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-16) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-16))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1872,7 +2303,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 16)
 	(attack-soldier-count <= 24)
-	(or (unit-type-count UNIT-MECH2-LINE >= 28) (unit-type-count UNIT-MECH3-LINE >= 28))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-24) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-24))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1883,7 +2314,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 24)
 	(attack-soldier-count <= 32)
-	(or (unit-type-count UNIT-MECH2-LINE >= 36) (unit-type-count UNIT-MECH3-LINE >= 36))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-32) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-32))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1894,7 +2325,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 32)
 	(attack-soldier-count <= 48)
-	(or (unit-type-count UNIT-MECH2-LINE >= 52) (unit-type-count UNIT-MECH3-LINE >= 52))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-48) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-48))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1905,7 +2336,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 48)
 	(attack-soldier-count <= 64)
-	(or (unit-type-count UNIT-MECH2-LINE >= 68) (unit-type-count UNIT-MECH3-LINE >= 68))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-64) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-64))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1916,7 +2347,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 64)
 	(attack-soldier-count <= 96)
-	(or (unit-type-count UNIT-MECH2-LINE >= 100) (unit-type-count UNIT-MECH3-LINE >= 100))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-96) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-96))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1927,7 +2358,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 96)
 	(attack-soldier-count <= 128)
-	(or (unit-type-count UNIT-MECH2-LINE >= 132) (unit-type-count UNIT-MECH3-LINE >= 132))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-128) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-128))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1938,7 +2369,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 128)
 	(attack-soldier-count <= 192)
-	(or (unit-type-count UNIT-MECH2-LINE >= 196) (unit-type-count UNIT-MECH3-LINE >= 196))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-192) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-192))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1949,7 +2380,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 192)
 	(attack-soldier-count <= 256)
-	(or (unit-type-count UNIT-MECH2-LINE >= 260) (unit-type-count UNIT-MECH3-LINE >= 260))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-256) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-256))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1960,7 +2391,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 256)
 	(attack-soldier-count <= 384)
-	(or (unit-type-count UNIT-MECH2-LINE >= 388) (unit-type-count UNIT-MECH3-LINE >= 388))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-384) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-384))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1971,7 +2402,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 384)
 	(attack-soldier-count <= 512)
-	(or (unit-type-count UNIT-MECH2-LINE >= 516) (unit-type-count UNIT-MECH3-LINE >= 516))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-512) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-512))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1982,7 +2413,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 512)
 	(attack-soldier-count <= 768)
-	(or (unit-type-count UNIT-MECH2-LINE >= 772) (unit-type-count UNIT-MECH3-LINE >= 772))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-768) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-768))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -1993,7 +2424,7 @@
 	(goal combat-arm DEATHBALL)
 	(attack-soldier-count > 768)
 	(attack-soldier-count <= 1024)
-	(or (unit-type-count UNIT-MECH2-LINE >= 1028) (unit-type-count UNIT-MECH3-LINE >= 1028))
+	(or (unit-type-count UNIT-MECH2-LINE >= land-core-spare-1024) (unit-type-count UNIT-MECH3-LINE >= land-core-spare-1024))
 =>
 	(set-goal land-core-ready YES)
 )
@@ -2001,7 +2432,7 @@
 (defrule
 	(goal land-attack-policy YES)
 	(goal land-regroup-phase 0)
-	(attack-soldier-count >= 8)
+	(attack-soldier-count >= land-loss-arm)
 =>
 	(set-goal land-regroup-phase 1)
 )
@@ -2009,7 +2440,7 @@
 (defrule
 	(goal land-attack-policy YES)
 	(goal land-regroup-phase 1)
-	(attack-soldier-count <= 2)
+	(attack-soldier-count <= land-loss-left)
 =>
 	(set-goal land-regroup-phase 2)
 	(set-goal attackTSAhold EXHAUSTED)
@@ -2027,129 +2458,39 @@
 	(set-goal land-regroup-debug 1)
 )
 
-#load-if-not-defined POPULATION-CAP-75
-#load-if-not-defined POPULATION-CAP-100
 (defrule
 	(goal land-regroup-phase 2)
 	(goal land-core-ready YES)
 	(goal fortress-siege-hold NO)
 	(goal attack-strength-hold NO)
 	(goal openingstyle STYLE-RUSH)
-	(defend-soldier-count >= 16)
+	(defend-soldier-count >= land-rebuild-rush)
 =>
 	(set-goal land-regroup-phase 0)
 )
 
-#end-if
-#end-if
-#load-if-defined POPULATION-CAP-75
-(defrule
-	(goal land-regroup-phase 2)
-	(goal land-core-ready YES)
-	(goal fortress-siege-hold NO)
-	(goal attack-strength-hold NO)
-	(goal openingstyle STYLE-RUSH)
-	(defend-soldier-count >= 8)
-=>
-	(set-goal land-regroup-phase 0)
-)
-
-#end-if
-#load-if-defined POPULATION-CAP-100
-(defrule
-	(goal land-regroup-phase 2)
-	(goal land-core-ready YES)
-	(goal fortress-siege-hold NO)
-	(goal attack-strength-hold NO)
-	(goal openingstyle STYLE-RUSH)
-	(defend-soldier-count >= 8)
-=>
-	(set-goal land-regroup-phase 0)
-)
-
-#end-if
-#load-if-not-defined POPULATION-CAP-75
-#load-if-not-defined POPULATION-CAP-100
 (defrule
 	(goal land-regroup-phase 2)
 	(goal land-core-ready YES)
 	(goal fortress-siege-hold NO)
 	(goal attack-strength-hold NO)
 	(goal openingstyle STYLE-AGGRESSIVE)
-	(defend-soldier-count >= 22)
+	(defend-soldier-count >= land-rebuild-aggressive)
 =>
 	(set-goal land-regroup-phase 0)
 )
 
-#end-if
-#end-if
-#load-if-defined POPULATION-CAP-75
-(defrule
-	(goal land-regroup-phase 2)
-	(goal land-core-ready YES)
-	(goal fortress-siege-hold NO)
-	(goal attack-strength-hold NO)
-	(goal openingstyle STYLE-AGGRESSIVE)
-	(defend-soldier-count >= 11)
-=>
-	(set-goal land-regroup-phase 0)
-)
-
-#end-if
-#load-if-defined POPULATION-CAP-100
-(defrule
-	(goal land-regroup-phase 2)
-	(goal land-core-ready YES)
-	(goal fortress-siege-hold NO)
-	(goal attack-strength-hold NO)
-	(goal openingstyle STYLE-AGGRESSIVE)
-	(defend-soldier-count >= 11)
-=>
-	(set-goal land-regroup-phase 0)
-)
-
-#end-if
-#load-if-not-defined POPULATION-CAP-75
-#load-if-not-defined POPULATION-CAP-100
 (defrule
 	(goal land-regroup-phase 2)
 	(goal land-core-ready YES)
 	(goal fortress-siege-hold NO)
 	(goal attack-strength-hold NO)
 	(goal openingstyle STYLE-DEFENSIVE)
-	(defend-soldier-count >= 32)
+	(defend-soldier-count >= land-rebuild-defensive)
 =>
 	(set-goal land-regroup-phase 0)
 )
 
-#end-if
-#end-if
-#load-if-defined POPULATION-CAP-75
-(defrule
-	(goal land-regroup-phase 2)
-	(goal land-core-ready YES)
-	(goal fortress-siege-hold NO)
-	(goal attack-strength-hold NO)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(defend-soldier-count >= 16)
-=>
-	(set-goal land-regroup-phase 0)
-)
-
-#end-if
-#load-if-defined POPULATION-CAP-100
-(defrule
-	(goal land-regroup-phase 2)
-	(goal land-core-ready YES)
-	(goal fortress-siege-hold NO)
-	(goal attack-strength-hold NO)
-	(goal openingstyle STYLE-DEFENSIVE)
-	(defend-soldier-count >= 16)
-=>
-	(set-goal land-regroup-phase 0)
-)
-
-#end-if
 (defrule
 	(goal land-regroup-debug 1)
 	(goal land-regroup-phase 0)
@@ -3359,6 +3700,20 @@
 	(enable-timer t-attackgroup-alt 30)
 )
 
+(defrule
+	(true)
+=>
+	(set-goal raid-rule-check NO)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal attacktype NORM)
+	(or (not (goal special-map LAND)) (goal combat-arm AIR))
+=>
+	(set-goal raid-rule-check YES)
+)
+
 ; TL3 core composition checks. Completed counts exclude queued production.
 ; Subtract a conservative upper bound for ALL attackers in the same domain:
 ; e.g. 1-4 attacking ground units require 8 owned Strike Mechs to prove 4 spare.
@@ -3376,7 +3731,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3392,7 +3747,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3409,7 +3764,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3426,7 +3781,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3443,7 +3798,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3460,7 +3815,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3477,7 +3832,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3494,7 +3849,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3511,7 +3866,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3528,7 +3883,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3545,7 +3900,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3562,7 +3917,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3579,7 +3934,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3596,7 +3951,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3613,7 +3968,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3630,7 +3985,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3647,7 +4002,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3664,7 +4019,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3681,7 +4036,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3698,7 +4053,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3715,7 +4070,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3732,7 +4087,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or
 		(goal combat-arm STRIKE/HW)
 		(or (goal combat-arm MECHBALL) (goal combat-arm DEATHBALL))
@@ -3748,7 +4103,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count <= 0)
 	(unit-type-count UNIT-FIGHTER-LINE < 4)
@@ -3761,7 +4116,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 0)
 	(attack-air-count <= 4)
@@ -3775,7 +4130,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 4)
 	(attack-air-count <= 8)
@@ -3789,7 +4144,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 8)
 	(attack-air-count <= 12)
@@ -3803,7 +4158,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 12)
 	(attack-air-count <= 16)
@@ -3817,7 +4172,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 16)
 	(attack-air-count <= 20)
@@ -3831,7 +4186,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 20)
 	(attack-air-count <= 24)
@@ -3845,7 +4200,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 24)
 	(attack-air-count <= 28)
@@ -3859,7 +4214,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 28)
 	(attack-air-count <= 32)
@@ -3873,7 +4228,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 32)
 	(attack-air-count <= 40)
@@ -3887,7 +4242,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 40)
 	(attack-air-count <= 48)
@@ -3901,7 +4256,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 48)
 	(attack-air-count <= 56)
@@ -3915,7 +4270,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 56)
 	(attack-air-count <= 64)
@@ -3929,7 +4284,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 64)
 	(attack-air-count <= 80)
@@ -3943,7 +4298,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 80)
 	(attack-air-count <= 96)
@@ -3957,7 +4312,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 96)
 	(attack-air-count <= 112)
@@ -3971,7 +4326,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 112)
 	(attack-air-count <= 128)
@@ -3985,7 +4340,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 128)
 	(attack-air-count <= 160)
@@ -3999,7 +4354,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 160)
 	(attack-air-count <= 192)
@@ -4013,7 +4368,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 192)
 	(attack-air-count <= 224)
@@ -4027,7 +4382,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 224)
 	(attack-air-count <= 256)
@@ -4041,7 +4396,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(goal combat-arm AIR)
 	(attack-air-count > 256)
 =>
@@ -4054,7 +4409,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count <= 0)
 	(unit-type-count UNIT-LASER-LINE < 4)
@@ -4068,7 +4423,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 0)
 	(attack-soldier-count <= 4)
@@ -4083,7 +4438,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 4)
 	(attack-soldier-count <= 8)
@@ -4098,7 +4453,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 8)
 	(attack-soldier-count <= 12)
@@ -4113,7 +4468,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 12)
 	(attack-soldier-count <= 16)
@@ -4128,7 +4483,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 16)
 	(attack-soldier-count <= 20)
@@ -4143,7 +4498,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 20)
 	(attack-soldier-count <= 24)
@@ -4158,7 +4513,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 24)
 	(attack-soldier-count <= 28)
@@ -4173,7 +4528,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 28)
 	(attack-soldier-count <= 32)
@@ -4188,7 +4543,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 32)
 	(attack-soldier-count <= 40)
@@ -4203,7 +4558,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 40)
 	(attack-soldier-count <= 48)
@@ -4218,7 +4573,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 48)
 	(attack-soldier-count <= 56)
@@ -4233,7 +4588,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 56)
 	(attack-soldier-count <= 64)
@@ -4248,7 +4603,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 64)
 	(attack-soldier-count <= 80)
@@ -4263,7 +4618,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 80)
 	(attack-soldier-count <= 96)
@@ -4278,7 +4633,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 96)
 	(attack-soldier-count <= 112)
@@ -4293,7 +4648,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 112)
 	(attack-soldier-count <= 128)
@@ -4308,7 +4663,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 128)
 	(attack-soldier-count <= 160)
@@ -4323,7 +4678,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 160)
 	(attack-soldier-count <= 192)
@@ -4338,7 +4693,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 192)
 	(attack-soldier-count <= 224)
@@ -4353,7 +4708,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 224)
 	(attack-soldier-count <= 256)
@@ -4368,7 +4723,7 @@
 (defrule
 	(current-age == tech-level-3)
 	(goal aready YES)
-	(goal attacktype NORM)
+	(goal raid-rule-check YES)
 	(or (goal combat-arm TROOP) (goal combat-arm TROOP/HW))
 	(attack-soldier-count > 256)
 =>
@@ -4380,11 +4735,9 @@
 #end-if
 #end-if
 
-; TL2 ground batches must contain enough soldiers at home to commit six
+; TL2 ground batches use the population package's smaller wave target
 ; after personality allocation (100/75/50 percent). Total military includes
 ; troops already deployed and cannot prove a spare reinforcement batch.
-#load-if-not-defined POPULATION-CAP-25
-#load-if-not-defined POPULATION-CAP-50
 (defrule
 	(current-age == tech-level-2)
 	(goal aready YES)
@@ -4393,7 +4746,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-RUSH)
-	(defend-soldier-count < 6)
+	(defend-soldier-count < land-tl2-wave-rush)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -4408,7 +4761,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-AGGRESSIVE)
-	(defend-soldier-count < 8)
+	(defend-soldier-count < land-tl2-wave-aggressive)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -4423,14 +4776,12 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-DEFENSIVE)
-	(defend-soldier-count < 12)
+	(defend-soldier-count < land-tl2-wave-defensive)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
 	(enable-timer t-attackgroup-alt 30)
 )
-#end-if
-#end-if
 
 ; Final LAND composition/recovery vetoes run before batch debug and ally signals.
 ; Keep existing readiness queued through the regular 30-second retry path.
@@ -4465,11 +4816,9 @@
 )
 
 ; TL3/TL4 LAND/HYBRID spare ground batches, including initial TSA starts.
-; Eight committed soldiers need 8/11/16 at home for 100/75/50 percent allocation.
+; Committed wave sizes and personality allocations come from population packages.
 ; Total military and troops already attacking do not satisfy this check.
 #load-if-not-defined MONUMENT-RACE
-#load-if-not-defined POPULATION-CAP-25
-#load-if-not-defined POPULATION-CAP-50
 (defrule
 	(current-age >= tech-level-3)
 	(goal aready YES)
@@ -4477,7 +4826,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-RUSH)
-	(defend-soldier-count < 8)
+	(defend-soldier-count < land-wave-rush)
 	(goal attack-batch-debug-phase 0)
 =>
 	(chat-to-all "ATTACK GROUP: SMALL - WAIT")
@@ -4492,7 +4841,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-RUSH)
-	(defend-soldier-count < 8)
+	(defend-soldier-count < land-wave-rush)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -4506,7 +4855,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-AGGRESSIVE)
-	(defend-soldier-count < 11)
+	(defend-soldier-count < land-wave-aggressive)
 	(goal attack-batch-debug-phase 0)
 =>
 	(chat-to-all "ATTACK GROUP: SMALL - WAIT")
@@ -4521,7 +4870,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-AGGRESSIVE)
-	(defend-soldier-count < 11)
+	(defend-soldier-count < land-wave-aggressive)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -4535,7 +4884,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-DEFENSIVE)
-	(defend-soldier-count < 16)
+	(defend-soldier-count < land-wave-defensive)
 	(goal attack-batch-debug-phase 0)
 =>
 	(chat-to-all "ATTACK GROUP: SMALL - WAIT")
@@ -4550,7 +4899,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-DEFENSIVE)
-	(defend-soldier-count < 16)
+	(defend-soldier-count < land-wave-defensive)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -4570,8 +4919,6 @@
 	(set-goal attack-batch-debug-phase 2)
 )
 
-#end-if
-#end-if
 #end-if
 
 ; CHITCHAT
