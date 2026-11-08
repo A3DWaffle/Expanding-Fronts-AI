@@ -208,6 +208,729 @@
 	(disable-self)
 )
 
+; Initial strength gate: AoC facts only, no diplomacy or target override.
+; Apply only to TL3+ LAND with exactly one active enemy. With several enemies,
+; AoC cannot reliably expose the engine's selected target, so leave attacks alone.
+; Recompute the opponent and population band each pass; preserve the hold between
+; passes for hysteresis. Small armies (enemy <= 20) bypass this initial rollout.
+; Bands approximate 70% to hold and 85% to release. They count unseen troops too.
+; This is total military population, not a simulation of the available field army.
+#load-if-not-defined MONUMENT-RACE
+(defrule
+	(true)
+=>
+	(set-goal attack-strength-hold NO)
+	(disable-self)
+)
+(defrule
+	(true)
+=>
+	(set-goal attack-strength-opponent 0)
+	(set-goal attack-strength-band 0)
+)
+(defrule
+	(player-in-game 1)
+	(players-stance 1 enemy)
+	(goal attack-strength-opponent 0)
+=>
+	(set-goal attack-strength-opponent 1)
+)
+(defrule
+	(player-in-game 1)
+	(players-stance 1 enemy)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 1))
+=>
+	(set-goal attack-strength-opponent 9)
+)
+(defrule
+	(player-in-game 2)
+	(players-stance 2 enemy)
+	(goal attack-strength-opponent 0)
+=>
+	(set-goal attack-strength-opponent 2)
+)
+(defrule
+	(player-in-game 2)
+	(players-stance 2 enemy)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 2))
+=>
+	(set-goal attack-strength-opponent 9)
+)
+(defrule
+	(player-in-game 3)
+	(players-stance 3 enemy)
+	(goal attack-strength-opponent 0)
+=>
+	(set-goal attack-strength-opponent 3)
+)
+(defrule
+	(player-in-game 3)
+	(players-stance 3 enemy)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 3))
+=>
+	(set-goal attack-strength-opponent 9)
+)
+(defrule
+	(player-in-game 4)
+	(players-stance 4 enemy)
+	(goal attack-strength-opponent 0)
+=>
+	(set-goal attack-strength-opponent 4)
+)
+(defrule
+	(player-in-game 4)
+	(players-stance 4 enemy)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 4))
+=>
+	(set-goal attack-strength-opponent 9)
+)
+(defrule
+	(player-in-game 5)
+	(players-stance 5 enemy)
+	(goal attack-strength-opponent 0)
+=>
+	(set-goal attack-strength-opponent 5)
+)
+(defrule
+	(player-in-game 5)
+	(players-stance 5 enemy)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 5))
+=>
+	(set-goal attack-strength-opponent 9)
+)
+(defrule
+	(player-in-game 6)
+	(players-stance 6 enemy)
+	(goal attack-strength-opponent 0)
+=>
+	(set-goal attack-strength-opponent 6)
+)
+(defrule
+	(player-in-game 6)
+	(players-stance 6 enemy)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 6))
+=>
+	(set-goal attack-strength-opponent 9)
+)
+(defrule
+	(player-in-game 7)
+	(players-stance 7 enemy)
+	(goal attack-strength-opponent 0)
+=>
+	(set-goal attack-strength-opponent 7)
+)
+(defrule
+	(player-in-game 7)
+	(players-stance 7 enemy)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 7))
+=>
+	(set-goal attack-strength-opponent 9)
+)
+(defrule
+	(player-in-game 8)
+	(players-stance 8 enemy)
+	(goal attack-strength-opponent 0)
+=>
+	(set-goal attack-strength-opponent 8)
+)
+(defrule
+	(player-in-game 8)
+	(players-stance 8 enemy)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 8))
+=>
+	(set-goal attack-strength-opponent 9)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 20)
+	(players-military-population any-enemy <= 30)
+=>
+	(set-goal attack-strength-band 30)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 30)
+	(players-military-population any-enemy <= 40)
+=>
+	(set-goal attack-strength-band 40)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 40)
+	(players-military-population any-enemy <= 50)
+=>
+	(set-goal attack-strength-band 50)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 50)
+	(players-military-population any-enemy <= 60)
+=>
+	(set-goal attack-strength-band 60)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 60)
+	(players-military-population any-enemy <= 70)
+=>
+	(set-goal attack-strength-band 70)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 70)
+	(players-military-population any-enemy <= 80)
+=>
+	(set-goal attack-strength-band 80)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 80)
+	(players-military-population any-enemy <= 90)
+=>
+	(set-goal attack-strength-band 90)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 90)
+	(players-military-population any-enemy <= 100)
+=>
+	(set-goal attack-strength-band 100)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 100)
+	(players-military-population any-enemy <= 125)
+=>
+	(set-goal attack-strength-band 125)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 125)
+	(players-military-population any-enemy <= 150)
+=>
+	(set-goal attack-strength-band 150)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 150)
+	(players-military-population any-enemy <= 175)
+=>
+	(set-goal attack-strength-band 175)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 175)
+	(players-military-population any-enemy <= 200)
+=>
+	(set-goal attack-strength-band 200)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 200)
+	(players-military-population any-enemy <= 225)
+=>
+	(set-goal attack-strength-band 225)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 225)
+	(players-military-population any-enemy <= 250)
+=>
+	(set-goal attack-strength-band 250)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 250)
+	(players-military-population any-enemy <= 300)
+=>
+	(set-goal attack-strength-band 300)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 300)
+	(players-military-population any-enemy <= 350)
+=>
+	(set-goal attack-strength-band 350)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 350)
+	(players-military-population any-enemy <= 400)
+=>
+	(set-goal attack-strength-band 400)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 400)
+	(players-military-population any-enemy <= 450)
+=>
+	(set-goal attack-strength-band 450)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 450)
+	(players-military-population any-enemy <= 500)
+=>
+	(set-goal attack-strength-band 500)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 500)
+	(players-military-population any-enemy <= 600)
+=>
+	(set-goal attack-strength-band 600)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 600)
+	(players-military-population any-enemy <= 700)
+=>
+	(set-goal attack-strength-band 700)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 700)
+	(players-military-population any-enemy <= 800)
+=>
+	(set-goal attack-strength-band 800)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 800)
+	(players-military-population any-enemy <= 900)
+=>
+	(set-goal attack-strength-band 900)
+)
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map LAND)
+	(not (goal attack-strength-opponent 0))
+	(not (goal attack-strength-opponent 9))
+	(players-military-population any-enemy > 900)
+	(players-military-population any-enemy <= 1000)
+=>
+	(set-goal attack-strength-band 1000)
+)
+(defrule
+	(goal attack-strength-band 0)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 30)
+	(goal attack-strength-hold NO)
+	(military-population < 21)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 30)
+	(goal attack-strength-hold YES)
+	(military-population >= 26)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 40)
+	(goal attack-strength-hold NO)
+	(military-population < 28)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 40)
+	(goal attack-strength-hold YES)
+	(military-population >= 34)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 50)
+	(goal attack-strength-hold NO)
+	(military-population < 35)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 50)
+	(goal attack-strength-hold YES)
+	(military-population >= 43)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 60)
+	(goal attack-strength-hold NO)
+	(military-population < 42)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 60)
+	(goal attack-strength-hold YES)
+	(military-population >= 51)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 70)
+	(goal attack-strength-hold NO)
+	(military-population < 49)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 70)
+	(goal attack-strength-hold YES)
+	(military-population >= 60)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 80)
+	(goal attack-strength-hold NO)
+	(military-population < 56)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 80)
+	(goal attack-strength-hold YES)
+	(military-population >= 68)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 90)
+	(goal attack-strength-hold NO)
+	(military-population < 63)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 90)
+	(goal attack-strength-hold YES)
+	(military-population >= 77)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 100)
+	(goal attack-strength-hold NO)
+	(military-population < 70)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 100)
+	(goal attack-strength-hold YES)
+	(military-population >= 85)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 125)
+	(goal attack-strength-hold NO)
+	(military-population < 88)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 125)
+	(goal attack-strength-hold YES)
+	(military-population >= 107)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 150)
+	(goal attack-strength-hold NO)
+	(military-population < 105)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 150)
+	(goal attack-strength-hold YES)
+	(military-population >= 128)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 175)
+	(goal attack-strength-hold NO)
+	(military-population < 123)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 175)
+	(goal attack-strength-hold YES)
+	(military-population >= 149)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 200)
+	(goal attack-strength-hold NO)
+	(military-population < 140)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 200)
+	(goal attack-strength-hold YES)
+	(military-population >= 170)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 225)
+	(goal attack-strength-hold NO)
+	(military-population < 158)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 225)
+	(goal attack-strength-hold YES)
+	(military-population >= 192)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 250)
+	(goal attack-strength-hold NO)
+	(military-population < 175)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 250)
+	(goal attack-strength-hold YES)
+	(military-population >= 213)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 300)
+	(goal attack-strength-hold NO)
+	(military-population < 210)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 300)
+	(goal attack-strength-hold YES)
+	(military-population >= 255)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 350)
+	(goal attack-strength-hold NO)
+	(military-population < 245)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 350)
+	(goal attack-strength-hold YES)
+	(military-population >= 298)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 400)
+	(goal attack-strength-hold NO)
+	(military-population < 280)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 400)
+	(goal attack-strength-hold YES)
+	(military-population >= 340)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 450)
+	(goal attack-strength-hold NO)
+	(military-population < 315)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 450)
+	(goal attack-strength-hold YES)
+	(military-population >= 383)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 500)
+	(goal attack-strength-hold NO)
+	(military-population < 350)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 500)
+	(goal attack-strength-hold YES)
+	(military-population >= 425)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 600)
+	(goal attack-strength-hold NO)
+	(military-population < 420)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 600)
+	(goal attack-strength-hold YES)
+	(military-population >= 510)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 700)
+	(goal attack-strength-hold NO)
+	(military-population < 490)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 700)
+	(goal attack-strength-hold YES)
+	(military-population >= 595)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 800)
+	(goal attack-strength-hold NO)
+	(military-population < 560)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 800)
+	(goal attack-strength-hold YES)
+	(military-population >= 680)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 900)
+	(goal attack-strength-hold NO)
+	(military-population < 630)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 900)
+	(goal attack-strength-hold YES)
+	(military-population >= 765)
+=>
+	(set-goal attack-strength-hold NO)
+)
+(defrule
+	(goal attack-strength-band 1000)
+	(goal attack-strength-hold NO)
+	(military-population < 700)
+=>
+	(set-goal attack-strength-hold YES)
+)
+(defrule
+	(goal attack-strength-band 1000)
+	(goal attack-strength-hold YES)
+	(military-population >= 850)
+=>
+	(set-goal attack-strength-hold NO)
+)
+#end-if
+
 ; Remember observed enemy Fortresses and recompute siege readiness each pass.
 #load-if-not-defined MONUMENT-RACE
 (defrule
@@ -1300,6 +2023,7 @@
 	(goal attacksonhold-scn NO)
 	(goal attacktype TSA)
 	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
 =>
 	(set-goal aready YES) ; is what sends an attack off
 	(set-goal attackTSAhold HOLDING-HIGH)
@@ -2627,6 +3351,7 @@
 	(goal attacktype NORM)
 	(goal raid-launch-open YES)
 	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
 =>
 	;(set-strategic-number sn-maximum-town-size 70)
 	(attack-now)
@@ -2640,6 +3365,7 @@
 	(goal attacktype NORM)
 	(goal raid-launch-open YES)
 	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
 =>
 	;(set-strategic-number sn-maximum-town-size 150)
 	(attack-now) ; try to not do this lategame, hence the whole TSA shebang
@@ -2660,6 +3386,7 @@
 	(goal aready YES)
 	(goal attacktype TSA)
 	(goal fortress-siege-hold NO)
+	(goal attack-strength-hold NO)
 =>
 	; (chat-local-to-self "WAFFLE: TSA. Attack. Set to HIGH")
 	(set-goal attackTSAhold HOLDING-HIGH)
