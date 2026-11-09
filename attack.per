@@ -6,6 +6,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-1)
 	(not (goal raid-worker-memory 0))
 =>
@@ -19,6 +20,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age <= tech-level-2)
 =>
 	(set-strategic-number sn-special-attack-type2 UNIT-WORKER)
@@ -104,6 +106,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-3)
 	(or
 		(not (strategic-number sn-special-attack-type2 == UNIT-WORKER))
@@ -119,6 +122,7 @@
 ; If those are not present, crack AA/power so follow-up groups have cleaner
 ; paths instead of spending the whole attack on random fogged buildings.
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(players-unit-type-count any-enemy UNIT-MECH3-LINE > TL4-mech3-arm-p1)
 	(or
@@ -131,6 +135,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(players-unit-type-count any-enemy UNIT-MECH3-LINE <= TL4-mech3-arm-p1)
 	(cc-players-unit-type-count any-enemy SIEGE-ARTILLERY-LINE > TL4-artillery-arm-p1)
@@ -144,6 +149,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(players-unit-type-count any-enemy UNIT-MECH3-LINE <= TL4-mech3-arm-p1)
 	(cc-players-unit-type-count any-enemy SIEGE-ARTILLERY-LINE <= TL4-artillery-arm-p1)
@@ -158,6 +164,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(players-unit-type-count any-enemy UNIT-MECH3-LINE <= TL4-mech3-arm-p1)
 	(cc-players-unit-type-count any-enemy SIEGE-ARTILLERY-LINE <= TL4-artillery-arm-p1)
@@ -173,6 +180,7 @@
 )
 
 (defrule
+	(not (goal special-map WATER))
 	(current-age == tech-level-4)
 	(players-unit-type-count any-enemy UNIT-MECH3-LINE <= TL4-mech3-arm-p1)
 	(cc-players-unit-type-count any-enemy SIEGE-ARTILLERY-LINE <= TL4-artillery-arm-p1)
@@ -200,12 +208,27 @@
 ; Keeping this separate prevents the TL1/TL2 attack launchers from exceeding
 ; the rule-size limit.
 (defrule
+	(not (goal special-map WATER))
 	(current-age <= tech-level-2)
 	(goal opening-attack-target TARGET-WORKERS)
 =>
 	(set-strategic-number sn-special-attack-type2 UNIT-WORKER)
 	(set-strategic-number sn-special-attack-influence2 2147483647)
 	(disable-self)
+)
+
+; WATER shares LAND's intelligent attacks and response to incoming fire, but
+; its fleet and landing force cannot share a forced land/air object preference.
+; Leave distance/reachability evaluation to the engine. Clear both values every
+; pass so changing age or losing a preferred target cannot leave a stale bias.
+; Do not replace this with a global boat preference: it also affects land troops.
+(defrule
+	(goal special-map WATER)
+=>
+	(set-strategic-number sn-special-attack-type2 -1)
+	(set-strategic-number sn-special-attack-influence2 0)
+	(set-strategic-number sn-attack-intelligence 1)
+	(set-strategic-number sn-ignore-attack-group-under-attack 0)
 )
 
 ; Initial strength gate: AoC facts only, no diplomacy or target override.

@@ -16,6 +16,21 @@
 ; *** Chapter 0: SETUP ***
 ; =====================================================
 
+; Every WATER personality uses Spaceport + War Center for TL3. Do not let
+; optional Temples/Mech Factories, reduced civ prerequisites, or Defensive's
+; turret-first build hold replace or delay this shore infrastructure pair.
+(defrule
+	(goal special-map WATER)
+	(current-age == tech-level-2)
+	(building-type-count BLDG-SPACEPORT > 0)
+	(building-type-count-total BLDG-WARCTR == 0)
+	(can-build-with-escrow BLDG-WARCTR)
+	(not (goal buildpause YES))
+=>
+	(release-escrow carbon)
+	(build BLDG-WARCTR)
+)
+
 (defrule
 	(current-age >= tech-level-3)
 	(or

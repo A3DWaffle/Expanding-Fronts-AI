@@ -26,6 +26,7 @@
 	(set-goal berries-present NO)
 	(set-goal hunt-present NO)
 	(set-goal special-map LAND)
+	(set-goal map-object-detected NO)
 	(set-strategic-number snc-lure-amount 0)
 	(disable-self)
 )
@@ -1112,13 +1113,14 @@
 ; =====================================================
 ; *** Chapter 4: GAIA MAP MARKER OVERRIDES ***
 ; =====================================================
-; Gaia markers select the map strategy. Unmarked maps retain the LAND default.
+; Gaia markers select the map strategy and override the resource fallback.
 
 (defrule
 	(cc-players-unit-type-count 0 OBJ-LANDMAP > 0)
 =>
 	(chat-local-to-self "WAFFLE: Land map marker detected")
 	(set-goal special-map LAND)
+	(set-goal map-object-detected YES)
 	(disable-self)
 )
 
@@ -1127,6 +1129,7 @@
 =>
 	(chat-local-to-self "WAFFLE: Hybrid map marker detected")
 	(set-goal special-map HYBRID)
+	(set-goal map-object-detected YES)
 	(disable-self)
 )
 
@@ -1135,6 +1138,7 @@
 =>
 	(chat-local-to-self "WAFFLE: Water map marker detected")
 	(set-goal special-map WATER)
+	(set-goal map-object-detected YES)
 	(disable-self)
 )
 
@@ -1143,7 +1147,24 @@
 =>
 	(chat-local-to-self "WAFFLE: Asteroid map marker detected")
 	(set-goal special-map ASTEROID)
+	(set-goal map-object-detected YES)
 	(disable-self)
+)
+
+; Older RMS sets may not place map objects. Any fish or aquatic carbon vent
+; is water evidence, even below the fishing-economy thresholds. It cannot prove
+; islands/disconnected land, so infer HYBRID only; WATER/ASTEROID need objects.
+; Keep checking for delayed resources, but never override any detected marker,
+; including an explicit LAND marker that later disappears.
+(defrule
+	(goal map-object-detected NO)
+	(goal special-map LAND)
+	(or
+		(cc-players-unit-type-count 0 GAIA-FISH-LINE > 0)
+		(or (cc-players-unit-type-count 0 6482 > 0) (cc-players-unit-type-count 0 7091 > 0))
+	)
+=>
+	(set-goal special-map HYBRID)
 )
 
 (defrule

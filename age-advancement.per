@@ -58,6 +58,8 @@
 	(can-research-with-escrow tech-level-3)
 	(shared-goal age-match-human NO)
 	(current-age-time > 120)
+	(or (not (goal special-map WATER))
+		(and (building-type-count BLDG-SPACEPORT > 0) (building-type-count BLDG-WARCTR > 0)))
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -128,6 +130,8 @@
 	(can-research-with-escrow tech-level-3)
 	(shared-goal age-match-human YES)
 	(players-current-age any-human >= tech-level-3)
+	(or (not (goal special-map WATER))
+		(and (building-type-count BLDG-SPACEPORT > 0) (building-type-count BLDG-WARCTR > 0)))
 =>
 	(release-escrow food)
 	(release-escrow nova)

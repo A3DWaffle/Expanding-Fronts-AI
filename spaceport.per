@@ -26,7 +26,7 @@
     (building-type-count-total BLDG-SPACEPORT == 0)
     (can-build-with-escrow BLDG-SPACEPORT)
 	(not (goal buildpause YES))
-	(goal raid-build-open YES)
+	(or (goal special-map WATER) (goal raid-build-open YES))
 =>
     (release-escrow carbon)
     (build BLDG-SPACEPORT)
