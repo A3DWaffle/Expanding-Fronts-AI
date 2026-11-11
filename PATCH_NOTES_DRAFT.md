@@ -1,5 +1,39 @@
 # Computer Prototype Patch Notes Draft
 
+Last verified: November 10, 2026. Current notes include Aggressive initiating TL2 attacks, warship priority, the TL2/TL3 Laser/Mounted ratio, delayed mech/Jedi responses, and town-clearing Pummels.
+
+## 2026-11-09 - Aggressive can attack first
+
+- Removed Aggressive's TL2 requirement to be attacked before it can launch. It can now initiate attacks using its normal readiness checks.
+- Army minimums, batch checks, cooldown, treaty permission, and automatic/manual/scenario holds still apply. Defensive's TL2 attack hold is retained.
+
+
+## 2026-11-09 - Warships before fishing expansion
+
+- WATER/HYBRID combat-boat requests now run before transports, naval upgrades, and fishing boats. This prevents the early WATER trawler request and fishing expansion from always taking the first available Shipyard opportunity.
+- TL2 combat boats no longer require fish to be present. HYBRID can request its first military Shipyard from TL2 without meeting fishing-economy thresholds, while still requiring Carbon Processing, Power, affordability, and the normal construction/raid gates.
+- Fishing no longer depends on the legacy fishing/attack turn flag, which could remain stuck after the combat fleet filled its caps or became unavailable.
+- Existing fishing and military unit caps remain unchanged. Trawlers can use remaining production when combat boats cannot train or have met their targets; this does not cancel already queued boats or guarantee simultaneous production in separate Shipyards.
+- Rule tests cover WATER/HYBRID at TL2-TL4, every personality, no-fish maps, emergency naval AA, fishing fallback, and HYBRID's first Shipyard. Native resource timing, power placement, and fleet movement still require playtesting.
+
+
+## 2026-11-09 - Laser Troopers before Mounted support
+
+- TL2/TL3 Mounted Trooper orders now require two completed Laser Troopers per Mounted Trooper after the new order. Existing and queued Mounties count toward the limit; queued Lasers do not qualify. Only one Mounted order is requested per scan, and Laser losses pause new Mounties until the ratio is restored.
+- Mounted upgrades wait for completed Lasers to satisfy both that ratio and the age/map P2 Laser core. TL3 Mounted-support lineups can train and upgrade their Laser core without requiring Repeater support; their first core tier need not wait for a Strike Mech.
+- Removed TL2 rush Laser prerequisites that waited for Mounted counts, making support depend on the Laser core in one direction. Existing unit caps remain, and TL1 scouting/TL4 Mounted packages retain their earlier behavior.
+- Seven focused rule tests pass, including queued units, loss recovery, upgrade gates, all map variants, existing package bounds, and affected rule sizes. Native production timing and defensive movement still require playtesting.
+
+
+## Current update - November 9, 2026
+
+- **TL3 mech pressure gets a Bomber response before more Fighters.** When Bombers can train and are below their existing response target, they receive the next Airbase production opportunity. P3/P4 mech alerts now use the P2 Bomber package instead of falling through the old checks. The response no longer waits for a Fighter quota or the passive-age hold. Fighters resume once the Bomber target is met or Bombers cannot train.
+- **Mech detection has a delayed fallback for unreliable visible counts.** Existing visible sightings still respond immediately where supported. The fallback checks the seven configured mech families, including Strike Mechs and the supported unique mech lines, on the existing intelligence clock: snapshots about 105 game seconds apart, published 45 seconds after capture. These total-count estimates can include hidden units. They merge with the existing five-minute mech memory without lowering a stronger remembered alert.
+- **Jedi warnings replenish the capped Bounty Hunter response.** A nonzero published warning now permits replacements up to the existing Hunter target until a later NONE estimate replaces it. One order no longer consumes the warning, and the response no longer expires after 15 seconds. All Hunter response tiers can use food/carbon escrow. Jedi sampling remains delayed, includes Masters, Shadowtroopers, and alternate Temple Jedi, and does not track hidden changes between snapshots.
+- **Pummels return as a small town-clearing package.** From TL3, enemy buildings detected inside the current town radius can trigger up to two Pummels including queued units, or one at 25 population, and one Heavy Weapons Factory if needed. Heavy Pummel research requires an existing Pummel and buildings in town. Production stops at the cap or when the buildings leave town; existing Pummels remain. During a Town Size Attack the radius may include offensive targets. Exact movement and building selection remain under native engine control.
+- These are script and production-response changes. Automated checks cover supplied negative mech counts, delayed snapshots, Hunter replenishment, all population/difficulty packages, and capped Pummel requests. Native detection, pathfinding, and exact Pummel targeting still need fresh-match validation. Use the Steam archive AI; the separate Computer Diagnostics AI has been removed.
+
+
 ## Moderate Income Correction
 
 * Restored the disabled main Moderate income block from the pre-export package; removed the accidentally reintroduced age grants, worker-band packets, reinforcements, and research-support income.
@@ -40,7 +74,7 @@
 
   * Restored file.
   * AGGRESSIVE now assigns `openingstyle STYLE-AGGRESSIVE` when no personality was already selected.
-  * AGGRESSIVE can release attack holds from TL2 onward once it has a small military force.
+  * AGGRESSIVE can initiate TL2 attacks without being attacked first, subject to normal launch checks; from TL3 it can also release its automatic hold once it has a small military force.
   * AGGRESSIVE uses lower attack thresholds than DEFENSIVE and steadier pacing than RUSH.
   * Retains the broad "standard computer" behavior but with less brute-force cheating and more strategy gating.
 
@@ -212,7 +246,7 @@
   * TL4 Heavy Weapons Factory count scales higher for TROOP/HW, MECH/HW, ARTILLERY support, or support-artillery.
   * Rich TL4 artillery/HW economies can add extra forward Heavy Weapons Factories, capped at 5.
   * Artillery upgrades moved back into this file and wait for artillery/HW strategy or support.
-  * Pummel/Ram upgrade and training rules are temporarily disabled to avoid wasting AI resources.
+  * Pummel/Ram training and upgrades now use the bounded town-clearing conditions in the current update above.
   * AA Mobile air-alert rules release escrow and briefly block ram/artillery training during GUARD/DANGER alerts until the LOW AA Mobile threshold is met.
   * TL3 missile and artillery production use staged p1/p2/p3 thresholds.
   * AA response thresholds were lowered for earlier reaction, then production caps were reduced one tier to avoid overcommitting.
@@ -494,7 +528,7 @@
   * Main Defend the Monument special-mode file retained.
   * Removed references to old `importantT4unique` and `importantT4heavy` goals.
   * Air Cruiser and Cannon counts now use generated TL4 constants.
-  * Bounty Hunter response now uses `TL4-bounty-detect`.
+  * Bounty Hunter response uses the age/alert-specific target constants; published warnings allow capped replenishment.
   * Added standardized header/comment structure.
 
 * 60053_ai_wonder-rush.bin

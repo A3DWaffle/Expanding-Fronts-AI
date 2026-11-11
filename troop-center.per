@@ -18,6 +18,741 @@
 ; *** Chapter 0: SETUP ***
 ; =====================================================
 
+; TL2/TL3: two completed Lasers per Mountie, counting queued Mounties.
+; Recompute once before upgrades/production; one new mounted order per scan.
+(defrule
+	(true)
+=>
+	(set-goal mounted-ratio-open NO)
+	(set-goal mounted-upgrade-ready NO)
+)
+
+(defrule
+	(current-age >= tech-level-4)
+=>
+	(set-goal mounted-ratio-open YES)
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 2)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 1)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 2)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 1)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 4)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 2)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 4)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 2)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 6)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 3)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 6)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 3)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 8)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 4)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 8)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 4)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 10)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 5)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 10)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 5)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 12)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 6)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 12)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 6)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 14)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 7)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 14)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 7)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 16)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 8)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 16)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 8)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 18)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 9)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 18)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 9)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 20)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 10)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 20)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 10)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 22)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 11)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 22)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 11)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 24)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 12)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 24)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 12)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 26)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 13)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 26)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 13)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 28)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 14)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 28)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 14)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 30)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 15)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 30)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 15)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 32)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 16)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 32)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 16)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 34)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 17)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 34)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 17)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 36)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 18)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 36)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 18)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 38)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 19)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 38)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 19)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 40)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 20)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 40)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 20)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 42)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 21)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 42)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 21)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 44)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 22)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 44)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 22)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 46)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 23)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 46)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 23)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 48)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 24)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 48)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 24)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 50)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 25)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 50)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 25)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 52)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 26)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 52)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 26)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 54)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 27)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 54)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 27)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 56)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 28)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 56)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 28)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 58)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 29)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 58)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 29)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 60)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 30)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 60)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 30)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 62)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 31)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 62)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 31)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 64)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 32)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 64)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 32)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 66)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 33)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 66)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 33)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 68)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 34)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 68)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 34)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 70)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 35)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 70)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 35)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 72)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 36)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 72)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 36)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 74)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 37)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 74)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 37)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 76)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 38)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 76)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 38)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 78)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 39)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 78)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 39)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 80)
+	(unit-type-count-total UNIT-MOUNTED-LINE < 40)
+=>
+	(set-goal mounted-ratio-open YES)
+)
+
+(defrule
+	(or (current-age == tech-level-2) (current-age == tech-level-3))
+	(unit-type-count UNIT-LASER-LINE >= 80)
+	(unit-type-count UNIT-MOUNTED-LINE > 0)
+	(unit-type-count-total UNIT-MOUNTED-LINE <= 40)
+=>
+	(set-goal mounted-upgrade-ready YES)
+)
+
+(defrule
+	(current-age == tech-level-2)
+	(unit-type-count UNIT-LASER-LINE < TL2-trooper-core-p2)
+=>
+	(set-goal mounted-upgrade-ready NO)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map LAND)
+	(unit-type-count UNIT-LASER-LINE < TL3-trooper-core-p2)
+=>
+	(set-goal mounted-upgrade-ready NO)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(unit-type-count UNIT-LASER-LINE < TL3-trooper-core-p2-water)
+=>
+	(set-goal mounted-upgrade-ready NO)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(unit-type-count UNIT-LASER-LINE < TL3-trooper-core-p2-hybrid)
+=>
+	(set-goal mounted-upgrade-ready NO)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(unit-type-count UNIT-LASER-LINE < TL3-trooper-core-p2-asteroid)
+=>
+	(set-goal mounted-upgrade-ready NO)
+)
+
 ; RAID: split oversized prerequisite list
 (defrule
 	(true)
@@ -365,7 +1100,7 @@
 (defrule
 	(can-research-with-escrow ut-laser-3)
 	(current-age >= tech-level-3)
-	(goal support-repeater YES)
+	(or (goal support-repeater YES) (goal support-mounted YES))
 	(or
 		(research-completed ut-laser-2)
 		(not (research-available ut-laser-2))
@@ -396,6 +1131,7 @@
 	(current-age >= tech-level-2)
 	(research-completed rt-macrobinoculars)
 	(unit-type-count-total UNIT-MOUNTED-LINE >= TL2-mounted-core-p1)
+	(goal mounted-upgrade-ready YES)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -411,6 +1147,7 @@
 		(research-completed ut-mounted-2)
 		(not (research-available ut-mounted-2))
 	)
+	(goal mounted-upgrade-ready YES)
 =>
 	(release-escrow food)
 	(release-escrow nova)
@@ -885,7 +1622,6 @@
 (defrule
 	(current-age == tech-level-2)
 	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-MOUNTED-LINE >= TL2-mounted-core-p1)
 	(unit-type-count-total UNIT-LASER-LINE < TL2-trooper-core-p3) ;No need for ratio to match closely here.
 	(research-completed ut-laser-2)
 	(research-completed rt-macrobinoculars)
@@ -898,7 +1634,6 @@
 (defrule
 	(current-age == tech-level-2)
 	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-MOUNTED-LINE >= TL2-mounted-core-p3)
 	(unit-type-count-total UNIT-LASER-LINE < TL2-trooper-core-p4) ;No need for ratio to match closely here.
 	(research-completed ut-laser-2)
 	(research-completed rt-macrobinoculars)
@@ -918,8 +1653,10 @@
 	(research-completed rt-macrobinoculars)
 	(can-train UNIT-MOUNTED-LINE)
 	(goal openingstyle STYLE-RUSH)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 (defrule
@@ -932,8 +1669,10 @@
 	(research-completed rt-macrobinoculars)
 	(can-train UNIT-MOUNTED-LINE)
 	(goal openingstyle STYLE-RUSH)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 (defrule
@@ -946,8 +1685,10 @@
 	(research-completed rt-macrobinoculars)
 	(can-train UNIT-MOUNTED-LINE)
 	(goal openingstyle STYLE-RUSH)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 ; --- TL2 AA Trooper air-alert low ---
@@ -1066,8 +1807,8 @@
 	(current-age == tech-level-3)
 	(goal special-map LAND)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p1)
-	(unit-type-count-total UNIT-MECH1-LINE > 0)
-	(goal support-repeater YES)
+	(or (goal support-mounted YES) (unit-type-count-total UNIT-MECH1-LINE > 0))
+	(or (goal support-repeater YES) (goal support-mounted YES))
 	(research-completed ut-laser-3)
 	(research-completed rt-portable-scanners)
 	(can-train UNIT-LASER-LINE)
@@ -1079,8 +1820,8 @@
 	(current-age == tech-level-3)
 	(goal special-map WATER)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p1-water)
-	(unit-type-count-total UNIT-MECH1-LINE > 0)
-	(goal support-repeater YES)
+	(or (goal support-mounted YES) (unit-type-count-total UNIT-MECH1-LINE > 0))
+	(or (goal support-repeater YES) (goal support-mounted YES))
 	(research-completed ut-laser-3)
 	(research-completed rt-portable-scanners)
 	(can-train UNIT-LASER-LINE)
@@ -1092,8 +1833,8 @@
 	(current-age == tech-level-3)
 	(goal special-map ASTEROID)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p1-asteroid)
-	(unit-type-count-total UNIT-MECH1-LINE > 0)
-	(goal support-repeater YES)
+	(or (goal support-mounted YES) (unit-type-count-total UNIT-MECH1-LINE > 0))
+	(or (goal support-repeater YES) (goal support-mounted YES))
 	(research-completed ut-laser-3)
 	(research-completed rt-portable-scanners)
 	(can-train UNIT-LASER-LINE)
@@ -1105,8 +1846,8 @@
 	(current-age == tech-level-3)
 	(goal special-map HYBRID)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p1-hybrid)
-	(unit-type-count-total UNIT-MECH1-LINE > 0)
-	(goal support-repeater YES)
+	(or (goal support-mounted YES) (unit-type-count-total UNIT-MECH1-LINE > 0))
+	(or (goal support-repeater YES) (goal support-mounted YES))
 	(research-completed ut-laser-3)
 	(research-completed rt-portable-scanners)
 	(can-train UNIT-LASER-LINE)
@@ -1120,7 +1861,7 @@
 	(goal special-map LAND)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p2)
 	(not (goal passiveage YES))
-	(goal support-repeater YES)
+	(or (goal support-repeater YES) (goal support-mounted YES))
 	(can-train UNIT-LASER-LINE)
 =>
 	(train UNIT-LASER-LINE)
@@ -1131,7 +1872,7 @@
 	(goal special-map WATER)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p2-water)
 	(not (goal passiveage YES))
-	(goal support-repeater YES)
+	(or (goal support-repeater YES) (goal support-mounted YES))
 	(can-train UNIT-LASER-LINE)
 =>
 	(train UNIT-LASER-LINE)
@@ -1142,7 +1883,7 @@
 	(goal special-map ASTEROID)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p2-asteroid)
 	(not (goal passiveage YES))
-	(goal support-repeater YES)
+	(or (goal support-repeater YES) (goal support-mounted YES))
 	(can-train UNIT-LASER-LINE)
 =>
 	(train UNIT-LASER-LINE)
@@ -1153,7 +1894,7 @@
 	(goal special-map HYBRID)
 	(unit-type-count-total UNIT-LASER-LINE < TL3-trooper-core-p2-hybrid)
 	(not (goal passiveage YES))
-	(goal support-repeater YES)
+	(or (goal support-repeater YES) (goal support-mounted YES))
 	(can-train UNIT-LASER-LINE)
 =>
 	(train UNIT-LASER-LINE)
@@ -1361,8 +2102,10 @@
 	(goal support-mounted YES)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 (defrule
@@ -1372,8 +2115,10 @@
 	(goal support-mounted YES)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1-water)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 (defrule
@@ -1383,8 +2128,10 @@
 	(goal support-mounted YES)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1-asteroid)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 (defrule
@@ -1394,8 +2141,10 @@
 	(goal support-mounted YES)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p1-hybrid)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 ; --- TL3 Mounted p2 ---
@@ -1410,8 +2159,10 @@
 	)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 (defrule
@@ -1425,8 +2176,10 @@
 	)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2-water)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 (defrule
@@ -1440,8 +2193,10 @@
 	)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2-asteroid)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 (defrule
@@ -1455,8 +2210,10 @@
 	)
 	(unit-type-count-total UNIT-MOUNTED-LINE < TL3-mounted-core-p2-hybrid)
 	(can-train UNIT-MOUNTED-LINE)
+	(goal mounted-ratio-open YES)
 =>
 	(train UNIT-MOUNTED-LINE)
+	(set-goal mounted-ratio-open NO)
 )
 
 ; =====================================================

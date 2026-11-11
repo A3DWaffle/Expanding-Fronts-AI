@@ -627,13 +627,7 @@
 	(set-goal raid-launch-open NO)
 )
 
-(defrule
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-AGGRESSIVE)
-	(goal raid-ever-attacked NO)
-=>
-	(set-goal raid-launch-open NO)
-)
+
 
 (defrule
 	(current-age == tech-level-1)

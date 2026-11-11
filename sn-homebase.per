@@ -193,7 +193,7 @@
 
 (defrule
 	(current-age == tech-level-4)
-	(game-time > 2400) ; 40min 
+	(game-time > 2400) ; 40min
 	(strategic-number sn-camp-max-distance < 60)
 =>
 	(set-strategic-number sn-camp-max-distance 60)
@@ -408,31 +408,8 @@
 	; (chat-local-to-self "WAFFLE: TS Mismatch, TS now BIGGER")
 )
 
-; Water maps have constrained shoreline build space. Keep town size compact so
-; the AI prioritizes docks and nearby production instead of sprawling inland.
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map WATER)
-	(not (strategic-number sn-maximum-town-size == TL3-townsize-smol))
-=>
-	(set-strategic-number sn-maximum-town-size TL3-townsize-smol)
-	(set-strategic-number sn-sentry-distance TL3-sentry-distance)
-)
-
-(defrule
-	(current-age == tech-level-4)
-	(goal special-map WATER)
-	(not (strategic-number sn-maximum-town-size == TL4-townsize-smol))
-=>
-	(set-strategic-number sn-maximum-town-size TL4-townsize-smol)
-	(set-strategic-number sn-sentry-distance TL4-sentry-distance)
-	(set-strategic-number sn-cap-civilian-builders 120)
-)
-
-
-
-
-
+; Normal town-size and TSA controllers own WATER's radius too. A separate
+; continuous shoreline clamp fought their expansion and rewrote it each pass.
 
 ;=======================TL1 RULES
 

@@ -1,5 +1,7 @@
 # LAND attack composition and loss recovery
 
+Normal LAND/HYBRID ground strategies now also set the engine's minimum ground attack-group size to the package's intended committed wave (`land-wave-rush`) from TL3 onward, with a maximum of `land-rebuild-rush`. At 250 population these bounds are 8–16. Personality-specific at-home reserve checks still apply separately. This covers formation of new groups, including new TSA groups; it does not guarantee that later reinforcements, survivors, or scouts travel together. Early raids, non-WATER AIR/SEA strategies, and ASTEROID retain their group-size settings. WATER now has a separate ground commitment policy described in WATER_TARGETING_NOTES.md. Engine behavior requires fresh-match verification.
+
 This update applies to ordinary TL3/TL4 LAND ground lineups at every supported population cap, 25 through 1,000. It keeps AIR, SEA, WATER, HYBRID, ASTEROID, early raids, and the monument modes on their existing composition/recovery rules. Shared LAND/HYBRID launch batching now also uses population-package targets.
 
 ## A useful core before launching
@@ -24,7 +26,7 @@ For either/or requirements, the required number of one line qualifies; mixed pai
 
 These are intended committed soldiers, not total troops at home: Aggressive requires the ceiling of wave / 0.75, Defensive wave / 0.5. At 250 population that is 8/11/16 for normal waves and 16/22/32 after a collapse. All 40 cap options have explicit values in each of the two package files. TL2 batching uses a smaller package target, six intended soldiers at 250 population.
 
-AoC provides no per-type idle-unit counter here. The policy subtracts an upper bound on all attacking ground soldiers from the completed core count. Counts of 0–4 attackers are exact; larger counts use conservative bands. At 250 population, one attacker requires five owned core units to prove four spare. This can delay an attack when the deployed force mixes unit types, but does not count queued or deployed troops twice. It evaluates launch requests; it does not control the composition of every engine-created group during an active Town Size Attack. Separate Jedi pulses retain their composition behavior, but are blocked during recovery.
+AoC provides no per-type idle-unit counter here. The policy subtracts an upper bound on all attacking ground soldiers from the completed core count. Counts of 0–4 attackers are exact; larger counts use conservative bands. At 250 population, one attacker requires five owned core units to prove four spare. This can delay an attack when the deployed force mixes unit types, but does not count queued or deployed troops twice. It evaluates launch requests; it does not control the composition of every engine-created group during an active Town Size Attack. Separate Master pulses retain their full-ground commitment, but now share the batch, core, siege, strength, and recovery release decision. A direct pulse consumes that scan's ground permission.
 
 The TL3 LAND mech lineups and TL4 LAND Strike lineup can maintain twice their package core requirement, so they can rebuild a spare core. Existing larger production targets remain in effect. The old fixed TL3 composition rules are retained for other map modes and AIR; they cannot override the scaled LAND thresholds.
 

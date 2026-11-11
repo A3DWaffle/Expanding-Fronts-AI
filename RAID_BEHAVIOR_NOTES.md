@@ -47,7 +47,7 @@ even if the signal remains true. A cleared signal rearms the next pause.
   farm prerequisites still require the Spaceport + Temple/Mech Factory spine.
 - Mines build through ID 5081 and also check spawned unit ID 5075, stopping
   requests at four live mine units belonging to this AI player. Detection uses
-  `cc-players-unit-type-count` for the matching player slot (1�8); the old
+  `cc-players-unit-type-count` for the matching player slot (1–8); the old
   construction-object cap and native self unit-count check are removed.
   Requires more than 300
   spendable carbon. A three-tick cooldown spaces requests about 10–15 game
@@ -58,9 +58,11 @@ even if the signal remains true. A cleared signal rearms the next pause.
 - Defensive rolls its mounted opening once at 50/50. In TL2 it trains the laser
   line up to the existing p4 target, without mounted dependencies; mounted/AA
   trooper production, scripted attacks and new scouts are disabled in that age.
-- Aggressive trains the laser line in TL2 and cannot launch attacks until the
-  attack signal has been observed at least once. Existing holds/treaty apply.
-- Rush retains its TL2 laser/mounted ratio conditions.
+- Aggressive trains the laser line in TL2 and can initiate attacks without
+  first being attacked. Existing army/batch requirements, holds, treaty, and
+  cooldown still apply.
+- Rush uses the TL2/TL3 two-completed-Lasers-per-Mountie support ratio.
+  Laser production no longer waits for Mounted counts.
 - New scouts are blocked during attack memory, active attack groups and the
   active TL1 raid phase. Previously assigned scouts may continue.
 

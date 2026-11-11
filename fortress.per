@@ -40,10 +40,9 @@
 )
 
 ; --- Bounty Hunter production priority ---
-; A published estimate opens a 15s window for at most ONE Hunter order.
-; Deficits reserve the Fortress during that window even if Hunters are not yet
-; affordable. The timer closes the window; a successful order closes it early.
-; Between windows, UUs/Cannons/Cruisers run normally. Existing targets remain.
+; A published nonzero estimate permits replenishment up to the existing target.
+; Reserve Fortress production while below target; release it when satisfied.
+; The next delayed NONE estimate ends the response; no extra intelligence polls.
 (defrule
 	(true)
 =>
@@ -122,10 +121,11 @@
 	(current-age == tech-level-3)
 	(goal enemyjedisighted JEDI-ALERT-P1)
 	(unit-type-count-total UNIT-BOUNTY < TL3-bounty-detect-p1)
-	(can-train UNIT-BOUNTY)
+	(can-train-with-escrow UNIT-BOUNTY)
 	=>
+	(release-escrow food)
+	(release-escrow carbon)
 	(train UNIT-BOUNTY)
-	(set-goal bounty-window NO)
 	(set-goal bounty-priority NO)
 )
 
@@ -140,10 +140,11 @@
 		)
 	)
 	(unit-type-count-total UNIT-BOUNTY < TL3-bounty-detect-p2)
-	(can-train UNIT-BOUNTY)
+	(can-train-with-escrow UNIT-BOUNTY)
 	=>
+	(release-escrow food)
+	(release-escrow carbon)
 	(train UNIT-BOUNTY)
-	(set-goal bounty-window NO)
 	(set-goal bounty-priority NO)
 )
 
@@ -152,10 +153,11 @@
 	(current-age == tech-level-4)
 	(goal enemyjedisighted JEDI-ALERT-P1)
 	(unit-type-count-total UNIT-BOUNTY < TL4-bounty-detect-p1)
-	(can-train UNIT-BOUNTY)
+	(can-train-with-escrow UNIT-BOUNTY)
 	=>
+	(release-escrow food)
+	(release-escrow carbon)
 	(train UNIT-BOUNTY)
-	(set-goal bounty-window NO)
 	(set-goal bounty-priority NO)
 )
 
@@ -164,10 +166,11 @@
 	(current-age == tech-level-4)
 	(goal enemyjedisighted JEDI-ALERT-P2)
 	(unit-type-count-total UNIT-BOUNTY < TL4-bounty-detect-p2)
-	(can-train UNIT-BOUNTY)
+	(can-train-with-escrow UNIT-BOUNTY)
 	=>
+	(release-escrow food)
+	(release-escrow carbon)
 	(train UNIT-BOUNTY)
-	(set-goal bounty-window NO)
 	(set-goal bounty-priority NO)
 )
 
@@ -181,7 +184,6 @@
 	(release-escrow food)
 	(release-escrow carbon)
 	(train UNIT-BOUNTY)
-	(set-goal bounty-window NO)
 	(set-goal bounty-priority NO)
 )
 
@@ -195,7 +197,6 @@
 	(release-escrow food)
 	(release-escrow carbon)
 	(train UNIT-BOUNTY)
-	(set-goal bounty-window NO)
 	(set-goal bounty-priority NO)
 )
 

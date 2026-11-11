@@ -2561,6 +2561,9 @@
 	(set-strategic-number sn-number-attack-groups 1)
 )
 
+; Compute release permission after current core/recovery facts and before pulses.
+(load "/Computer Prototype/ground")
+
 ; -----------------------------------------------------
 ; --- CHAPTER 1B: RE-ENABLING AUTOMATIC ATTACK HOLDS
 ; -----------------------------------------------------
@@ -3069,7 +3072,7 @@
 	(goal jediattack JEDIATTACK-READY)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
-	(goal raid-launch-open YES)
+	(goal ground-pulse-open YES)
 	(goal fortress-siege-hold NO)
 =>
 	(set-goal holocroncollectionservices HOLOCRON-DISABLED)
@@ -3078,11 +3081,11 @@
 	(set-strategic-number sn-percent-attack-air 0)
 	(set-strategic-number sn-percent-attack-boats 0)
 	(attack-now)
-	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-goal ground-release-state GROUND-COMMITTED)
 	(set-strategic-number sn-percent-attack-air 100)
 	(set-strategic-number sn-percent-attack-boats 100)
 	(set-goal jediattack JEDIATTACK-DONE)
-	(do-nothing) ; RAID diagnostics disabled
+	(set-goal ground-pulse-open NO) ; consume this pass's direct-ground permission
 )
 
 ; If the Master pulse did not create a real attack group, give it one bounded
@@ -3108,7 +3111,7 @@
 	(goal jediattack JEDIATTACK-RETRY)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)
-	(goal raid-launch-open YES)
+	(goal ground-pulse-open YES)
 	(goal fortress-siege-hold NO)
 =>
 	(set-goal holocroncollectionservices HOLOCRON-DISABLED)
@@ -3117,11 +3120,11 @@
 	(set-strategic-number sn-percent-attack-air 0)
 	(set-strategic-number sn-percent-attack-boats 0)
 	(attack-now)
-	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-goal ground-release-state GROUND-COMMITTED)
 	(set-strategic-number sn-percent-attack-air 100)
 	(set-strategic-number sn-percent-attack-boats 100)
 	(set-goal jediattack JEDIATTACK-WAITING)
-	(do-nothing) ; RAID diagnostics disabled
+	(set-goal ground-pulse-open NO) ; consume this pass's direct-ground permission
 )
 
 (defrule
@@ -3672,7 +3675,8 @@
 	(set-goal aready NO)
 )
 
-; Keep existing TL3 reinforcement batching on WATER/ASTEROID.
+; Keep the older TL3 reinforcement check on ASTEROID only.
+; WATER gates just the ground commitment below, so it cannot stall the fleet.
 ; LAND/HYBRID use the broader TL3/TL4 spare-batch gate before CHITCHAT.
 ; Retry in 30 game seconds so a small batch does not wait a full attack interval.
 (defrule
@@ -3684,7 +3688,7 @@
 	(attack-soldier-count > 0)
 	(goal openingstyle STYLE-RUSH)
 	(defend-soldier-count < 8)
-	(or (goal special-map WATER) (goal special-map ASTEROID))
+	(goal special-map ASTEROID)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -3700,7 +3704,7 @@
 	(attack-soldier-count > 0)
 	(goal openingstyle STYLE-AGGRESSIVE)
 	(defend-soldier-count < 11)
-	(or (goal special-map WATER) (goal special-map ASTEROID))
+	(goal special-map ASTEROID)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -3716,7 +3720,7 @@
 	(attack-soldier-count > 0)
 	(goal openingstyle STYLE-DEFENSIVE)
 	(defend-soldier-count < 16)
-	(or (goal special-map WATER) (goal special-map ASTEROID))
+	(goal special-map ASTEROID)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -3733,6 +3737,7 @@
 	(current-age == tech-level-3)
 	(goal attacktype NORM)
 	(or (not (goal special-map LAND)) (goal combat-arm AIR))
+	(not (goal special-map WATER))
 =>
 	(set-goal raid-rule-check YES)
 )
@@ -4811,7 +4816,7 @@
 (defrule
 	(goal land-attack-policy YES)
 	(goal aready YES)
-	(goal land-core-ready NO)
+	(goal ground-release-state GROUND-CORE-LOW)
 	(goal attack-batch-debug-phase 0)
 =>
 	(chat-to-all "ATTACK GROUP: CORE LOW - WAIT")
@@ -4822,7 +4827,7 @@
 (defrule
 	(goal land-attack-policy YES)
 	(goal aready YES)
-	(goal land-core-ready NO)
+	(goal ground-release-state GROUND-CORE-LOW)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -4830,7 +4835,7 @@
 )
 
 (defrule
-	(goal land-regroup-phase 2)
+	(goal ground-release-state GROUND-REBUILDING)
 	(goal aready YES)
 =>
 	(set-goal aready NO)
@@ -4849,7 +4854,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-RUSH)
-	(defend-soldier-count < land-wave-rush)
+	(goal ground-release-state GROUND-GATHERING)
 	(goal attack-batch-debug-phase 0)
 =>
 	(chat-to-all "ATTACK GROUP: SMALL - WAIT")
@@ -4864,7 +4869,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-RUSH)
-	(defend-soldier-count < land-wave-rush)
+	(goal ground-release-state GROUND-GATHERING)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -4878,7 +4883,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-AGGRESSIVE)
-	(defend-soldier-count < land-wave-aggressive)
+	(goal ground-release-state GROUND-GATHERING)
 	(goal attack-batch-debug-phase 0)
 =>
 	(chat-to-all "ATTACK GROUP: SMALL - WAIT")
@@ -4893,7 +4898,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-AGGRESSIVE)
-	(defend-soldier-count < land-wave-aggressive)
+	(goal ground-release-state GROUND-GATHERING)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -4907,7 +4912,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-DEFENSIVE)
-	(defend-soldier-count < land-wave-defensive)
+	(goal ground-release-state GROUND-GATHERING)
 	(goal attack-batch-debug-phase 0)
 =>
 	(chat-to-all "ATTACK GROUP: SMALL - WAIT")
@@ -4922,7 +4927,7 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal openingstyle STYLE-DEFENSIVE)
-	(defend-soldier-count < land-wave-defensive)
+	(goal ground-release-state GROUND-GATHERING)
 =>
 	(set-goal aready NO)
 	(disable-timer t-attackgroup-alt)
@@ -4936,12 +4941,40 @@
 	(not (goal combat-arm AIR))
 	(not (goal combat-arm SEA))
 	(goal attack-batch-debug-phase 1)
+	(goal ground-release-state GROUND-READY)
 =>
 	(chat-to-all "ATTACK GROUP: READY")
 	(chat-local "ATTACK GROUP: READY")
 	(set-goal attack-batch-debug-phase 2)
 )
 
+(defrule
+	(goal aready YES)
+	(goal ground-release-state GROUND-HELD)
+	(not (goal special-map WATER))
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
+
+#end-if
+
+; A direct ground pulse already committed this pass. Do not issue an ordinary
+; ground attack immediately afterward; WATER can still launch fleet/air alone.
+#load-if-not-defined MONUMENT-RACE
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(goal ground-release-state GROUND-COMMITTED)
+=>
+	(set-goal aready NO)
+	(disable-timer t-attackgroup-alt)
+	(enable-timer t-attackgroup-alt 30)
+)
 #end-if
 
 ; CHITCHAT
@@ -4986,47 +5019,9 @@
 	(set-goal reasonforattack attack-is-me) ; this one's a bit of a bugger to get your head around, but basically if the AI gets a joinin while it is holding its attacks (eg: getting techs), the joinin is never cleared
 )
 
-; Standard attack-group commitment by opening personality.
-; TSA and the separate opening/Jedi pulses keep their existing behavior.
-(defrule
-	(goal aready YES)
-	(goal attacktype NORM)
-	(goal openingstyle STYLE-RUSH)
-=>
-	(set-strategic-number sn-percent-attack-soldiers 100)
-	(set-strategic-number sn-percent-attack-air 100)
-	(set-strategic-number sn-percent-attack-boats 100)
-)
-
-(defrule
-	(goal aready YES)
-	(goal attacktype NORM)
-	(goal openingstyle STYLE-AGGRESSIVE)
-=>
-	(set-strategic-number sn-percent-attack-soldiers 75)
-	(set-strategic-number sn-percent-attack-air 75)
-	(set-strategic-number sn-percent-attack-boats 75)
-)
-
-(defrule
-	(goal aready YES)
-	(goal attacktype NORM)
-	(goal openingstyle STYLE-DEFENSIVE)
-=>
-	(set-strategic-number sn-percent-attack-soldiers 50)
-	(set-strategic-number sn-percent-attack-air 50)
-	(set-strategic-number sn-percent-attack-boats 50)
-)
-
-; Naval maps commit their available fleet when an ordinary attack launches.
-(defrule
-	(current-age >= tech-level-3)
-	(goal aready YES)
-	(goal attacktype NORM)
-	(or (goal special-map HYBRID) (goal special-map WATER))
-=>
-	(set-strategic-number sn-percent-attack-boats 100)
-)
+; Single owner of ordinary attack commitment settings. Keep this load after
+; readiness vetoes and before attack-now/TSA starts; its rule order is significant.
+(load "/Computer Prototype/groups")
 
 (defrule
 	(goal aready YES)
@@ -5798,21 +5793,11 @@
 	(set-strategic-number sn-gather-defense-units 1)
 )
 
-(defrule
-	(current-age == tech-level-2)
-	(goal openingstyle STYLE-AGGRESSIVE)
-	(goal raid-ever-attacked NO)
-=>
-	(set-goal aready NO)
-	(set-strategic-number sn-percent-attack-soldiers 0)
-	(set-strategic-number sn-number-attack-groups 0)
-	(set-strategic-number sn-gather-defense-units 1)
-)
+
 
 (defrule
 	(current-age == tech-level-2)
 	(goal openingstyle STYLE-AGGRESSIVE)
-	(goal raid-ever-attacked YES)
 =>
 	(set-strategic-number sn-number-attack-groups 1)
 )
@@ -5820,7 +5805,6 @@
 (defrule
 	(current-age == tech-level-2)
 	(goal openingstyle STYLE-AGGRESSIVE)
-	(goal raid-ever-attacked YES)
 	(goal attacksonhold-auto NO)
 	(goal attacksonhold-manual NO)
 	(goal attacksonhold-scn NO)

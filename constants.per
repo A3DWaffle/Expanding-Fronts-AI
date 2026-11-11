@@ -65,7 +65,20 @@
 (defconst OBJ-WATERMAP 8019)
 (defconst OBJ-HYBRIDMAP 8020)
 (defconst OBJ-ASTEROIDMAP 8021)
+(defconst mech-intel-pending 82) ; Delayed coarse fallback, sampled with Jedi intelligence
+(defconst mounted-ratio-open 84) ; TL2/3 completed Laser support for the next Mountie
+(defconst mounted-upgrade-ready 85) ; Completed Laser ratio and core before mounted tech
+(defconst t3-bomber-priority 83) ; Production priority only, recomputed by Airbase
 (defconst map-object-detected 64) ; Latch explicit map-object authority over resource fallback
+(defconst ground-release-state 65) ; Shared late ground release decision, recomputed each pass
+(defconst ground-pulse-open 66) ; Raid permission plus shared readiness for direct Jedi pulses
+(defconst GROUND-BYPASS 0)
+(defconst GROUND-GATHERING 1)
+(defconst GROUND-READY 2)
+(defconst GROUND-REBUILDING 3)
+(defconst GROUND-CORE-LOW 4)
+(defconst GROUND-HELD 5)
+(defconst GROUND-COMMITTED 6) ; A direct ground pulse already used this pass's permission
 (defconst OBJ-SUPPLEMENT-SCENARIO 3111)
 
 (defconst BLDG-MAIN2 621)
@@ -486,7 +499,7 @@
 	(defconst mech-seen-this-pass 243)	; Detection state; never use engine SN storage
 	(defconst jedi-intel-phase 244)	; 0 initial wait, 1 sample, 2 delay, 3 Hunter window, 4 rest
 	(defconst jedi-intel-pending 245)	; Snapshot only: 0 none, 1 small, 3 large
-	(defconst bounty-window 246)	; One Hunter order allowed per published estimate
+	(defconst bounty-window 246)	; Published nonzero estimate permits capped Hunter replenishment
 	(defconst enemytroopersighted 247)	; Visible Lasers/Mounties remembered for AIR composition
 		(defconst TROOPER-ALERT-NONE 0)
 		(defconst TROOPER-ALERT-P1 1)
@@ -719,6 +732,7 @@
 =>
  (set-goal jedi-intel-phase 0)
  (set-goal jedi-intel-pending 0)
+	(set-goal mech-intel-pending 0)
  (set-goal bounty-window NO)
  (enable-timer t-jedi-intel 105)
  (disable-self)
@@ -1116,7 +1130,7 @@
 )
 
 ; DETECTION MEMORY: SHARED AIR / MECH / JEDI PIPELINE
-; Air/mechs use visible memory; Jedi use delayed intelligence estimates below.
+; Air/mechs retain visible memory; mechs also share delayed Jedi intelligence.
 ; State belongs in goals: SN 223 is sn-percent-attack-air, NOT custom storage;
 ; SN 105 is sn-save-scenario-information. Detection must not overwrite either.
 ; Keep the highest observed level until 300 seconds without a sighting.
@@ -1877,6 +1891,7 @@
 ; Cheat counts are read ONLY in phase 1, never continuously and never at publish.
 ; Cadence: initial wait 105s -> sample -> delay 45s -> Hunter window 15s
 ; -> rest 45s -> next sample. Thus snapshots/publications stay 105s apart.
+; A nonzero published warning allows capped Hunter replenishment until replaced.
 ; Publish only NONE / P1 (small) / P3 (large), retaining existing Hunter targets.
 ; Hidden losses/reinforcements cannot change a pending or published snapshot.
 
@@ -1884,7 +1899,6 @@
 	(goal jedi-intel-phase 3)
 	(timer-triggered t-jedi-intel)
 =>
-	(set-goal bounty-window NO)
 	(set-goal jedi-intel-phase 4)
 	(disable-timer t-jedi-intel)
 	(enable-timer t-jedi-intel 45)
@@ -1896,6 +1910,7 @@
 =>
 	(disable-timer t-jedi-intel)
 	(set-goal jedi-intel-pending 0)
+	(set-goal mech-intel-pending 0)
 	(set-goal jedi-intel-phase 1)
 )
 
@@ -1905,7 +1920,251 @@
 =>
 	(disable-timer t-jedi-intel)
 	(set-goal jedi-intel-pending 0)
+	(set-goal mech-intel-pending 0)
 	(set-goal jedi-intel-phase 1)
+)
+
+; DELAYED MECH FALLBACK: family vision queries are unreliable for some civs.
+; Sample only on the shared 105s clock, publish 45s later, never live-poll totals.
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH1-LINE > 0)
+=>
+	(set-goal mech-intel-pending 1)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH2-LINE > 0)
+=>
+	(set-goal mech-intel-pending 1)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH3-LINE > 0)
+=>
+	(set-goal mech-intel-pending 1)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH4-LINE > 0)
+=>
+	(set-goal mech-intel-pending 1)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-DESTDROID-LINE > 0)
+=>
+	(set-goal mech-intel-pending 1)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-SKISPEEDER-LINE > 0)
+=>
+	(set-goal mech-intel-pending 1)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-GLADIATORDROID1-LINE > 0)
+=>
+	(set-goal mech-intel-pending 1)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH1-LINE > 5)
+=>
+	(set-goal mech-intel-pending 2)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH2-LINE > 5)
+=>
+	(set-goal mech-intel-pending 2)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH3-LINE > 5)
+=>
+	(set-goal mech-intel-pending 2)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH4-LINE > 5)
+=>
+	(set-goal mech-intel-pending 2)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-DESTDROID-LINE > 5)
+=>
+	(set-goal mech-intel-pending 2)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-SKISPEEDER-LINE > 5)
+=>
+	(set-goal mech-intel-pending 2)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-GLADIATORDROID1-LINE > 5)
+=>
+	(set-goal mech-intel-pending 2)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH1-LINE > 10)
+=>
+	(set-goal mech-intel-pending 3)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH2-LINE > 10)
+=>
+	(set-goal mech-intel-pending 3)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH3-LINE > 10)
+=>
+	(set-goal mech-intel-pending 3)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH4-LINE > 10)
+=>
+	(set-goal mech-intel-pending 3)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-DESTDROID-LINE > 10)
+=>
+	(set-goal mech-intel-pending 3)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-SKISPEEDER-LINE > 10)
+=>
+	(set-goal mech-intel-pending 3)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-GLADIATORDROID1-LINE > 10)
+=>
+	(set-goal mech-intel-pending 3)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH1-LINE > 20)
+=>
+	(set-goal mech-intel-pending 4)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH2-LINE > 20)
+=>
+	(set-goal mech-intel-pending 4)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH3-LINE > 20)
+=>
+	(set-goal mech-intel-pending 4)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-MECH4-LINE > 20)
+=>
+	(set-goal mech-intel-pending 4)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-DESTDROID-LINE > 20)
+=>
+	(set-goal mech-intel-pending 4)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-SKISPEEDER-LINE > 20)
+=>
+	(set-goal mech-intel-pending 4)
+)
+
+(defrule
+	(goal jedi-intel-phase 1)
+	(cc-players-unit-type-count any-enemy UNIT-GLADIATORDROID1-LINE > 20)
+=>
+	(set-goal mech-intel-pending 4)
+)
+
+(defrule
+	(goal jedi-intel-phase 2)
+	(timer-triggered t-jedi-intel)
+	(goal mech-intel-pending 1)
+	(goal mech-detection-level 0)
+=>
+	(set-goal mech-detection-level 1)
+)
+
+(defrule
+	(goal jedi-intel-phase 2)
+	(timer-triggered t-jedi-intel)
+	(goal mech-intel-pending 2)
+	(or (goal mech-detection-level 0) (goal mech-detection-level 1))
+=>
+	(set-goal mech-detection-level 2)
+)
+
+(defrule
+	(goal jedi-intel-phase 2)
+	(timer-triggered t-jedi-intel)
+	(goal mech-intel-pending 3)
+	(or (or (goal mech-detection-level 0) (goal mech-detection-level 1)) (goal mech-detection-level 2))
+=>
+	(set-goal mech-detection-level 3)
+)
+
+(defrule
+	(goal jedi-intel-phase 2)
+	(timer-triggered t-jedi-intel)
+	(goal mech-intel-pending 4)
+	(or (or (or (goal mech-detection-level 0) (goal mech-detection-level 1)) (goal mech-detection-level 2)) (goal mech-detection-level 3))
+=>
+	(set-goal mech-detection-level 4)
+)
+
+(defrule
+	(goal jedi-intel-phase 2)
+	(timer-triggered t-jedi-intel)
+	(not (goal mech-intel-pending 0))
+=>
+	(disable-timer t-mech-counter-memory)
+	(enable-timer t-mech-counter-memory 300)
 )
 
 (defrule

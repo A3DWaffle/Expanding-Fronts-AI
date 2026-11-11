@@ -18,3 +18,7 @@ Recommended cleanup steps:
 - Use commits with simple messages, such as `Add AI prototype scripts` or `Update file guide`.
 - Add documentation when a file would not be obvious to someone outside the project.
 - Keep experimental work labeled clearly.
+
+## Active deployment workflow
+
+Use the Steam archive AI in Game/Data/gamedata_x2.drs for live testing. “Dropbox” means the formally named files in E:/Code Projects/Computer Standard/6-2026/gamedata_x2; retain their existing filenames. Sync production changes to those files and the Steam archive. Computer Diagnostics and its build tools were removed; do not recreate a separate diagnostic AI without a new request.

@@ -1,15 +1,71 @@
 ; =====================================================
 ; FILE: groups
-; PURPOSE:
-;   Legacy group loader helper for Prototype module compatibility.
-;
+; PURPOSE: Own ordinary attack commitment percentages for ground, air, and boats.
+; Loaded by attack.per after launch vetoes and before ordinary execution.
+; Keep personality defaults, WATER ground batching, then fleet overrides in order.
+; Separate opening/Jedi pulses and TL1 recall remain explicit exceptions.
 ; =====================================================
-; *** Table of Contents *** 
-; =====================================================
-;
-;	Chapter 0: SETUP
-;	Chapter 1: LOGIC
-;
-; =====================================================
-; *** Chapter 0: SETUP ***
-; =====================================================
+
+; Standard attack-group commitment by opening personality.
+; TSA and the separate opening/Jedi pulses keep their existing behavior.
+(defrule
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal openingstyle STYLE-RUSH)
+=>
+	(set-strategic-number sn-percent-attack-soldiers 100)
+	(set-strategic-number sn-percent-attack-air 100)
+	(set-strategic-number sn-percent-attack-boats 100)
+)
+
+(defrule
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal openingstyle STYLE-AGGRESSIVE)
+=>
+	(set-strategic-number sn-percent-attack-soldiers 75)
+	(set-strategic-number sn-percent-attack-air 75)
+	(set-strategic-number sn-percent-attack-boats 75)
+)
+
+(defrule
+	(goal aready YES)
+	(goal attacktype NORM)
+	(goal openingstyle STYLE-DEFENSIVE)
+=>
+	(set-strategic-number sn-percent-attack-soldiers 50)
+	(set-strategic-number sn-percent-attack-air 50)
+	(set-strategic-number sn-percent-attack-boats 50)
+)
+
+; WATER's small shore army must not veto a fleet/air attack or donate a few
+; troops. Commit a complete package wave, or hold the ground component only.
+; This runs after personality allocations, before ordinary launch/TSA starts.
+; It neither recalls deployed groups nor changes transport loading/escorts.
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map WATER)
+	(goal aready YES)
+	(not (goal ground-release-state GROUND-READY))
+=>
+	(set-strategic-number sn-percent-attack-soldiers 0)
+)
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map WATER)
+	(goal aready YES)
+	(goal ground-release-state GROUND-READY)
+=>
+	(set-strategic-number sn-percent-attack-soldiers 100)
+)
+
+; Naval maps commit their available fleet when an ordinary attack launches.
+(defrule
+	(current-age >= tech-level-3)
+	(goal aready YES)
+	(goal attacktype NORM)
+	(or (goal special-map HYBRID) (goal special-map WATER))
+=>
+	(set-strategic-number sn-percent-attack-boats 100)
+)

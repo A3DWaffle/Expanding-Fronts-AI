@@ -175,6 +175,34 @@
 	(disable-self)
 )
 
+; Match engine-created ground groups to the intended committed wave, not the
+; larger at-home reserve required by Aggressive/Defensive allocation. This also
+; applies to new TSA groups. Boats, aircraft, and WATER sealift stay separate.
+; The maximum must scale too, so large-cap minimums never exceed the group cap.
+(defrule
+	(current-age >= tech-level-3)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+	(or (not (strategic-number sn-minimum-attack-group-size == land-wave-rush))
+		(not (strategic-number sn-maximum-attack-group-size == land-rebuild-rush)))
+=>
+	(set-strategic-number sn-maximum-attack-group-size land-rebuild-rush)
+	(set-strategic-number sn-minimum-attack-group-size land-wave-rush)
+)
+
+; WATER needs a ground-group floor independently of its fleet and air lineup.
+; Leave transport assignment enabled; this only sizes newly tasked ground groups.
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map WATER)
+	(or (not (strategic-number sn-minimum-attack-group-size == land-wave-rush))
+		(not (strategic-number sn-maximum-attack-group-size == land-rebuild-rush)))
+=>
+	(set-strategic-number sn-maximum-attack-group-size land-rebuild-rush)
+	(set-strategic-number sn-minimum-attack-group-size land-wave-rush)
+)
+
 ; so about enemy sighted response distance
 ; if a unit is chillin' outside of town size
 ; and it gets shot at

@@ -301,6 +301,183 @@
 ; CHAPTER 3: TECH 3 AIR PACKAGES
 ; =====================================================
 
+; TL3 mech counters get the next Airbase slot until their bounded target is met.
+(defrule
+	(true)
+=>
+	(set-goal t3-bomber-priority NO)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map LAND)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(set-goal t3-bomber-priority YES)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map LAND)
+	(or (goal enemymechsighted MECH-ALERT-P2) (or (goal enemymechsighted MECH-ALERT-P3) (goal enemymechsighted MECH-ALERT-P4)))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(set-goal t3-bomber-priority YES)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-water)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(set-goal t3-bomber-priority YES)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(or (goal enemymechsighted MECH-ALERT-P2) (or (goal enemymechsighted MECH-ALERT-P3) (goal enemymechsighted MECH-ALERT-P4)))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-water)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(set-goal t3-bomber-priority YES)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-hybrid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(set-goal t3-bomber-priority YES)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(or (goal enemymechsighted MECH-ALERT-P2) (or (goal enemymechsighted MECH-ALERT-P3) (goal enemymechsighted MECH-ALERT-P4)))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-hybrid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(set-goal t3-bomber-priority YES)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-asteroid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(set-goal t3-bomber-priority YES)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(or (goal enemymechsighted MECH-ALERT-P2) (or (goal enemymechsighted MECH-ALERT-P3) (goal enemymechsighted MECH-ALERT-P4)))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-asteroid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(set-goal t3-bomber-priority YES)
+)
+
+; -----------------------
+; BOMBERS
+; -----------------------
+
+; --- TL3 defensive bomber mech-counter p1 ---
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map LAND)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-water)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-asteroid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(goal enemymechsighted MECH-ALERT-P1)
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-hybrid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+; --- TL3 defensive bomber mech-counter p2 ---
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map LAND)
+	(or (goal enemymechsighted MECH-ALERT-P2)
+		(or (goal enemymechsighted MECH-ALERT-P3) (goal enemymechsighted MECH-ALERT-P4)))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map WATER)
+	(or (goal enemymechsighted MECH-ALERT-P2)
+		(or (goal enemymechsighted MECH-ALERT-P3) (goal enemymechsighted MECH-ALERT-P4)))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-water)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map ASTEROID)
+	(or (goal enemymechsighted MECH-ALERT-P2)
+		(or (goal enemymechsighted MECH-ALERT-P3) (goal enemymechsighted MECH-ALERT-P4)))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-asteroid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
+(defrule
+	(current-age == tech-level-3)
+	(goal special-map HYBRID)
+	(or (goal enemymechsighted MECH-ALERT-P2)
+		(or (goal enemymechsighted MECH-ALERT-P3) (goal enemymechsighted MECH-ALERT-P4)))
+	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-hybrid)
+	(can-train UNIT-BOMBER-LINE)
+=>
+	(train UNIT-BOMBER-LINE)
+)
+
 ; -----------------------
 ; FIGHTERS
 ; -----------------------
@@ -316,6 +493,7 @@
 	(goal combat-arm AIR)
 	(unit-type-count-total UNIT-FIGHTER-LINE < 8)
 	(can-train UNIT-FIGHTER-LINE)
+	(goal t3-bomber-priority NO)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
@@ -327,6 +505,7 @@
 	(goal special-map LAND)
 	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1)
 	(can-train UNIT-FIGHTER-LINE)
+	(goal t3-bomber-priority NO)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
@@ -336,6 +515,7 @@
 	(goal special-map WATER)
 	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1-water)
 	(can-train UNIT-FIGHTER-LINE)
+	(goal t3-bomber-priority NO)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
@@ -345,6 +525,7 @@
 	(goal special-map ASTEROID)
 	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1-asteroid)
 	(can-train UNIT-FIGHTER-LINE)
+	(goal t3-bomber-priority NO)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
@@ -354,6 +535,7 @@
 	(goal special-map HYBRID)
 	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p1-hybrid)
 	(can-train UNIT-FIGHTER-LINE)
+	(goal t3-bomber-priority NO)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
@@ -365,6 +547,7 @@
 	(goal special-map LAND)
 	(not (goal passiveage YES))
 	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2)
+	(goal t3-bomber-priority NO)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
@@ -375,6 +558,7 @@
 	(goal special-map WATER)
 	(not (goal passiveage YES))
 	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2-water)
+	(goal t3-bomber-priority NO)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
@@ -385,6 +569,7 @@
 	(goal special-map ASTEROID)
 	(not (goal passiveage YES))
 	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2-asteroid)
+	(goal t3-bomber-priority NO)
 =>
 	(train UNIT-FIGHTER-LINE)
 )
@@ -395,110 +580,9 @@
 	(goal special-map HYBRID)
 	(not (goal passiveage YES))
 	(unit-type-count-total UNIT-FIGHTER-LINE < TL3-fighter-arm-p2-hybrid)
+	(goal t3-bomber-priority NO)
 =>
 	(train UNIT-FIGHTER-LINE)
-)
-
-; -----------------------
-; BOMBERS
-; -----------------------
-
-; --- TL3 defensive bomber mech-counter p1 ---
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map LAND)
-	(goal enemymechsighted MECH-ALERT-P1)
-	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1)
-	(can-train UNIT-BOMBER-LINE)
-=>
-	(train UNIT-BOMBER-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map WATER)
-	(goal enemymechsighted MECH-ALERT-P1)
-	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1-water)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-water)
-	(can-train UNIT-BOMBER-LINE)
-=>
-	(train UNIT-BOMBER-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map ASTEROID)
-	(goal enemymechsighted MECH-ALERT-P1)
-	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1-asteroid)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-asteroid)
-	(can-train UNIT-BOMBER-LINE)
-=>
-	(train UNIT-BOMBER-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map HYBRID)
-	(goal enemymechsighted MECH-ALERT-P1)
-	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p1-hybrid)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p1-hybrid)
-	(can-train UNIT-BOMBER-LINE)
-=>
-	(train UNIT-BOMBER-LINE)
-)
-
-; --- TL3 defensive bomber mech-counter p2 ---
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map LAND)
-	(goal enemymechsighted MECH-ALERT-P2)
-	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2)
-	(can-train UNIT-BOMBER-LINE)
-=>
-	(train UNIT-BOMBER-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map WATER)
-	(goal enemymechsighted MECH-ALERT-P2)
-	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2-water)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-water)
-	(can-train UNIT-BOMBER-LINE)
-=>
-	(train UNIT-BOMBER-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map ASTEROID)
-	(goal enemymechsighted MECH-ALERT-P2)
-	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2-asteroid)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-asteroid)
-	(can-train UNIT-BOMBER-LINE)
-=>
-	(train UNIT-BOMBER-LINE)
-)
-
-(defrule
-	(current-age == tech-level-3)
-	(goal special-map HYBRID)
-	(goal enemymechsighted MECH-ALERT-P2)
-	(not (goal passiveage YES))
-	(unit-type-count-total UNIT-FIGHTER-LINE >= TL3-fighter-arm-p2-hybrid)
-	(unit-type-count-total UNIT-BOMBER-LINE < TL3-bomber-arm-p2-hybrid)
-	(can-train UNIT-BOMBER-LINE)
-=>
-	(train UNIT-BOMBER-LINE)
 )
 
 ; =====================================================
@@ -552,58 +636,6 @@
 ; -----------------------
 ; INTERCEPTORS
 ; -----------------------
-
-; --- Interceptor air-alert low ---
-(defrule
-	(current-age == tech-level-4)
-	(goal support-aircraft YES)
-	(goal enemyairsighted AIR-ALERT-LOW)
-	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-detect-air-alert-low-p1)
-	(can-train UNIT-INTERCEPTOR-LINE)
-	(goal t4-fighter-priority NO)
-	(not (goal combat-arm AIR))
-=>
-	(train UNIT-INTERCEPTOR-LINE)
-)
-
-; Reduced Interceptor cover for the AIR core lineup.
-(defrule
-	(current-age == tech-level-4)
-	(goal support-aircraft YES)
-	(goal enemyairsighted AIR-ALERT-LOW)
-	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-air-low)
-	(can-train UNIT-INTERCEPTOR-LINE)
-	(goal t4-fighter-priority NO)
-	(goal combat-arm AIR)
-=>
-	(train UNIT-INTERCEPTOR-LINE)
-)
-
-; --- Interceptor air-alert guard ---
-(defrule
-	(current-age == tech-level-4)
-	(goal support-aircraft YES)
-	(goal enemyairsighted AIR-ALERT-GUARD)
-	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-detect-air-alert-guard-p2)
-	(can-train UNIT-INTERCEPTOR-LINE)
-	(goal t4-fighter-priority NO)
-	(not (goal combat-arm AIR))
-=>
-	(train UNIT-INTERCEPTOR-LINE)
-)
-
-; Reduced Interceptor cover for the AIR core lineup.
-(defrule
-	(current-age == tech-level-4)
-	(goal support-aircraft YES)
-	(goal enemyairsighted AIR-ALERT-GUARD)
-	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-air-guard)
-	(can-train UNIT-INTERCEPTOR-LINE)
-	(goal t4-fighter-priority NO)
-	(goal combat-arm AIR)
-=>
-	(train UNIT-INTERCEPTOR-LINE)
-)
 
 ; --- Interceptor air-alert danger ---
 (defrule
@@ -687,10 +719,6 @@
 	(goal support-aircraft YES)
 	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p3)
 	(can-train UNIT-ATTACKER-LINE)
-	(or
-		(not (goal combat-arm AIR))
-		(not (goal enemytroopersighted TROOPER-ALERT-P2))
-	)
 	(goal t4-fighter-priority NO)
 =>
 	(train UNIT-ATTACKER-LINE)
@@ -701,14 +729,76 @@
 	(goal support-aircraft YES)
 	(unit-type-count-total UNIT-ATTACKER-LINE < TL4-attacker-arm-p4)
 	(can-train UNIT-ATTACKER-LINE)
-	(or
-		(not (goal combat-arm AIR))
-		(goal enemytroopersighted TROOPER-ALERT-NONE)
-	)
 	(goal t4-fighter-priority NO)
 =>
 	(train UNIT-ATTACKER-LINE)
 )
+
+; -----------------------
+; INTERCEPTOR SUPPORT
+; -----------------------
+; Low/guard Interceptors supplement the Attacker core rather than taking its
+; production slots first. If Attackers cannot train, allow available AA cover.
+; --- Interceptor air-alert low ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-detect-air-alert-low-p1)
+	(can-train UNIT-INTERCEPTOR-LINE)
+	(goal t4-fighter-priority NO)
+	(or (unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p2)
+		(not (can-train UNIT-ATTACKER-LINE)))
+	(not (goal combat-arm AIR))
+=>
+	(train UNIT-INTERCEPTOR-LINE)
+)
+
+; Reduced Interceptor cover for the AIR core lineup.
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(goal enemyairsighted AIR-ALERT-LOW)
+	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-air-low)
+	(can-train UNIT-INTERCEPTOR-LINE)
+	(goal t4-fighter-priority NO)
+	(or (unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p2)
+		(not (can-train UNIT-ATTACKER-LINE)))
+	(goal combat-arm AIR)
+=>
+	(train UNIT-INTERCEPTOR-LINE)
+)
+
+; --- Interceptor air-alert guard ---
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-detect-air-alert-guard-p2)
+	(can-train UNIT-INTERCEPTOR-LINE)
+	(goal t4-fighter-priority NO)
+	(or (unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p2)
+		(not (can-train UNIT-ATTACKER-LINE)))
+	(not (goal combat-arm AIR))
+=>
+	(train UNIT-INTERCEPTOR-LINE)
+)
+
+; Reduced Interceptor cover for the AIR core lineup.
+(defrule
+	(current-age == tech-level-4)
+	(goal support-aircraft YES)
+	(goal enemyairsighted AIR-ALERT-GUARD)
+	(unit-type-count-total UNIT-INTERCEPTOR-LINE < TL4-interceptor-air-guard)
+	(can-train UNIT-INTERCEPTOR-LINE)
+	(goal t4-fighter-priority NO)
+	(or (unit-type-count-total UNIT-ATTACKER-LINE >= TL4-attacker-arm-p2)
+		(not (can-train UNIT-ATTACKER-LINE)))
+	(goal combat-arm AIR)
+=>
+	(train UNIT-INTERCEPTOR-LINE)
+)
+
 
 ; -----------------------
 ;  BOMBERS

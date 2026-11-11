@@ -1,15 +1,91 @@
-; =====================================================
-; FILE: ground
-; PURPOSE:
-;   Unused ground-mode loader kept only for legacy reference.
-;
-; =====================================================
-; *** Table of Contents *** 
-; =====================================================
-;
-;	Chapter 0: SETUP
-;	Chapter 1: LOGIC
-;
-; =====================================================
-; *** Chapter 0: SETUP ***
-; =====================================================
+; Shared ground readiness, loaded after current core/recovery facts and before
+; direct Jedi pulses. It requests no attacks, changes no groups, and owns no timer.
+; Direct pulses consume READY as COMMITTED so ordinary execution cannot reuse it.
+; EARLY/AIR/SEA/ASTEROID retain their existing release policies via BYPASS.
+(defrule
+	(true)
+=>
+	(set-goal ground-release-state GROUND-BYPASS)
+	(set-goal ground-pulse-open NO)
+)
+
+#load-if-not-defined MONUMENT-RACE
+(defrule
+	(current-age >= tech-level-3)
+	(or (goal special-map LAND) (goal special-map HYBRID))
+	(not (goal combat-arm AIR))
+	(not (goal combat-arm SEA))
+=>
+	(set-goal ground-release-state GROUND-GATHERING)
+)
+#end-if
+
+(defrule
+	(current-age >= tech-level-3)
+	(goal special-map WATER)
+=>
+	(set-goal ground-release-state GROUND-GATHERING)
+)
+
+; WATER commits a full wave; other ground lineups retain personality reserves.
+(defrule
+	(goal ground-release-state GROUND-GATHERING)
+	(goal special-map WATER)
+	(defend-soldier-count >= land-wave-rush)
+=>
+	(set-goal ground-release-state GROUND-READY)
+)
+
+(defrule
+	(goal ground-release-state GROUND-GATHERING)
+	(not (goal special-map WATER))
+	(goal openingstyle STYLE-RUSH)
+	(defend-soldier-count >= land-wave-rush)
+=>
+	(set-goal ground-release-state GROUND-READY)
+)
+
+(defrule
+	(goal ground-release-state GROUND-GATHERING)
+	(not (goal special-map WATER))
+	(goal openingstyle STYLE-AGGRESSIVE)
+	(defend-soldier-count >= land-wave-aggressive)
+=>
+	(set-goal ground-release-state GROUND-READY)
+)
+
+(defrule
+	(goal ground-release-state GROUND-GATHERING)
+	(not (goal special-map WATER))
+	(goal openingstyle STYLE-DEFENSIVE)
+	(defend-soldier-count >= land-wave-defensive)
+=>
+	(set-goal ground-release-state GROUND-READY)
+)
+
+(defrule
+	(goal land-attack-policy YES)
+	(goal land-core-ready NO)
+=>
+	(set-goal ground-release-state GROUND-CORE-LOW)
+)
+
+(defrule
+	(not (goal ground-release-state GROUND-BYPASS))
+	(or (goal fortress-siege-hold YES) (goal attack-strength-hold YES))
+=>
+	(set-goal ground-release-state GROUND-HELD)
+)
+
+(defrule
+	(goal land-regroup-phase 2)
+=>
+	(set-goal ground-release-state GROUND-REBUILDING)
+)
+
+(defrule
+	(goal raid-launch-open YES)
+	(or (goal ground-release-state GROUND-READY) (goal ground-release-state GROUND-BYPASS))
+=>
+	(set-goal ground-pulse-open YES)
+)

@@ -22,6 +22,20 @@
 ; *** Chapter 1: BUILDINGS ***
 ; =====================================================
 
+; Town-clearing Pummels can request one factory outside the ordinary lineup.
+(defrule
+	(current-age >= tech-level-3)
+	(enemy-buildings-in-town)
+	(building-type-count-total BLDG-TRAINHEAVY < 1)
+	(building-type-count BLDG-POWERCORE > 0)
+	(not (goal buildpause YES))
+	(not (too-many-unpowered-buildings))
+	(goal raid-build-open YES)
+	(can-build BLDG-TRAINHEAVY)
+=>
+	(build BLDG-TRAINHEAVY)
+)
+
 ; Build a siege factory if the normal lineup has none to meet the fortress hold.
 (defrule
 	(goal fortress-siege-hold YES)
@@ -198,8 +212,15 @@
 	(research ut-artillery-2)
 )
 
-; --- Heavy Ram ---
-; Temporarily disabled: pummels are not worth the current AI resource/time cost.
+; --- Heavy Pummel: upgrade only a town-clearing package already in use. ---
+(defrule
+	(current-age >= tech-level-4)
+	(enemy-buildings-in-town)
+	(unit-type-count SIEGE-RAM-LINE >= 1)
+	(can-research ut-ram-2)
+=>
+	(research ut-ram-2)
+)
 
 ; --- Heavy AA Mobile ---
 (defrule
@@ -780,6 +801,31 @@
 ; =====================================================
 ; *** Chapter 4: TL3 SIEGE AND TL4 RAMS ***
 ; =====================================================
+
+; Town-clearing only: stop requesting Pummels as soon as buildings leave town.
+; No attack-now or global targeting/radius changes; native combat selects targets.
+#load-if-defined POPULATION-CAP-25
+(defrule
+	(current-age >= tech-level-3)
+	(enemy-buildings-in-town)
+	(unit-type-count-total SIEGE-RAM-LINE < 1)
+	(can-train SIEGE-RAM-LINE)
+=>
+	(train SIEGE-RAM-LINE)
+)
+
+#end-if
+#load-if-not-defined POPULATION-CAP-25
+(defrule
+	(current-age >= tech-level-3)
+	(enemy-buildings-in-town)
+	(unit-type-count-total SIEGE-RAM-LINE < 2)
+	(can-train SIEGE-RAM-LINE)
+=>
+	(train SIEGE-RAM-LINE)
+)
+
+#end-if
 
 ; -----------------------
 ; ARTILLERY
